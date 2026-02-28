@@ -365,11 +365,11 @@ export default function Welcome({ appName, laravelVersion, phpVersion }) {
                     </div>
 
                     {/* Subsidiaries Grid */}
-                    <div className="w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 h-auto">
+                    <div className="w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 h-auto shadow-[0_8px_24px_-10px_rgba(0,0,0,0.12),0_4px_8px_-2px_rgba(0,0,0,0.06)]">
                         {subsidiaries.map((sub) => (
                             <div
                                 key={sub.name}
-                                className={`relative flex flex-col items-center justify-start p-10 h-[500px] text-center group overflow-hidden ${sub.dark ? 'text-white' : 'bg-white text-black'}`}
+                                className={`relative flex flex-col items-center justify-start p-10 h-[500px] text-center group overflow-hidden shadow-[0_-4px_14px_0_rgba(0,0,0,0.08),0_0_0_1px_rgba(0,0,0,0.04),8px_0_12px_-4px_rgba(0,0,0,0.05),-8px_0_12px_-4px_rgba(0,0,0,0.05)] ${sub.dark ? 'text-white' : 'bg-white text-black'}`}
                             >
                                 {sub.dark && (
                                     <>
@@ -456,7 +456,7 @@ export default function Welcome({ appName, laravelVersion, phpVersion }) {
 
                 </div>
 
-                <div className="bg-white pt-12 pb-0">
+                    <div className="bg-white pt-4 pb-16">
                     {/* Trusted Companies Section */}
                     <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 flex flex-col items-center">
                         <div className="text-center mb-16 w-full">
@@ -548,10 +548,8 @@ export default function Welcome({ appName, laravelVersion, phpVersion }) {
                     </div>
                 </div>
 
-                <div className="w-full h-12 bg-white 600"></div>
-
                 {/* Maps Section */}
-                <div className="w-full h-[450px] -mt-1">
+                <div className="w-full h-[450px]">
                     <iframe
                         src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d683.5324601848853!2d121.08392021601612!3d14.274000867836397!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3397d8036175e4af%3A0x9f5d8162fef05b1b!2sTop%20OffRoad%20PH%20-%20Santa%20Rosa%20Branch!5e0!3m2!1sen!2sph!4v1772089113143!5m2!1sen!2sph"
                         width="100%"
