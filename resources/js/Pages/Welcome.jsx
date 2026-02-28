@@ -21,7 +21,7 @@ export default function Welcome({ appName, laravelVersion, phpVersion }) {
     const subsidiaries = [
         {
             name: 'SD TRADING C.',
-            logo: '/Sundialogo.png',
+            logo: '/sd-remove.png',
             description: 'Founded in 1982 and forged an exclusive partnership with Sunstar of Japan, started supplying windshield sealers to local automotive OEMs. Other products introduced include body sealers, D/G, primers, and adhesives',
             dark: true,
             image: '/SD.JPG'
@@ -454,6 +454,30 @@ export default function Welcome({ appName, laravelVersion, phpVersion }) {
                         </div>
                     </div>
 
+                    {/* SD Trading Corporation Section - full width, no side margin, not scrollable */}
+                    <div className="w-screen relative left-1/2 -translate-x-1/2 overflow-hidden">
+                        <div className="relative min-h-[595px] w-full">
+                            <div
+                                className="absolute inset-0 bg-cover bg-center grayscale"
+                                style={{ backgroundImage: "url('/production.jpg')" }}
+                            />
+                            <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/60 to-black/85" />
+                            <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 flex flex-col lg:flex-row items-center gap-8 lg:gap-12 min-h-[595px] py-16 lg:py-0 lg:min-h-[595px]">
+                                <div className="flex-shrink-0 w-96 h-96 bg-white rounded-full shadow-[-3px_12px_14px_0px_rgba(0,0,0,0.08)] flex items-center justify-center overflow-hidden">
+                                    <img className="w-56 h-32 object-contain" src="/sd-remove.png" alt="SD Trading" />
+                                </div>
+                                <div className="flex-1 text-white">
+                                    <h2 className="text-4xl font-extrabold font-['Inter'] leading-tight tracking-widest mb-6">
+                                        SD TRADING CORPORATION
+                                    </h2>
+                                    <p className="text-xl font-normal font-['Inter'] leading-10 tracking-wide text-white/90">
+                                        Founded in 1982 and forged an exclusive partnership with Sunstar of Japan, started supplying windshield sealers to local automotive OEMs. Other products introduced include body sealers, D/G, primers, and adhesives. Certified BS EN ISO 14001:2004 Products include Sunstar Penguin Seal, Sunstar Penguin Foam, Sunstar Penguin Cement, and Orotex Sealant
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
 
                 <div className="bg-white pt-12 pb-0">
@@ -468,14 +492,14 @@ export default function Welcome({ appName, laravelVersion, phpVersion }) {
                             </p>
                         </div>
                         <div className="flex flex-wrap items-center justify-center gap-16 lg:gap-32">
-                            <img className="h-20 lg:h-24 w-auto object-contain" src="/siam.png" alt="Siam Direct" />
+                            <img className="h-12 lg:h-14 w-auto object-contain" src="/siam.png" alt="Siam Direct" />
                             <img className="h-28 lg:h-36 w-auto object-contain" src="/Tpsmilogo.png" alt="TPSMI" />
                             <img className="h-20 lg:h-24 w-auto object-contain" src="/topoffroadlogo.png" alt="Top Offroad" />
                         </div>
                     </div>
 
                     {/* Get In Touch Section */}
-                    <div className="mt-16 w-full">
+                    <div id="contact" className="mt-16 w-full">
                         <div className="w-full bg-red-600 py-10 mb-10">
                             <div className="max-w-[930px] mx-auto flex flex-col items-center gap-3">
                                 <div className="text-center text-white text-4xl font-extrabold font-['Inter'] leading-9">

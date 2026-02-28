@@ -5,7 +5,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
 
         <title inertia>{{ config('app.name', 'Sundia') }}</title>
-        <link rel="icon" href="/SundiaIcon.png" type="image/png">
+        <link rel="icon" href="{{ asset('Slogo.png') }}?v=1" type="image/png">
 
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">
