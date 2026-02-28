@@ -284,10 +284,10 @@ export default function Welcome({ appName, laravelVersion, phpVersion }) {
                 </div>
 
                 {/* New White Section for KEY FACTORS, SOLUTION, Subsidiaries, etc. */}
-                <div className="bg-white py-32">
+                <div className="bg-white pt-32 pb-10">
                     <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                         {/* KEY FACTORS Section */}
-                        <div className="pb-32">
+                        <div className="pb-16">
                             <h2 className="text-center text-black text-4xl font-extrabold tracking-widest uppercase mb-16">
                                 KEY FACTORS
                             </h2>
@@ -347,14 +347,14 @@ export default function Welcome({ appName, laravelVersion, phpVersion }) {
                     </div>
 
                     {/* SOLUTION Section */}
-                    <div className="relative w-full py-32 overflow-hidden">
+                    <div className="relative w-full min-h-[80vh] overflow-hidden flex flex-col justify-end">
                         <img
                             src="/Uniform.jpg"
                             alt="Solution Background"
-                            className="absolute inset-0 h-full w-full object-cover grayscale"
+                            className="absolute inset-0 h-full w-full object-cover object-[50%_75%] grayscale"
                         />
                         <div className="absolute inset-0 bg-black/60" />
-                        <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+                        <div className="relative z-10 mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8 pb-16">
                             <h2 className="text-white text-4xl font-extrabold tracking-widest uppercase mb-8">
                                 SOLUTION
                             </h2>
@@ -365,7 +365,7 @@ export default function Welcome({ appName, laravelVersion, phpVersion }) {
                     </div>
 
                     {/* Subsidiaries Grid */}
-                    <div className="w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 h-auto">
+                    <div className="w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 h-auto shadow-xl">
                         {subsidiaries.map((sub) => (
                             <div
                                 key={sub.name}
@@ -499,7 +499,6 @@ export default function Welcome({ appName, laravelVersion, phpVersion }) {
                                         123 Business District, Metro<br/>Manila, Philippines
                                     </div>
                                 </div>
-                                <div className="h-12 bg-zinc-300" />
                             </div>
 
                             {/* Phone Card */}
@@ -513,7 +512,6 @@ export default function Welcome({ appName, laravelVersion, phpVersion }) {
                                         123 Business District, Metro<br/>Manila, Philippines
                                     </div>
                                 </div>
-                                <div className="h-12 bg-zinc-300" />
                             </div>
 
                             {/* Email Card */}
@@ -527,7 +525,6 @@ export default function Welcome({ appName, laravelVersion, phpVersion }) {
                                         123 Business District, Metro<br/>Manila, Philippines
                                     </div>
                                 </div>
-                                <div className="h-12 bg-zinc-300" />
                             </div>
 
                             {/* Hours Card */}
@@ -541,17 +538,14 @@ export default function Welcome({ appName, laravelVersion, phpVersion }) {
                                         123 Business District, Metro<br/>Manila, Philippines
                                     </div>
                                 </div>
-                                <div className="h-12 bg-zinc-300" />
                             </div>
                         </div>
 
                     </div>
                 </div>
 
-                <div className="w-full h-12 bg-white 600"></div>
-
-                {/* Maps Section */}
-                <div className="w-full h-[450px] -mt-1">
+                {/* Maps Section - pt-12 gives white space above map, bg-white blocks background */}
+                <div className="w-full h-[450px] -mt-1 pt-20 bg-white">
                     <iframe
                         src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d683.5324601848853!2d121.08392021601612!3d14.274000867836397!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3397d8036175e4af%3A0x9f5d8162fef05b1b!2sTop%20OffRoad%20PH%20-%20Santa%20Rosa%20Branch!5e0!3m2!1sen!2sph!4v1772089113143!5m2!1sen!2sph"
                         width="100%"
