@@ -21,6 +21,7 @@ export default function Welcome({ appName, laravelVersion, phpVersion }) {
     const subsidiaries = [
         {
             name: 'SD TRADING C.',
+            anchorId: 'sd-trading',
             logo: '/Sundialogo.png',
             description: 'Founded in 1982 and forged an exclusive partnership with Sunstar of Japan, started supplying windshield sealers to local automotive OEMs. Other products introduced include body sealers, D/G, primers, and adhesives',
             dark: true,
@@ -28,12 +29,14 @@ export default function Welcome({ appName, laravelVersion, phpVersion }) {
         },
         {
             name: 'SIAM DIRECT',
+            anchorId: 'siam',
             logo: '/siam.png',
             description: 'Established in 2010 to handle distribution of manufacturing consumables. We also stand as the sales and marketing arm of the whole Sundia group.',
             dark: false
         },
         {
             name: 'TPMSI',
+            anchorId: 'tpsm',
             logo: '/Tpsmilogo.png',
             description: 'Offer a broad range of packaging solutions to meet our customer needs and continuously improve our operations to better respond to those needs.',
             dark: true,
@@ -41,12 +44,14 @@ export default function Welcome({ appName, laravelVersion, phpVersion }) {
         },
         {
             name: 'R2R',
+            anchorId: 'r2r',
             logo: '/Sundialogo.png',
             description: 'A primary painting contractor of automotive, motorcycle, and electronic components that includes ED painting, powder coating, and automotive plastic painting.',
             dark: false
         },
         {
             name: 'TOP OFFROAD',
+            anchorId: 'top-offroad',
             logo: '/topoffroadlogo.png',
             description: 'TOP Offroad Philippines have become a major player in the distribution and installation of outdoor and off-road vehicle accessories. We continuously expand our product line to help our customers enjoy the outdoor experience.',
             dark: true,
@@ -67,7 +72,7 @@ export default function Welcome({ appName, laravelVersion, phpVersion }) {
         <>
             <Head title="Welcome to Sundia" />
 
-            <div className="min-h-screen font-sans antialiased">
+            <div id="home" className="min-h-screen font-sans antialiased">
                 <div className="relative min-h-[80vh]">
                     <div className="absolute inset-0 -z-10">
                         <img
@@ -369,7 +374,8 @@ export default function Welcome({ appName, laravelVersion, phpVersion }) {
                         {subsidiaries.map((sub) => (
                             <div
                                 key={sub.name}
-                                className={`relative flex flex-col items-center justify-start p-10 h-[500px] text-center group overflow-hidden shadow-[0_-4px_14px_0_rgba(0,0,0,0.08),0_0_0_1px_rgba(0,0,0,0.04),8px_0_12px_-4px_rgba(0,0,0,0.05),-8px_0_12px_-4px_rgba(0,0,0,0.05)] ${sub.dark ? 'text-white' : 'bg-white text-black'}`}
+                                id={sub.anchorId}
+                                className={`scroll-mt-24 relative flex flex-col items-center justify-start p-10 h-[500px] text-center group overflow-hidden shadow-[0_-4px_14px_0_rgba(0,0,0,0.08),0_0_0_1px_rgba(0,0,0,0.04),8px_0_12px_-4px_rgba(0,0,0,0.05),-8px_0_12px_-4px_rgba(0,0,0,0.05)] ${sub.dark ? 'text-white' : 'bg-white text-black'}`}
                             >
                                 {sub.dark && (
                                     <>
@@ -475,7 +481,7 @@ export default function Welcome({ appName, laravelVersion, phpVersion }) {
                     </div>
 
                     {/* Get In Touch Section */}
-                    <div className="mt-16 w-full">
+                    <div id="contact" className="scroll-mt-24 mt-16 w-full">
                         <div className="w-full bg-red-600 py-10 mb-10">
                             <div className="max-w-[930px] mx-auto flex flex-col items-center gap-3">
                                 <div className="text-center text-white text-4xl font-extrabold font-['Inter'] leading-9">

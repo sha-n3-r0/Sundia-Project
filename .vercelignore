@@ -1,0 +1,24 @@
+# Dependencies (reinstalled during build)
+/vendor
+/node_modules
+
+# Local and sensitive
+.env
+.env.*
+!.env.example
+
+# Git and IDE
+.git
+.idea
+.vscode
+*.log
+
+# Tests and dev
+/tests
+/phpunit.xml
+.phpunit.result.cache
+.phpunit.cache
+
+# Docs (optional; remove if you want to exclude more)
+# *.md
+# !README.md
