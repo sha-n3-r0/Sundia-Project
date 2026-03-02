@@ -3,6 +3,8 @@ import { Link, usePage } from '@inertiajs/react';
 export default function Header() {
     const { url, props } = usePage();
     const auth = props.auth;
+    const isTopOffroadPage = route().current('top-offroad');
+    const navBarColor = isTopOffroadPage ? '#FF6E00' : '#FF0000';
 
     const navLinks = [
         { 
@@ -230,7 +232,7 @@ export default function Header() {
                     >
                         <path
                             d="M60.2824 0.595664C60.4442 0.230656 60.8026 0 61.2019 0H1169.54C1170.1 0 1170.54 0.447715 1170.54 1V81C1170.54 81.5523 1170.1 82 1169.54 82H1.01415C0.115465 82 -0.34191 80.9141 0.298992 80.2841C5.92651 74.7525 23.8345 56.9164 35.5439 42.5974C48.3201 26.974 58.5425 4.5188 60.2824 0.595664Z"
-                            fill="#FF0000"
+                            fill={navBarColor}
                         />
                     </svg>
 
