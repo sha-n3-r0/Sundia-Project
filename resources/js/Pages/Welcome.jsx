@@ -3,7 +3,7 @@ import Header from '@/Components/Header';
 import { Head, Link } from '@inertiajs/react';
 import { useRef, useState } from 'react';
 
-export default function Welcome({ appName, laravelVersion, phpVersion }) {
+export default function Welcome({ appName }) {
     const videoRef = useRef(null);
     const [isPlaying, setIsPlaying] = useState(false);
     const togglePlay = () => {
@@ -183,11 +183,14 @@ export default function Welcome({ appName, laravelVersion, phpVersion }) {
 
                 <div className="relative z-0 bg-white pt-48 pb-32">
                     <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+                        {/* ISO logo - white background */}
+
+
                         {/* Video Section */}
-                        <div className="relative aspect-video w-full overflow-hidden rounded-[3px] bg-gray-900 shadow-2xl group">
+                        <div className="relative aspect-video w-full overflow-hidden rounded-[30px] bg-gray-900 shadow-2xl group">
                             <video
                                 ref={videoRef}
-                                className="h-full w-full object-cover"
+                                className="h-full w-full object-cover rounded-[30px]"
                                 src="/2025%20Sundia%20Company%20video.mp4"
                                 onPlay={() => setIsPlaying(true)}
                                 onPause={() => setIsPlaying(false)}
