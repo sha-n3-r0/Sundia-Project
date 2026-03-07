@@ -1,3 +1,4 @@
+import Footer from '@/Components/Footer';
 import Header from '@/Components/Header';
 import { Head, Link } from '@inertiajs/react';
 import { useRef, useState } from 'react';
@@ -34,14 +35,14 @@ export default function Tpsmi() {
 
                         {/* Hero content - same layout as TopOffroad */}
                         <div
-                            className="relative z-10 mr-auto flex max-w-6xl min-h-[540px] flex-col justify-center pl-2 pr-4 sm:pl-4 sm:pr-5 lg:pl-6 lg:pr-8 pt-56 sm:pt-64"
+                            className="relative z-10 mr-auto flex max-w-6xl min-h-[540px] flex-col justify-center pl-2 pr-4 sm:pl-4 sm:pr-5 lg:pl-6 lg:pr-8 pt-40 sm:pt-48 lg:pt-52"
                             style={{ marginLeft: '85px' }}
                         >
                             <div className="w-full max-w-[796px]">
-                                <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black leading-tight text-white">
+                                <h1 className="text-4xl sm:text-5xl lg:text-4xl font-black leading-tight text-white">
                                     TOTAL PACKAGING SOLUTIONS MANUFACTURING INC.
                                 </h1>
-                                <p className="mt-6 text-orange-500 text-2xl font-medium leading-8">
+                                <p className="mt-6 text-red-500 text-2xl font-medium leading-8">
                                     Bringing Innovative Solutions to Life
                                 </p>
                                 <p className="mt-3 text-white text-base sm:text-lg font-medium leading-7">
@@ -53,7 +54,7 @@ export default function Tpsmi() {
                                 <div className="mt-10 flex flex-wrap items-center gap-4">
                                     <Link
                                         href={route('home') + '#contact'}
-                                        className="inline-flex h-12 items-center gap-2 rounded-full bg-gradient-to-r from-red-600 to-orange-600 px-8 text-base font-normal text-white shadow-[0px_1px_2px_-1px_rgba(0,0,0,0.10),0px_1px_3px_0px_rgba(0,0,0,0.10)] hover:from-red-500 hover:to-orange-500"
+                                        className="inline-flex h-12 items-center gap-2 rounded-full bg-gradient-to-r from-red-600 to-red-600 px-8 text-base font-normal text-white shadow-[0px_1px_2px_-1px_rgba(0,0,0,0.10),0px_1px_3px_0px_rgba(0,0,0,0.10)] hover:from-red-500 hover:to-orange-500"
                                     >
                                         <span>Learn More</span>
                                         <span className="inline-flex h-4 w-6 items-center justify-start pl-2">
@@ -290,57 +291,96 @@ export default function Tpsmi() {
                     </div>
                 </div>
 
-                {/* VACUUM FORMED PLASTIC PRODUCTS banner - red width: increase 320/400 for more red, decrease for less */}
-                <div className="w-full h-24 relative overflow-hidden">
-                    <svg className="absolute inset-0 w-full h-full object-cover" viewBox="0 0 771 103" fill="none" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M0 0H320L400 103H0V0Z" fill="#E31E25"/>
-                        <path d="M320 0L400 103L771 103L771 0Z" fill="#8C8C8C"/>
-                    </svg>
-                    <div className="relative z-10 h-full flex items-center w-full pl-6 sm:pl-8 md:pl-12">
-                        <span className="text-white text-base sm:text-lg font-bold font-['Inter'] uppercase tracking-wide" style={{ letterSpacing: '0.12em', wordSpacing: '0.2em' }}>
-                            VACUUM FORMED PLASTIC PRODUCTS
-                        </span>
-                    </div>
-                </div>
-
-                {/* Section with grayscale bg.jpg background + product cards 3x2 + carousel buttons */}
-                <div className="relative w-full min-h-[700px] py-16">
+                {/* VACUUM FORMED PLASTIC PRODUCTS - whole section on grayscale bg.jpg */}
+                <div className="relative w-full overflow-hidden min-h-[800px]">
                     <div
-                        className="absolute inset-0 bg-cover bg-center grayscale -z-10"
-                        style={{ backgroundImage: "url('/bg.jpg')" }}
+                        className="absolute inset-0 z-0 min-h-full"
+                        style={{
+                            backgroundImage: "url('/bg.jpg')",
+                            backgroundSize: 'cover',
+                            backgroundPosition: 'center',
+                            backgroundRepeat: 'no-repeat',
+                            filter: 'grayscale(100%)',
+                        }}
                     />
+                    {/* Red/gray banner */}
+                    <div className="relative z-10 w-full h-24 overflow-hidden">
+                        <svg className="absolute inset-0 w-full h-full object-cover" viewBox="0 0 771 103" fill="none" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M0 0H320L400 103H0V0Z" fill="#E31E25"/>
+                            <path d="M320 0L400 103L771 103L771 0Z" fill="#8C8C8C"/>
+                        </svg>
+                        <div className="relative z-10 h-full flex items-center w-full pl-6 sm:pl-8 md:pl-12">
+                            <span className="text-white text-base sm:text-lg font-bold font-['Inter'] uppercase tracking-wide whitespace-nowrap" style={{ letterSpacing: '0.12em', wordSpacing: '0.2em' }}>
+                                VACUUM FORMED PLASTIC PRODUCTS
+                            </span>
+                        </div>
+                    </div>
+
+                    {/* Product cards 3x2 + carousel buttons */}
+                    <div className="relative z-10 w-full min-h-[700px] py-16">
                     <div className="relative max-w-6xl mx-auto px-4">
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-14 lg:gap-19  justify-items-center">
                             {[
-                                { title: 'CORRUGATED BOX', img: 'https://placehold.co/419x322' },
-                                { title: 'BILAO BOX', img: 'https://placehold.co/419x322' },
-                                { title: 'BELLY BOX', img: 'https://placehold.co/419x322' },
-                                { title: 'ANTI-STATIC BUBBLE SHEET POUCH', img: 'https://placehold.co/419x322' },
-                                { title: 'PE FOAM POUCH', img: 'https://placehold.co/419x322' },
-                                { title: 'BUBBLE SHEET SLEEVES', img: 'https://placehold.co/419x322' }
+                                { title: 'CORRUGATED BOX', img: '/CORRUGATED BOX.png', features: ['Durable', 'Custom sizes', 'Eco-friendly'] },
+                                { title: 'BILAO BOX', img: '/Bilao Box.png', features: ['Food-grade', 'Stackable', 'Secure fit'] },
+                                { title: 'BELLY BOX', img: '/BELLY BOX.png', features: ['Heavy duty', 'Versatile', 'Cost-effective'] },
+                                { title: 'ANTI-STATIC BUBBLE SHEET POUCH', img: '/AntiStatic.png', features: ['ESD protection', 'Reusable', 'Tear resistant'] },
+                                { title: 'PE FOAM POUCH', img: '/PE FOAM PoUCH.png', features: ['Cushioning', 'Lightweight', 'Flexible'] },
+                                { title: 'BUBBLE SHEET SLEEVES', img: '/BUBBLE SHEET SLEEVES.png', features: ['Easy to use', 'Protective', 'Multiple sizes'] }
                             ].map((product, i) => (
-                                <div key={i} className="w-96 min-h-[442px] relative overflow-hidden shadow-[0px_4px_25px_0px_rgba(0,0,0,0.25)] rounded-[20px]">
-                                    <div className="w-full h-32 absolute left-0 top-[314px] bg-red-600 rounded-bl-[20px] rounded-br-[20px]" />
-                                    <img className="w-full h-80 left-0 top-0 absolute rounded-tl-[20px] rounded-tr-[20px] object-cover" src={product.img} alt={product.title} />
-                                    <div className="left-0 right-0 top-[328px] absolute flex items-center justify-center text-center text-white text-base font-extrabold font-['Inter'] px-2">
-                                        {product.title}
+                                <div key={i} className="w-96 min-h-[442px] flex flex-col overflow-hidden shadow-[0px_4px_25px_0px_rgba(0,0,0,0.25)] rounded-[20px] transition-transform duration-300 ease-out hover:scale-105 cursor-pointer">
+                                    <div className="relative w-full h-64 flex-shrink-0">
+                                        <img className="w-full h-full object-cover rounded-t-[20px]" src={product.img} alt={product.title} />
+                                    </div>
+                                    <div className="flex flex-col items-center justify-center min-h-[120px] py-4 px-5 rounded-b-[20px] bg-red-600">
+                                        <h3 className="text-white text-base font-bold font-['Inter'] uppercase text-center tracking-wide mb-4">
+                                            {product.title}
+                                        </h3>
+                                        <div className="flex flex-wrap justify-center items-center gap-x-5 gap-y-2">
+                                            {product.features.map((feature, j) => (
+                                                <div key={j} className="flex items-center gap-2">
+                                                    <span className="w-2 h-2 rounded-full bg-white flex-shrink-0" />
+                                                    <span className="text-white text-sm font-normal font-['Inter']">{feature}</span>
+                                                </div>
+                                            ))}
+                                        </div>
                                     </div>
                                 </div>
                             ))}
                         </div>
                         {/* Carousel prev/next buttons */}
-                        <button type="button" className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-2 w-12 h-12 rounded-full bg-white border-2 border-neutral-300 shadow-lg flex items-center justify-center hover:bg-neutral-50 z-10" aria-label="Previous">
+                        <button type="button" className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-14 w-12 h-12 rounded-full bg-white border-2 border-neutral-300 shadow-lg flex items-center justify-center hover:bg-neutral-50 z-10" aria-label="Previous">
                             <svg className="w-6 h-6 text-neutral-800" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                             </svg>
                         </button>
-                        <button type="button" className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-2 w-12 h-12 rounded-full bg-white border-2 border-neutral-300 shadow-lg flex items-center justify-center hover:bg-neutral-50 z-10" aria-label="Next">
+                        <button type="button" className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-14 w-12 h-12 rounded-full bg-white border-2 border-neutral-300 shadow-lg flex items-center justify-center hover:bg-neutral-50 z-10" aria-label="Next">
                             <svg className="w-6 h-6 text-neutral-800" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                             </svg>
                         </button>
                     </div>
+                    </div>
                 </div>
+
+                {/* Stone background block with VFP content */}
+                <div className="w-full flex justify-center bg-stone-900 min-h-[1537px] py-16">
+                    <div className="w-[1442px] max-w-full h-[1537px] bg-stone-900">
+                        <div className="w-[1328px] max-w-full h-[1287px] relative mx-auto">
+                            <div className="w-[1243.79px] max-w-full h-[1236.69px] left-[84.21px] top-[50.31px] absolute bg-white rounded-[50px] border-[5px] border-red-600" />
+                            <div data-svg-wrapper className="left-0 top-0 absolute">
+                                <svg width="750" height="101" viewBox="0 0 750 101" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M0 0H642.222L749.662 100.618H0V0Z" fill="#E31E25"/>
+                                </svg>
+                            </div>
+                            <div className="left-[50.85px] top-[29.27px] absolute text-white text-xl sm:text-2xl font-bold font-['Inter'] leading-tight whitespace-nowrap flex items-center h-10">VACUUM FORMED PLASTIC PRODUCTS</div>
+                            <img className="w-[1014.38px] max-w-full h-[1065.10px] left-[203.29px] top-[161.69px] absolute object-cover" src="/Aircon Evaporator Cover.png" alt="Aircon Evaporator Cover" />
+                            <img className="w-36 h-24 left-[530px] top-[8px] absolute object-contain grayscale" src="/Tpsmilogo.png" alt="TPSMI" />
+                        </div>
+                    </div>
+                </div>
+
+                <Footer />
         </>
     );
 }

@@ -69,13 +69,13 @@ export default function Welcome({ appName }) {
 
             <div className="min-h-screen font-sans antialiased">
                 <div className="relative min-h-[80vh]">
-                    <div className="absolute inset-0 -z-10">
-                        <img
-                            src="/BackgroundSundia.JPG"
-                            alt="Background"
-                            className="h-full w-full object-cover"
-                        />
-                        <div className="absolute inset-0 bg-black/50" />
+                    <div
+                        className="fixed inset-0 -z-10 bg-cover bg-center"
+                        style={{
+                            backgroundImage: "url('/sundia-group-background.png')",
+                            backgroundAttachment: 'fixed',
+                        }}
+                    >
                     </div>
 
                     <Header />
@@ -461,7 +461,7 @@ export default function Welcome({ appName }) {
                     <div className="w-screen relative left-1/2 -translate-x-1/2 overflow-hidden">
                         <div className="relative min-h-[595px] w-full">
                             <div
-                                className="absolute inset-0 z-0 bg-cover bg-center grayscale"
+                                className="absolute inset-0 z-0 bg-cover bg-center "
                                 style={{ backgroundImage: "url('/production.jpg')" }}
                             />
                             <div className="absolute inset-0 z-[1] bg-gradient-to-b from-neutral-400/0 to-stone-950/100 pointer-events-none" />

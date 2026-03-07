@@ -203,7 +203,8 @@ export default function Header() {
     ];
 
     return (
-        <header className="relative z-50">
+        <>
+        <header className="fixed top-0 left-0 right-0 z-[100]">
             {/* Top Logo Bar */}
             <div className="bg-[linear-gradient(to_right,_rgb(163,163,163)_0%,_rgb(209,213,219)_18%,_white_26%,_white_100%)] border-b border-gray-200">
                 <div className="mx-auto flex max-w-7xl items-center px-6 py-2">
@@ -267,5 +268,8 @@ export default function Header() {
                 </div>
             </div>
         </header>
+        {/* Spacer so page content is not hidden under fixed header (logo bar ~80px + nav bar ~73px) */}
+        <div className="h-[120px] shrink-0" aria-hidden="true" />
+        </>
     );
 }

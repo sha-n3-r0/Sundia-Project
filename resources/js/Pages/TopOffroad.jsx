@@ -59,7 +59,7 @@ export default function TopOffroad() {
                         >
                         <div className="w-full max-w-[796px]">
                             <img
-                                className="w-[600px] h-16 max-w-full"
+                                className="w-[500px] h-18 max-w-full"
                                 src="TOPLOGO.PNG"
                                 alt="TOP OFFROAD"
                             />
