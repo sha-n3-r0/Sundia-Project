@@ -1,10 +1,47 @@
 import { Link, usePage } from '@inertiajs/react';
+import { useState, useEffect, useRef } from 'react';
 
 export default function Header() {
     const { url, props } = usePage();
     const auth = props.auth;
+    const [hidden, setHidden] = useState(false);
+    const lastScrollY = useRef(0);
+
+    // hide on scroll down, show on hover/top movement
+    useEffect(() => {
+        const onScroll = () => {
+            const currentY = window.scrollY;
+            // hide when scrolling down and not at top
+            if (currentY > lastScrollY.current && currentY > 0) {
+                setHidden(true);
+            }
+            // show when reaching very top
+            if (currentY === 0) {
+                setHidden(false);
+            }
+            lastScrollY.current = currentY;
+        };
+        const onMouseMove = (e) => {
+            if (e.clientY < 50) {
+                setHidden(false);
+            }
+        };
+        document.addEventListener('scroll', onScroll);
+        document.addEventListener('mousemove', onMouseMove);
+        return () => {
+            document.removeEventListener('scroll', onScroll);
+            document.removeEventListener('mousemove', onMouseMove);
+        };
+    }, []);
+
     const isTopOffroadPage = route().current('top-offroad');
     const navBarColor = isTopOffroadPage ? '#FF6E00' : '#FF0000';
+
+    const scrollToTop = () => {
+        if (window.scrollY > 0) {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    };
 
     const navLinks = [
         { 
@@ -204,7 +241,15 @@ export default function Header() {
 
     return (
         <>
-        <header className="fixed top-0 left-0 right-0 z-[100]">
+        <header
+            onClick={scrollToTop}
+            className={
+                "fixed top-0 left-0 right-0 z-[100] transition-transform duration-300 transition-opacity duration-300 " +
+                (hidden
+                    ? "-translate-y-full opacity-0 pointer-events-none"
+                    : "translate-y-0 opacity-100 pointer-events-auto")
+            }
+        >
             {/* Top Logo Bar */}
             <div className="bg-[linear-gradient(to_right,_rgb(163,163,163)_0%,_rgb(209,213,219)_18%,_white_26%,_white_100%)] border-b border-gray-200">
                 <div className="mx-auto flex max-w-7xl items-center px-6 py-2">

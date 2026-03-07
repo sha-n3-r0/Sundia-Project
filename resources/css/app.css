@@ -2,6 +2,10 @@
 @tailwind components;
 @tailwind utilities;
 
+html, body {
+    overflow-x: hidden; /* prevent horizontal scroll */
+}
+
 body {
     position: relative;
     min-height: 100vh;

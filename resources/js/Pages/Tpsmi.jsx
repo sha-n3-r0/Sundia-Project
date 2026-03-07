@@ -234,6 +234,8 @@ export default function Tpsmi() {
                 <div className="flex justify-center bg-white py-12">
                     <img src="/iso.png" alt="ISO" className="h-26 w-auto object-contain" />
                 </div>
+                {/* separator line below ISO logo */}
+                <div className="w-full border-t-8 border-gray-200" />
 
                 {/* Premium Packaging and Protective Solutions */}
                 <div className="bg-white py-12 pb-14">
@@ -319,7 +321,7 @@ export default function Tpsmi() {
                     {/* Product cards 3x2 + carousel buttons */}
                     <div className="relative z-10 w-full min-h-[700px] py-16">
                     <div className="relative max-w-6xl mx-auto px-4">
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-14 lg:gap-19  justify-items-center">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-20 lg:gap-24 justify-items-center">
                             {[
                                 { title: 'CORRUGATED BOX', img: '/CORRUGATED BOX.png', features: ['Durable', 'Custom sizes', 'Eco-friendly'] },
                                 { title: 'BILAO BOX', img: '/Bilao Box.png', features: ['Food-grade', 'Stackable', 'Secure fit'] },
@@ -328,7 +330,7 @@ export default function Tpsmi() {
                                 { title: 'PE FOAM POUCH', img: '/PE FOAM PoUCH.png', features: ['Cushioning', 'Lightweight', 'Flexible'] },
                                 { title: 'BUBBLE SHEET SLEEVES', img: '/BUBBLE SHEET SLEEVES.png', features: ['Easy to use', 'Protective', 'Multiple sizes'] }
                             ].map((product, i) => (
-                                <div key={i} className="w-96 min-h-[442px] flex flex-col overflow-hidden shadow-[0px_4px_25px_0px_rgba(0,0,0,0.25)] rounded-[20px] transition-transform duration-300 ease-out hover:scale-105 cursor-pointer">
+                                <div key={i} className="w-96 min-h-[442px] flex flex-col overflow-hidden shadow-[0px_4px_25px_0px_rgba(0,0,0,0.25)] rounded-[20px] transition-transform duration-300 ease-out hover:scale-105 hover:shadow-none cursor-pointer">
                                     <div className="relative w-full h-64 flex-shrink-0">
                                         <img className="w-full h-full object-cover rounded-t-[20px]" src={product.img} alt={product.title} />
                                     </div>
