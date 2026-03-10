@@ -371,7 +371,7 @@ export default function TopOffroad() {
                                     <div className="text-center text-white text-2xl sm:text-3xl font-medium">
                                         OUR PRODUCTS
                                     </div>
-                                    <div className="mt-8 flex flex-wrap items-center justify-center gap-8">
+                                    <div className="mt-8 flex flex-nowrap items-center justify-center gap-4">
                                         <button
                                             type="button"
                                             aria-pressed={activeCategory === 'car-accessories'}
@@ -419,6 +419,18 @@ export default function TopOffroad() {
                                             }`}
                                         >
                                             Tints
+                                        </button>
+                                        <button
+                                            type="button"
+                                            aria-pressed={activeCategory === 'camping-gears'}
+                                            onClick={() => setActiveCategory('camping-gears')}
+                                            className={`min-w-[210px] h-14 px-8 rounded-2xl border-[3px] border-orange-500 text-base font-medium cursor-pointer flex items-center justify-center transition-all duration-200 hover:scale-[1.02] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-900 ${
+                                                activeCategory === 'camping-gears'
+                                                    ? 'bg-orange-400 text-white hover:bg-orange-300'
+                                                    : 'bg-transparent text-white hover:bg-orange-500/15'
+                                            }`}
+                                        >
+                                            Camping Gears
                                         </button>
                                     </div>
                                 </div>
