@@ -500,79 +500,101 @@ export default function Welcome({ appName }) {
                             <img className="h-20 lg:h-24 w-auto object-contain" src="/topoffroadlogo.png" alt="Top Offroad" />
                         </div>
                     </div>
+                    <div className="mt-10 w-screen relative left-1/2 -translate-x-1/2">
+                        <img
+                            src="/2026%20Sundia%20lobby.png"
+                            alt="2026 Sundia lobby"
+                            loading="lazy"
+                            className="w-screen max-w-none h-auto object-cover block"
+                        />
+                    </div>
 
                     {/* Get In Touch Section */}
-                    <div id="contact" className="mt-16 w-full">
-                        <div className="w-full bg-red-600 py-10 mb-10">
-                            <div className="max-w-[930px] mx-auto flex flex-col items-center gap-3">
-                                <div className="text-center text-white text-4xl font-extrabold font-['Inter'] leading-9">
+                    <div
+                        id="contact"
+                        className="mt-0 w-screen relative left-1/2 -translate-x-1/2 bg-red-600 pt-10 pb-12"
+                    >
+                        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+                            <div className="text-center mb-10">
+                                <div className="text-white text-4xl font-extrabold font-['Inter'] leading-9">
                                     Get In Touch
                                 </div>
-                                <div className="text-center text-white text-xs font-normal font-['Inter'] leading-5">
+                                <div className="mt-2 text-white text-xs font-normal font-['Inter'] leading-5">
                                     We&apos;d love to hear from you
                                 </div>
                             </div>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+                                {/* Address Card */}
+                                <div className="bg-white shadow-[0px_10px_25px_rgba(0,0,0,0.18)] overflow-hidden">
+                                    <div className="h-[170px] flex flex-col items-center justify-center px-6">
+                                        <svg width="40" height="40" viewBox="0 0 90 90" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M45 10C33.5 10 24 19.5 24 31C24 48 45 75 45 75C45 75 66 48 66 31C66 19.5 56.5 10 45 10ZM45 40C40 40 36 36 36 31C36 26 40 22 45 22C50 22 54 26 54 31C54 36 50 40 45 40Z" fill="#DC2626"/>
+                                        </svg>
+                                        <div className="mt-4 text-center text-black text-xs font-bold font-['Inter'] uppercase leading-4">
+                                            ADDRESS
+                                        </div>
+                                        <div className="mt-2 text-center text-black text-[10px] font-normal font-['Inter'] leading-4">
+                                            123 Business District, Metro<br/>Manila, Philippines
+                                        </div>
+                                    </div>
+                                    <div className="h-14 bg-gray-300" />
+                                </div>
+
+                                {/* Phone Card */}
+                                <div className="bg-white shadow-[0px_10px_25px_rgba(0,0,0,0.18)] overflow-hidden">
+                                    <div className="h-[170px] flex flex-col items-center justify-center px-6">
+                                        <svg width="40" height="40" viewBox="0 0 90 90" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M73.1 56.5C67.8 56.5 62.7 55.6 57.9 53.9C56.3 53.3 54.5 53.7 53.3 54.9L46.3 63.5C35.5 58.3 26.7 49.8 21.3 39L29.9 31.7C31.1 30.5 31.5 28.7 30.9 27.1C29.2 22.3 28.3 17.2 28.3 11.9C28.3 9.3 26.2 7.2 23.6 7.2H12.3C9.7 7.2 7.2 8.3 7.2 11.9C7.2 47.9 37.1 77.8 73.1 77.8C76.5 77.8 77.8 75.4 77.8 72.7V61.2C77.8 58.6 75.7 56.5 73.1 56.5Z" fill="#DC2626"/>
+                                        </svg>
+                                        <div className="mt-4 text-center text-black text-xs font-bold font-['Inter'] uppercase leading-4">
+                                            PHONE
+                                        </div>
+                                        <div className="mt-2 text-center text-black text-[10px] font-normal font-['Inter'] leading-4">
+                                            123 Business District, Metro<br/>Manila, Philippines
+                                        </div>
+                                    </div>
+                                    <div className="h-14 bg-gray-300" />
+                                </div>
+
+                                {/* Email Card */}
+                                <div className="bg-white shadow-[0px_10px_25px_rgba(0,0,0,0.18)] overflow-hidden">
+                                    <div className="h-[170px] flex flex-col items-center justify-center px-6">
+                                        <svg width="40" height="35" viewBox="0 0 90 90" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M75 15H15C11.7 15 9 17.7 9 21V69C9 72.3 11.7 75 15 75H75C78.3 75 81 72.3 81 69V21C81 17.7 78.3 15 75 15ZM75 27L45 48L15 27V21L45 42L75 21V27Z" fill="#DC2626"/>
+                                        </svg>
+                                        <div className="mt-4 text-center text-black text-xs font-bold font-['Inter'] uppercase leading-4">
+                                            EMAIL
+                                        </div>
+                                        <div className="mt-2 text-center text-black text-[10px] font-normal font-['Inter'] leading-4">
+                                            123 Business District, Metro<br/>Manila, Philippines
+                                        </div>
+                                    </div>
+                                    <div className="h-14 bg-gray-300" />
+                                </div>
+
+                                {/* Hours Card */}
+                                <div className="bg-white shadow-[0px_10px_25px_rgba(0,0,0,0.18)] overflow-hidden">
+                                    <div className="h-[170px] flex flex-col items-center justify-center px-6">
+                                        <svg width="37" height="37" viewBox="0 0 90 90" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M45 7.5C24.3 7.5 7.5 24.3 7.5 45C7.5 65.7 24.3 82.5 45 82.5C65.7 82.5 82.5 65.7 82.5 45C82.5 24.3 65.7 7.5 45 7.5ZM45 75C28.4 75 15 61.6 15 45C15 28.4 28.4 15 45 15C61.6 15 75 28.4 75 45C75 61.6 61.6 75 45 75ZM48.8 41.3L48.8 22.5H41.3V45L58.1 55.1L62.3 48.2L48.8 41.3Z" fill="#DC2626"/>
+                                        </svg>
+                                        <div className="mt-4 text-center text-black text-xs font-bold font-['Inter'] uppercase leading-4">
+                                            HOURS
+                                        </div>
+                                        <div className="mt-2 text-center text-black text-[10px] font-normal font-['Inter'] leading-4">
+                                            123 Business District, Metro<br/>Manila, Philippines
+                                        </div>
+                                    </div>
+                                    <div className="h-14 bg-gray-300" />
+                                </div>
+                            </div>
                         </div>
-
-                        <div className="max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-                            {/* Address Card */}
-                            <div className="bg-white flex flex-col border border-gray-200">
-                                <div className="flex-1 flex flex-col items-center justify-center px-6 pt-8 pb-8">
-                                    <svg width="40" height="40" viewBox="0 0 90 90" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                        <path d="M45 10C33.5 10 24 19.5 24 31C24 48 45 75 45 75C45 75 66 48 66 31C66 19.5 56.5 10 45 10ZM45 40C40 40 36 36 36 31C36 26 40 22 45 22C50 22 54 26 54 31C54 36 50 40 45 40Z" fill="#DC2626"/>
-                                    </svg>
-                                    <div className="mt-4 text-center text-black text-sm font-bold font-['Inter'] uppercase leading-4">Address</div>
-                                    <div className="mt-2 text-center text-black text-xs font-normal font-['Inter'] leading-4">
-                                        123 Business District, Metro<br/>Manila, Philippines
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Phone Card */}
-                            <div className="bg-white flex flex-col border border-gray-200">
-                                <div className="flex-1 flex flex-col items-center justify-center px-6 pt-8 pb-8">
-                                    <svg width="40" height="40" viewBox="0 0 90 90" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                        <path d="M73.1 56.5C67.8 56.5 62.7 55.6 57.9 53.9C56.3 53.3 54.5 53.7 53.3 54.9L46.3 63.5C35.5 58.3 26.7 49.8 21.3 39L29.9 31.7C31.1 30.5 31.5 28.7 30.9 27.1C29.2 22.3 28.3 17.2 28.3 11.9C28.3 9.3 26.2 7.2 23.6 7.2H12.3C9.7 7.2 7.2 8.3 7.2 11.9C7.2 47.9 37.1 77.8 73.1 77.8C76.5 77.8 77.8 75.4 77.8 72.7V61.2C77.8 58.6 75.7 56.5 73.1 56.5Z" fill="#DC2626"/>
-                                    </svg>
-                                    <div className="mt-4 text-center text-black text-sm font-bold font-['Inter'] uppercase leading-4">Phone</div>
-                                    <div className="mt-2 text-center text-black text-xs font-normal font-['Inter'] leading-4">
-                                        123 Business District, Metro<br/>Manila, Philippines
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Email Card */}
-                            <div className="bg-white flex flex-col border border-gray-200">
-                                <div className="flex-1 flex flex-col items-center justify-center px-6 pt-8 pb-8">
-                                    <svg width="40" height="35" viewBox="0 0 90 90" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                        <path d="M75 15H15C11.7 15 9 17.7 9 21V69C9 72.3 11.7 75 15 75H75C78.3 75 81 72.3 81 69V21C81 17.7 78.3 15 75 15ZM75 27L45 48L15 27V21L45 42L75 21V27Z" fill="#DC2626"/>
-                                    </svg>
-                                    <div className="mt-4 text-center text-black text-sm font-bold font-['Inter'] uppercase leading-4">Email</div>
-                                    <div className="mt-2 text-center text-black text-xs font-normal font-['Inter'] leading-4">
-                                        123 Business District, Metro<br/>Manila, Philippines
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Hours Card */}
-                            <div className="bg-white flex flex-col border border-gray-200">
-                                <div className="flex-1 flex flex-col items-center justify-center px-6 pt-8 pb-8">
-                                    <svg width="37" height="37" viewBox="0 0 90 90" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                        <path d="M45 7.5C24.3 7.5 7.5 24.3 7.5 45C7.5 65.7 24.3 82.5 45 82.5C65.7 82.5 82.5 65.7 82.5 45C82.5 24.3 65.7 7.5 45 7.5ZM45 75C28.4 75 15 61.6 15 45C15 28.4 28.4 15 45 15C61.6 15 75 28.4 75 45C75 61.6 61.6 75 45 75ZM48.8 41.3L48.8 22.5H41.3V45L58.1 55.1L62.3 48.2L48.8 41.3Z" fill="#DC2626"/>
-                                    </svg>
-                                    <div className="mt-4 text-center text-black text-sm font-bold font-['Inter'] uppercase leading-4">Hours</div>
-                                    <div className="mt-2 text-center text-black text-xs font-normal font-['Inter'] leading-4">
-                                        123 Business District, Metro<br/>Manila, Philippines
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
                     </div>
                 </div>
 
-                {/* Maps Section - pt-12 gives white space above map, bg-white blocks background */}
-                <div className="w-full h-[450px] -mt-1 pt-20 bg-white">
+                {/* Maps Section */}
+                <div className="w-full h-[450px] bg-white pt-3">
                     <iframe
                         src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d683.5324601848853!2d121.08392021601612!3d14.274000867836397!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3397d8036175e4af%3A0x9f5d8162fef05b1b!2sTop%20OffRoad%20PH%20-%20Santa%20Rosa%20Branch!5e0!3m2!1sen!2sph!4v1772089113143!5m2!1sen!2sph"
                         width="100%"

@@ -25,5 +25,15 @@ class AppServiceProvider extends ServiceProvider
         if ($this->app->environment('production')) {
             \Illuminate\Support\Facades\URL::forceScheme('https');
         }
+
+        // Ensure storage directories exist so logging and views don't throw 500
+        $storage = storage_path();
+        $dirs = ['logs', 'framework/views', 'framework/sessions', 'framework/cache/data', 'app/public', 'app/private'];
+        foreach ($dirs as $dir) {
+            $path = $storage . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $dir);
+            if (!is_dir($path)) {
+                @mkdir($path, 0755, true);
+            }
+        }
     }
 }

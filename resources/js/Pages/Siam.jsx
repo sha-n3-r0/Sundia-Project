@@ -1,3 +1,4 @@
+import Footer from '@/Components/Footer';
 import Header from '@/Components/Header';
 import { Head, Link } from '@inertiajs/react';
 import { useRef, useState } from 'react';
@@ -17,6 +18,7 @@ export default function Siam() {
             }
         }
     };
+
     return (
         <>
             <Head title="SIAM" />
@@ -54,41 +56,12 @@ export default function Siam() {
                             <div className="mt-10 flex flex-wrap items-center gap-4">
                                 <Link
                                     href="#"
-                                    className="inline-flex h-12 items-center gap-2 rounded-full bg-gradient-to-r from-red-600 to-red-700 px-8 text-base font-medium text-white shadow-md hover:from-red-500 hover:to-red-600"
+                                    className="w-80 h-12 relative bg-gradient-to-r from-red-600 to-orange-600 rounded-full shadow-[0px_1px_2px_-1px_rgba(0,0,0,0.10)] shadow-[0px_1px_3px_0px_rgba(0,0,0,0.10)] overflow-hidden"
                                 >
-                                    <span>Learn More</span>
-                                    <span className="inline-flex h-4 w-6 items-center justify-start pl-2">
-                                        <span className="flex h-4 w-4 items-center justify-center overflow-hidden">
-                                            <svg
-                                                width="16"
-                                                height="16"
-                                                viewBox="0 0 16 16"
-                                                fill="none"
-                                                xmlns="http://www.w3.org/2000/svg"
-                                            >
-                                                <path
-                                                    d="M3.33301 8H12.6663"
-                                                    stroke="white"
-                                                    strokeWidth="1.33333"
-                                                    strokeLinecap="round"
-                                                    strokeLinejoin="round"
-                                                />
-                                                <path
-                                                    d="M8 3.33337L12.6667 8.00004L8 12.6667"
-                                                    stroke="white"
-                                                    strokeWidth="1.33333"
-                                                    strokeLinecap="round"
-                                                    strokeLinejoin="round"
-                                                />
-                                            </svg>
-                                        </span>
-                                    </span>
-                                </Link>
-                                <Link
-                                    href="#"
-                                    className="inline-flex h-12 items-center justify-center rounded-full bg-white px-8 text-base font-medium text-black shadow-sm ring-1 ring-slate-700 hover:bg-gray-50"
-                                >
-                                    Contact Us
+                                    <div className="w-6 h-4 pl-2 left-[42.50px] top-[16px] absolute" />
+                                    <div className="left-[65.50px] top-[10px] absolute text-center justify-center text-color-white-solid text-base font-bold font-['Inter'] leading-7">
+                                        REQUEST FOR QUOTATION
+                                    </div>
                                 </Link>
                             </div>
                         </div>
@@ -159,7 +132,6 @@ export default function Siam() {
                                     )}
                                 </div>
 
-
                                 <p className="mt-8 text-base sm:text-lg font-medium leading-7 text-gray-700">
                                     It was established in 2010 to handle the distribution of manufacturing consumables. We also stand as the sales and marketing arm of the whole Sundia group. Products include automotive acccessories, adhesives, chemicals, power coating, industrial oil, diesel fuel, kraft paper underlay, plastic overlay, and other manufacturing packaging and consumables. We also provide services for generator, truck, and forklift maintenance.
                                 </p>
@@ -185,8 +157,105 @@ export default function Siam() {
                             </div>
                         </div>
                     </div>
+
+                    <div className="mt-20 w-full h-20 relative">
+                        <div data-svg-wrapper className="left-0 top-0 absolute w-[58%] h-full">
+                            <svg width="100%" height="80" viewBox="0 0 771 80" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
+                                <path d="M-4 0H770.5L659.5 80H-4V0Z" fill="#E31E25" />
+                            </svg>
+                        </div>
+                        <div data-svg-wrapper className="right-0 top-0 absolute w-[58%] h-full">
+                            <svg width="100%" height="81" viewBox="0 0 781 81" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
+                                <path d="M781 0L107.245 0L0 80.54H781V0Z" fill="#8C8C8C" />
+                            </svg>
+                        </div>
+                        <div className="absolute inset-y-0 left-0 w-[38%] flex items-center justify-center text-white text-2xl font-extrabold font-['Inter']">
+                            OUR PRODUCTS
+                        </div>
+                    </div>
+
+                    <div className="mt-24 flex flex-col items-center gap-16 pb-0">
+                        <div className="w-[1278px] h-56 relative">
+                            <div className="w-[740px] h-12 left-[280px] top-0 absolute justify-center text-black text-2xl font-normal font-['Inter'] leading-[50px] tracking-wider text-center">Delivering Quality Products Across Multiple Industries</div>
+                            <div className="w-[1278px] h-36 left-0 top-[80px] absolute text-center justify-center text-black text-2xl font-normal font-['Inter'] tracking-wide">We deliver high-quality products across multiple industries, ensuring reliability, durability, and customer satisfaction. Our offerings include pandemic essentials, precision metal fabrication, customized trophies and signages, durable boxes and office supplies, construction materials, and other essential consumables. Each product is designed to meet industry standards while providing practical and cost-effective solutions for businesses.</div>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-12 gap-y-16 max-w-7xl mx-auto">
+                            {/* Pandemic Products */}
+                            <div className="flex flex-col w-80 mx-auto">
+                                <img className="w-full h-64 object-cover rounded-t-[20px]" src="PandemicProducts.png" alt="Pandemic Products" />
+                                <div className="bg-red-600 rounded-b-[20px] p-6 flex flex-col items-center justify-center min-h-[112px] text-center text-white">
+                                    <h3 className="text-base font-extrabold font-['Inter'] uppercase">PANDEMIC PRODUCTS</h3>
+                                    <p className="mt-2 text-[11px] font-light font-['Inter'] leading-tight px-2">Essential safety and protective products designed to promote health and prevent the spread of infection.</p>
+                                </div>
+                            </div>
+
+                            {/* Metal Fabrication */}
+                            <div className="flex flex-col w-80 mx-auto">
+                                <img className="w-full h-64 object-cover rounded-t-[20px]" src="MetalFabrication.png" alt="Metal Fabrication" />
+                                <div className="bg-red-600 rounded-b-[20px] p-6 flex flex-col items-center justify-center min-h-[112px] text-center text-white">
+                                    <h3 className="text-base font-extrabold font-['Inter'] uppercase">METAL FABRICATION</h3>
+                                    <p className="mt-2 text-[11px] font-light font-['Inter'] leading-tight px-2">Custom metal works crafted with precision and durability for industrial, commercial, and personal use.</p>
+                                </div>
+                            </div>
+
+                            {/* Trophies & Signages */}
+                            <div className="flex flex-col w-80 mx-auto">
+                                <img className="w-full h-64 object-cover rounded-t-[20px]" src="Trophies.png" alt="Trophies & Signages" />
+                                <div className="bg-red-600 rounded-b-[20px] p-6 flex flex-col items-center justify-center min-h-[112px] text-center text-white">
+                                    <h3 className="text-base font-extrabold font-['Inter'] uppercase">TROPHIES & SIGNAGES</h3>
+                                    <p className="mt-2 text-[11px] font-light font-['Inter'] leading-tight px-2">High-quality custom trophies and signages designed for events, businesses, and special recognition.</p>
+                                </div>
+                            </div>
+
+                            {/* Boxes & Office Supplies */}
+                            <div className="flex flex-col w-80 mx-auto">
+                                <img className="w-full h-64 object-cover rounded-t-[20px]" src="Boxes.png" alt="Boxes & Office Supplies" />
+                                <div className="bg-red-600 rounded-b-[20px] p-6 flex flex-col items-center justify-center min-h-[112px] text-center text-white">
+                                    <h3 className="text-base font-extrabold font-['Inter'] uppercase">BOXES & OFFICE SUPPLIES</h3>
+                                    <p className="mt-2 text-[11px] font-light font-['Inter'] leading-tight px-2">Durable packaging boxes and reliable office essentials for everyday business needs.</p>
+                                </div>
+                            </div>
+
+                            {/* Construction Materials */}
+                            <div className="flex flex-col w-80 mx-auto">
+                                <img className="w-full h-64 object-cover rounded-t-[20px]" src="https://placehold.co/350x269" alt="Construction Materials" />
+                                <div className="bg-red-600 rounded-b-[20px] p-6 flex flex-col items-center justify-center min-h-[112px] text-center text-white">
+                                    <h3 className="text-base font-extrabold font-['Inter'] uppercase">CONSTRUCTION MATERIALS</h3>
+                                    <p className="mt-2 text-[11px] font-light font-['Inter'] leading-tight px-2">Quality materials built for strength, safety, and reliable construction projects.</p>
+                                </div>
+                            </div>
+
+                            {/* Other Consumables */}
+                            <div className="flex flex-col w-80 mx-auto">
+                                <img className="w-full h-64 object-cover rounded-t-[20px]" src="https://placehold.co/350x269" alt="Other Consumables" />
+                                <div className="bg-red-600 rounded-b-[20px] p-6 flex flex-col items-center justify-center min-h-[112px] text-center text-white">
+                                    <h3 className="text-base font-extrabold font-['Inter'] uppercase">Other Consumables</h3>
+                                    <p className="mt-2 text-[11px] font-light font-['Inter'] leading-tight px-2">Essential everyday supplies designed for continuous use in various industries and businesses.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="mt-14 w-screen relative left-1/2 -translate-x-1/2 m-0 p-0">
+                            <div className="w-screen max-w-none h-28 bg-red-600" />
+                        </div>
+
+                        <div
+                            className="w-screen relative left-1/2 -translate-x-1/2 m-0 p-0 overflow-hidden"
+                            style={{ width: '100vw', marginLeft: 'calc(-50vw + 50%)', marginRight: 'calc(-50vw + 50%)' }}
+                        >
+                            <img
+                                src="/Rectangle.png"
+                                alt="Rectangle"
+                                loading="lazy"
+                                className="block w-screen max-w-none h-auto object-cover m-0 p-0"
+                            />
+                        </div>
+                    </div>
                 </div>
             </div>
+
+            <Footer />
         </>
     );
 }

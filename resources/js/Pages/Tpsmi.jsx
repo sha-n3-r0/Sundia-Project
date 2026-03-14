@@ -1,6 +1,6 @@
 import Footer from '@/Components/Footer';
 import Header from '@/Components/Header';
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, router } from '@inertiajs/react';
 import { useRef, useState } from 'react';
 
 export default function Tpsmi() {
@@ -378,6 +378,117 @@ export default function Tpsmi() {
                             <div className="left-[50.85px] top-[29.27px] absolute text-white text-xl sm:text-2xl font-bold font-['Inter'] leading-tight whitespace-nowrap flex items-center h-10">VACUUM FORMED PLASTIC PRODUCTS</div>
                             <img className="w-[1014.38px] max-w-full h-[1065.10px] left-[203.29px] top-[161.69px] absolute object-cover" src="/Aircon Evaporator Cover.png" alt="Aircon Evaporator Cover" />
                             <img className="w-36 h-24 left-[530px] top-[8px] absolute object-contain grayscale" src="/Tpsmilogo.png" alt="TPSMI" />
+                        </div>
+                    </div>
+                </div>
+
+                {/* Full-bleed Karton banner with cards */}
+                <div className="w-screen relative left-1/2 -translate-x-1/2 m-0 p-0">
+                    <img
+                        src="/karton.png"
+                        alt="Karton"
+                        loading="lazy"
+                        className="w-screen max-w-none h-auto object-cover block m-0 p-0"
+                    />
+
+                    {/* Overlay cards */}
+                    <div className="absolute inset-0 flex items-center">
+                        <div className="w-full px-6 sm:px-10 lg:px-16">
+                            <div className="flex flex-col gap-5 max-w-[482px]">
+                                <div className="w-[482px] max-w-full h-32 relative rounded-3xl shadow-[0px_4px_14.100000381469727px_0px_rgba(0,0,0,0.62)]">
+                                    <div className="w-full h-full left-0 top-0 absolute bg-red-600/90 rounded-3xl border border-white" />
+                                    <div className="absolute inset-0 flex flex-col items-center justify-center px-8 text-center">
+                                        <div className="text-white text-xl font-extrabold font-['Inter'] leading-tight">
+                                            Quotation
+                                        </div>
+                                        <div className="mt-3 text-white text-xl font-normal font-['Inter'] leading-6">
+                                            Get a free estimate tailored to your budget and requirements.
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="w-[482px] max-w-full h-32 relative rounded-3xl shadow-[0px_4px_14.100000381469727px_0px_rgba(0,0,0,0.62)]">
+                                    <div className="w-full h-full left-0 top-0 absolute bg-red-600/90 rounded-3xl border border-white" />
+                                    <div className="absolute inset-0 flex flex-col items-center justify-center px-8 text-center">
+                                        <div className="text-white text-xl font-extrabold font-['Inter'] leading-tight">
+                                            Delivery
+                                        </div>
+                                        <div className="mt-3 text-white text-xl font-normal font-['Inter'] leading-6">
+                                            We provide reliable delivery services to clients anywhere in the Philippines.
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="w-[482px] max-w-full h-32 relative rounded-3xl shadow-[0px_4px_14.100000381469727px_0px_rgba(0,0,0,0.62)]">
+                                    <div className="w-full h-full left-0 top-0 absolute bg-red-600/90 rounded-3xl border border-white" />
+                                    <div className="absolute inset-0 flex flex-col items-center justify-center px-8 text-center">
+                                        <div className="text-white text-xl font-extrabold font-['Inter'] leading-tight">
+                                            Free Customization
+                                        </div>
+                                        <div className="mt-3 text-white text-xl font-normal font-['Inter'] leading-6">
+                                            Enjoy free customization of style, color, and size based on your specific needs
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="w-[482px] max-w-full h-36 relative rounded-3xl shadow-[0px_4px_14.100000381469727px_0px_rgba(0,0,0,0.62)]">
+                                    <div className="w-full h-full left-0 top-0 absolute bg-red-600/90 rounded-3xl border border-white" />
+                                    <div className="absolute inset-0 flex flex-col items-center justify-center px-8 text-center">
+                                        <div className="text-white text-xl font-extrabold font-['Inter'] leading-tight">
+                                            Printing
+                                        </div>
+                                        <div className="mt-3 text-white text-xl font-normal font-['Inter'] leading-6">
+                                            We offer customized printing solutions designed to match your brand and requirements.
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Customize box section (full-bleed, no side spacing) */}
+                <div
+                    className="relative left-1/2 -translate-x-1/2 w-screen m-0 p-0 overflow-hidden"
+                    style={{ width: '100vw' }}
+                >
+                    <div className="relative w-full h-[320px] sm:h-[420px] lg:h-[520px]">
+                        <img
+                            src="/customize box.png"
+                            alt="Customize Box"
+                            className="absolute inset-0 w-full h-full object-cover blur-xl scale-110"
+                            aria-hidden="true"
+                        />
+                        <img
+                            src="/customize box.png"
+                            alt=""
+                            className="absolute inset-0 w-full h-full object-contain"
+                            aria-hidden="true"
+                        />
+                    
+                        <div className="absolute inset-0 flex flex-col items-center justify-center">
+                            <div className="w-full text-center px-4">
+                                <p className="text-white text-base sm:text-lg lg:text-xl font-medium tracking-[0.25em]">
+                                    We are more than just a packaging company;
+                                </p>
+                                <h2 className="mt-3 text-white text-2xl sm:text-4xl lg:text-5xl xl:text-6xl font-extrabold leading-tight tracking-widest">
+                                    WE MANUFACTURE AND CUSTOMIZE BOXES
+                                </h2>
+                                <p className="mt-3 text-white text-base sm:text-lg lg:text-xl font-medium">
+                                    of the highest quality.
+                                </p>
+                            </div>
+                            <div className="mt-6">
+                                <button
+                                    type="button"
+                                    onClick={() => router.visit(route('home') + '#contact')}
+                                    className="group inline-flex items-center justify-center px-12 sm:px-16 py-3 sm:py-4 bg-red-600 rounded-full border-2 border-white cursor-pointer select-none transition-transform duration-200 ease-out hover:scale-[1.03] active:scale-[0.99] focus:outline-none focus-visible:ring-2 focus-visible:ring-white/80 focus-visible:ring-offset-2 focus-visible:ring-offset-black/40 hover:bg-red-500 shadow-[0_10px_24px_rgba(0,0,0,0.25)]"
+                                >
+                                    <span className="text-white text-xl sm:text-2xl font-extrabold tracking-[0.25em]">
+                                        CUSTOMIZE NOW
+                                    </span>
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>

@@ -1,6 +1,6 @@
 import Footer from '@/Components/Footer';
 import Header from '@/Components/Header';
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, router } from '@inertiajs/react';
 import { useRef, useState } from 'react';
 
 export default function TopOffroad() {
@@ -74,41 +74,12 @@ export default function TopOffroad() {
                             <div className="mt-10 flex flex-wrap items-center gap-4">
                                 <Link
                                     href={route('home') + '#contact'}
-                                    className="inline-flex h-12 items-center gap-2 rounded-full bg-gradient-to-r from-red-600 to-orange-600 px-8 text-base font-normal text-white shadow-[0px_1px_2px_-1px_rgba(0,0,0,0.10),0px_1px_3px_0px_rgba(0,0,0,0.10)] hover:from-red-500 hover:to-orange-500"
+                                 className="w-80 h-12 relative bg-white rounded-full shadow-[0px_1px_2px_-1px_rgba(0,0,0,0.10)] shadow-[0px_1px_3px_0px_rgba(0,0,0,0.10)] overflow-hidden"
                                 >
-                                    <span>Learn More</span>
-                                    <span className="inline-flex h-4 w-6 items-center justify-start pl-2">
-                                        <span className="flex h-4 w-4 items-center justify-center overflow-hidden">
-                                            <svg
-                                                width="16"
-                                                height="16"
-                                                viewBox="0 0 16 16"
-                                                fill="none"
-                                                xmlns="http://www.w3.org/2000/svg"
-                                            >
-                                                <path
-                                                    d="M3.33398 8H12.6673"
-                                                    stroke="white"
-                                                    strokeWidth="1.33333"
-                                                    strokeLinecap="round"
-                                                    strokeLinejoin="round"
-                                                />
-                                                <path
-                                                    d="M8 3.33337L12.6667 8.00004L8 12.6667"
-                                                    stroke="white"
-                                                    strokeWidth="1.33333"
-                                                    strokeLinecap="round"
-                                                    strokeLinejoin="round"
-                                                />
-                                            </svg>
-                                        </span>
-                                    </span>
-                                </Link>
-                                <Link
-                                    href={route('home') + '#contact'}
-                                    className="inline-flex h-12 items-center justify-center rounded-full bg-white px-8 text-base font-normal text-black shadow-[0px_1px_2px_0px_rgba(0,0,0,0.05)] ring-1 ring-slate-700 hover:bg-gray-50"
-                                >
-                                    Contact Us
+                                    <div className="w-6 h-4 pl-2 left-[42.50px] top-[16px] absolute" />
+                                    <div className="left-[65.50px] top-[10px] absolute text-center justify-center text-color-black-solid text-base font-bold font-['Inter'] leading-7">
+                                        REQUEST FOR QUOTATION
+                                    </div>
                                 </Link>
                             </div>
                         </div>
@@ -721,12 +692,23 @@ export default function TopOffroad() {
                             {/* Lineup Image with black gradient overlay */}
                             <div className="relative w-screen mt-0 mb-0" style={{ marginLeft: 'calc(-50vw + 50%)' }}>
                                 <img
-                                    src="/lineup.jpg"
-                                    alt="Lineup"
+                                    src="/Built for Mission.png"
+                                    alt="Built for Mission"
                                     loading="lazy"
                                     className="w-screen max-w-none h-auto object-cover"
                                 />
-                                <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/80 via-black/40 to-transparent" />
+                                <div className="absolute inset-0 flex items-center justify-center translate-y-4 sm:translate-y-20">
+                                    <button
+                                        type="button"
+                                        onClick={() => router.visit(route('home') + '#contact')}
+                                        className="group w-64 h-12 relative rounded-3xl cursor-pointer select-none transition-transform duration-200 ease-out hover:scale-[1.03] active:scale-[0.99] focus:outline-none focus-visible:ring-2 focus-visible:ring-white/80 focus-visible:ring-offset-2 focus-visible:ring-offset-black/40"
+                                    >
+                                        <div className="w-64 h-12 left-0 top-0 absolute bg-red-600 rounded-3xl border-[0.87px] border-white shadow-[0_10px_24px_rgba(0,0,0,0.25)] transition-colors duration-200 group-hover:bg-red-500" />
+                                        <div className="left-[33px] top-[7.37px] absolute justify-center text-white text-lg font-extrabold font-['Inter'] leading-8 tracking-wide">
+                                            GET IN TOUCH NOW
+                                        </div>
+                                    </button>
+                                </div>
                             </div>
                         </div>
                 </div>
