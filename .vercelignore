@@ -1,0 +1,19 @@
+# Keep serverless function small (Vercel limit: 250MB unzipped)
+
+# Build / dependency caches
+node_modules/
+.git/
+
+# Local-only / runtime dirs
+storage/
+bootstrap/cache/
+
+# Large assets that should be hosted elsewhere (CDN/Blob/S3)
+public/**/*.mp4
+
+# User uploads can be huge; serve via object storage instead
+public/storage/
+
+# Local DB dumps / artifacts
+*.sql
+
