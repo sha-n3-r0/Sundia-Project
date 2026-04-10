@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="520" height="220" viewBox="0 0 520 220">
+  <defs>
+    <style>
+      .txt { fill: #111; font: 900 86px/1 Arial, Helvetica, sans-serif; letter-spacing: 2px; }
+      .sub { fill: #666; font: 700 18px/1 Arial, Helvetica, sans-serif; letter-spacing: 1.2px; }
+    </style>
+  </defs>
+
+  <!-- diamond -->
+  <g transform="translate(260 90)">
+    <polygon points="0,-70 110,0 0,70 -110,0" fill="#d10000"/>
+    <polygon points="0,-56 88,0 0,56 -88,0" fill="#ffffff" opacity="0.92"/>
+    <polygon points="0,-40 62,0 0,40 -62,0" fill="#d10000" opacity="0.9"/>
+  </g>
+
+  <text x="95" y="115" class="txt">TPSMI</text>
+  <text x="75" y="198" class="sub">TOTAL PACKAGING SOLUTIONS AND MANUFACTURING, INC.</text>
+</svg>
+

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="520" height="220" viewBox="0 0 520 220">
+  <defs>
+    <style>
+      .txt { fill: #111; font: 900 86px/1 Arial, Helvetica, sans-serif; letter-spacing: 2px; }
+    </style>
+  </defs>
+  <text x="55" y="135" class="txt">TOPOFFROAD</text>
+</svg>
+

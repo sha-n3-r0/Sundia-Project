@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="520" height="220" viewBox="0 0 520 220">
+  <defs>
+    <style>
+      .gray { fill: #8b8b8b; font: 900 92px/1 Arial, Helvetica, sans-serif; letter-spacing: 2px; }
+      .red  { fill: #d10000; font: 900 92px/1 Arial, Helvetica, sans-serif; letter-spacing: 2px; }
+      .sub  { fill: #6d6d6d; font: 700 18px/1 Arial, Helvetica, sans-serif; letter-spacing: 2px; }
+    </style>
+  </defs>
+
+  <!-- "SIAM" -->
+  <text x="20" y="105" class="gray">SIAM</text>
+
+  <!-- simple red mark -->
+  <g transform="translate(250 30)">
+    <rect x="0" y="0" width="46" height="46" transform="rotate(45 23 23)" fill="#d10000"/>
+    <rect x="10" y="10" width="26" height="26" transform="rotate(45 23 23)" fill="#ffffff" opacity="0.9"/>
+  </g>
+
+  <!-- "DIRECT" -->
+  <text x="20" y="185" class="red">DIRECT</text>
+  <text x="225" y="208" class="sub">TRADE AND MARKETING SERVICES</text>
+</svg>
+

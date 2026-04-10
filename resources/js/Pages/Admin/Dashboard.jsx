@@ -1,5 +1,5 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head } from '@inertiajs/react';
+import { Head, Link } from '@inertiajs/react';
 
 export default function AdminDashboard() {
     return (
@@ -29,6 +29,44 @@ export default function AdminDashboard() {
                                 <span className="font-mono">admin</span>{' '}
                                 middleware.
                             </p>
+
+                            <div className="pt-4">
+                                <div className="text-sm font-semibold text-gray-800">
+                                    Quick links
+                                </div>
+                                <div className="mt-3 flex flex-wrap gap-3">
+                                    <Link
+                                        href={route('admin.subsidiaries.index')}
+                                        className="inline-flex items-center rounded-md bg-gray-900 px-4 py-2 text-sm font-semibold text-white hover:bg-gray-800"
+                                    >
+                                        Manage Subsidiaries
+                                    </Link>
+                                    <Link
+                                        href={route('admin.homepage-videos.index')}
+                                        className="inline-flex items-center rounded-md bg-gray-900 px-4 py-2 text-sm font-semibold text-white hover:bg-gray-800"
+                                    >
+                                        Manage Homepage Videos
+                                    </Link>
+                                    <Link
+                                        href={route('admin.siampage-videos.index')}
+                                        className="inline-flex items-center rounded-md bg-gray-900 px-4 py-2 text-sm font-semibold text-white hover:bg-gray-800"
+                                    >
+                                        Manage SIAM Page Videos
+                                    </Link>
+                                    <Link
+                                        href={route('admin.team-members.index')}
+                                        className="inline-flex items-center rounded-md bg-gray-900 px-4 py-2 text-sm font-semibold text-white hover:bg-gray-800"
+                                    >
+                                        Manage Team Members
+                                    </Link>
+                                    <Link
+                                        href={route('admin.trusted-companies.index')}
+                                        className="inline-flex items-center rounded-md bg-gray-900 px-4 py-2 text-sm font-semibold text-white hover:bg-gray-800"
+                                    >
+                                        Manage Trusted Companies
+                                    </Link>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>

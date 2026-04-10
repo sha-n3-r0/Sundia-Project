@@ -1,11 +1,93 @@
 import Footer from '@/Components/Footer';
 import Header from '@/Components/Header';
-import { Head, Link, router } from '@inertiajs/react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
 import { useRef, useState } from 'react';
 
 export default function Tpsmi() {
+    const { props } = usePage();
+    const tpsmi = props.tpsmi;
+    const tpsmiPageVideo = props.tpsmiPageVideo;
+    const tpsmiProducts = props.tpsmiProducts ?? [];
+
+    const statsTitleLine1 = tpsmi?.content?.stats_title_line1 ?? 'WHAT';
+    const statsTitleLine2 = tpsmi?.content?.stats_title_line2 ?? 'WE';
+    const statsTitleLine3 = tpsmi?.content?.stats_title_line3 ?? 'DO?';
+    const statsItems =
+        tpsmi?.content?.stats_items ?? [
+            { value: '25+', label: 'Years Experience' },
+            { value: '3', label: 'Affiliated Companies' },
+            { value: '500+', label: 'Team Members' },
+            { value: '1000+', label: 'Projects Completed' },
+        ];
+
     const videoRef = useRef(null);
     const [isPlaying, setIsPlaying] = useState(false);
+
+    // Prefer legacy owner-dashboard format: `tpsmi.content.video` (title/url/thumbnail/active).
+    const activeTpsmiContentVideo =
+        tpsmi?.content?.video && (tpsmi?.content?.video?.active ?? true)
+            ? tpsmi.content.video
+            : null;
+
+    const activeTpsmiPageVideo =
+        tpsmiPageVideo && tpsmiPageVideo.is_active ? tpsmiPageVideo : null;
+
+    const resolvedVideoTitle =
+        activeTpsmiContentVideo?.title ??
+        activeTpsmiPageVideo?.title ??
+        'TPSMI Page Video';
+
+    const resolvedVideoUrl =
+        activeTpsmiContentVideo?.url ??
+        activeTpsmiPageVideo?.video_path ??
+        activeTpsmiPageVideo?.video_url ??
+        '/2025%20Sundia%20Company%20video.mp4';
+
+    const resolvedVideoThumbnail =
+        activeTpsmiContentVideo?.thumbnail ??
+        activeTpsmiPageVideo?.thumbnail_path ??
+        null;
+
+    // Legacy format has no overlay_enabled toggle, so default to showing overlay play button.
+    const resolvedOverlayEnabled =
+        activeTpsmiContentVideo ? true : activeTpsmiPageVideo?.overlay_enabled ?? true;
+
+    const isEmbedUrl = (url) => {
+        if (!url) return false;
+        const u = url.toLowerCase();
+        return u.includes('youtube.com') || u.includes('youtu.be') || u.includes('vimeo.com');
+    };
+
+    const toEmbedUrl = (url) => {
+        if (!url) return url;
+        try {
+            const parsed = new URL(url, window.location.origin);
+            const host = parsed.hostname.toLowerCase();
+
+            // YouTube
+            if (host.includes('youtube.com')) {
+                const id = parsed.searchParams.get('v');
+                if (id) return `https://www.youtube.com/embed/${id}`;
+                if (parsed.pathname.startsWith('/embed/')) return url;
+            }
+            if (host === 'youtu.be') {
+                const id = parsed.pathname.replace('/', '').trim();
+                if (id) return `https://www.youtube.com/embed/${id}`;
+            }
+
+            // Vimeo
+            if (host.includes('vimeo.com')) {
+                const parts = parsed.pathname.split('/').filter(Boolean);
+                const id = parts[0];
+                if (id && /^\\d+$/.test(id)) return `https://player.vimeo.com/video/${id}`;
+                if (parsed.hostname.includes('player.vimeo.com')) return url;
+            }
+        } catch {
+            // If it's already an embed URL or a relative path, just return it.
+        }
+        return url;
+    };
+
     const togglePlay = () => {
         if (videoRef.current) {
             if (videoRef.current.paused) {
@@ -17,140 +99,180 @@ export default function Tpsmi() {
             }
         }
     };
+
+    const parseFeaturesFromDescription = (description) => {
+        if (!description) return [];
+        if (Array.isArray(description)) return description;
+        if (typeof description !== 'string') return [];
+        return description
+            .split(',')
+            .map((s) => s.trim())
+            .filter(Boolean);
+    };
+
+    const resolvedTpsmiProducts = tpsmiProducts.map((p) => ({
+        id: p.id,
+        title: p.title ?? '',
+        img: p.image_path ?? '',
+        features: parseFeaturesFromDescription(p.description),
+    }));
+    const productsPerPage = 6;
+    const totalProductPages = Math.max(1, Math.ceil(resolvedTpsmiProducts.length / productsPerPage));
+    const [currentProductPage, setCurrentProductPage] = useState(0);
+    const visibleTpsmiProducts = resolvedTpsmiProducts.slice(
+        currentProductPage * productsPerPage,
+        (currentProductPage + 1) * productsPerPage,
+    );
+
+    const goToPreviousProductPage = () => {
+        setCurrentProductPage((prev) => (prev === 0 ? totalProductPages - 1 : prev - 1));
+    };
+
+    const goToNextProductPage = () => {
+        setCurrentProductPage((prev) => (prev === totalProductPages - 1 ? 0 : prev + 1));
+    };
     return (
         <>
             <Head title="TPSMI" />
             <div className="min-h-screen font-['Inter'] antialiased bg-white">
-                {/* HERO - same format as TopOffroad.jsx */}
-                <div className="relative min-h-[540px] sm:min-h-[620px] lg:min-h-[875px]">
-                    <section
-                        className="relative overflow-hidden min-h-[540px] sm:min-h-[620px] lg:min-h-[875px] bg-cover bg-center"
-                        style={{ backgroundImage: "url('/tpsmi.jpg')" }}
-                    >
-                        {/* Gradient overlay layer */}
-                        <div className="absolute inset-0 z-0 bg-gradient-to-r from-black to-black/30 pointer-events-none" />
+                <section
+                    className="relative flex min-h-[46vh] flex-col overflow-visible bg-cover bg-center sm:min-h-[56vh] lg:min-h-[68vh]"
+                    style={{ backgroundImage: "url('/tpsmi.jpg')" }}
+                >
+                    <div className="pointer-events-none absolute inset-0 z-0 bg-gradient-to-r from-black to-black/30" />
 
-                        {/* Navbar */}
-                        <Header />
+                    <Header />
 
-                        {/* Hero content - same layout as TopOffroad */}
-                        <div
-                            className="relative z-10 mr-auto flex max-w-6xl min-h-[540px] flex-col justify-center pl-2 pr-4 sm:pl-4 sm:pr-5 lg:pl-6 lg:pr-8 pt-40 sm:pt-48 lg:pt-52"
-                            style={{ marginLeft: '85px' }}
-                        >
-                            <div className="w-full max-w-[796px]">
-                                <h1 className="text-4xl sm:text-5xl lg:text-4xl font-black leading-tight text-white">
-                                    TOTAL PACKAGING SOLUTIONS MANUFACTURING INC.
-                                </h1>
-                                <p className="mt-6 text-red-500 text-2xl font-medium leading-8">
-                                    Bringing Innovative Solutions to Life
-                                </p>
-                                <p className="mt-3 text-white text-base sm:text-lg font-medium leading-7">
-                                    At Sundia Group Philippines, our core values drive us every day. We are
-                                    solutions-oriented, united, disciplined, have integrity, and are adaptable
-                                    to change.
-                                </p>
-
-                                <div className="mt-10 flex flex-wrap items-center gap-4">
-                                    <Link
-                                        href={route('home') + '#contact'}
-                                        className="inline-flex h-12 items-center gap-2 rounded-full bg-gradient-to-r from-red-600 to-red-600 px-8 text-base font-normal text-white shadow-[0px_1px_2px_-1px_rgba(0,0,0,0.10),0px_1px_3px_0px_rgba(0,0,0,0.10)] hover:from-red-500 hover:to-orange-500"
-                                    >
-                                        <span>Learn More</span>
-                                        <span className="inline-flex h-4 w-6 items-center justify-start pl-2">
-                                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                <path d="M3.33398 8H12.6673" stroke="white" strokeWidth="1.33333" strokeLinecap="round" strokeLinejoin="round" />
-                                                <path d="M8 3.33337L12.6667 8.00004L8 12.6667" stroke="white" strokeWidth="1.33333" strokeLinecap="round" strokeLinejoin="round" />
-                                            </svg>
-                                        </span>
-                                    </Link>
-                                    <Link
-                                        href={route('home') + '#contact'}
-                                        className="inline-flex h-12 items-center justify-center rounded-full bg-white px-8 text-base font-normal text-black shadow-[0px_1px_2px_0px_rgba(0,0,0,0.05)] ring-1 ring-slate-700 hover:bg-gray-50"
-                                    >
-                                        Contact Us
-                                    </Link>
-                                </div>
-                            </div>
+                    <div className="relative z-10 mx-auto flex w-full max-w-7xl flex-1 flex-col justify-center px-4 pb-10 pt-32 sm:px-6 sm:pb-12 md:pb-32 md:pt-32 lg:px-8 lg:pb-40 lg:pt-36">
+                        <div className="w-full max-w-[min(100%,42rem)]">
+                            <h1 className="text-balance font-['Inter'] text-white text-hero">
+                                <span className="block">TOTAL PACKAGING SOLUTIONS</span>
+                                <span className="block">MANUFACTURING INC.</span>
+                            </h1>
+                            <p className="mt-6 font-['Inter'] text-subtitle text-red-600">
+                                Bringing Innovative Solutions to Life
+                            </p>
+                            <p className="mt-4 font-['Inter'] text-body text-neutral-200">
+                                At Sundia Group Philippines, our core values drive us every day. We are
+                                solutions-oriented, united, disciplined, have integrity, and are adaptable to
+                                change.
+                            </p>
                         </div>
-                    </section>
 
-                    {/* What do we do - same position as TopOffroad.jsx */}
-                    <div className="relative z-10">
-                        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-                            <div className="relative z-20" style={{ transform: 'translateY(-80px)' }}>
-                                <div className="flex flex-col overflow-hidden rounded-[3px] bg-white shadow-2xl lg:flex-row lg:h-48">
-                                    <div className="flex flex-col justify-center p-8 text-white lg:w-52 shadow-[10.1px_13.5px_20px_0px_rgba(0,0,0,0.09)]" style={{ backgroundColor: '#dc2626' }}>
-                                        <div className="text-sm font-bold tracking-widest uppercase">
-                                            <svg width="33" height="10" viewBox="0 0 33 10" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                <path d="M0.388672 0.673863C0.388672 0.301699 0.690371 0 1.06254 0H13.788C13.9232 0 14.0553 0.040683 14.1671 0.11676L15.6078 1.09715C16.1563 1.47039 15.8921 2.32812 15.2287 2.32812H4.3004C4.02946 2.32812 3.80983 2.54776 3.80983 2.8187C3.80983 3.08833 4.02742 3.30742 4.29705 3.30927L16.7474 3.39448C17.1178 3.39701 17.4167 3.69796 17.4167 4.06833V5.05332C17.4167 5.42548 17.115 5.72718 16.7428 5.72718H1.06254C0.690371 5.72718 0.388672 5.42548 0.388672 5.05332V0.673863Z" fill="white" />
-                                                <path d="M3.40554 6.96057C3.51706 6.88507 3.64864 6.84473 3.7833 6.84473H15.3365C15.9972 6.84473 16.2633 7.69675 15.72 8.07271L14.1687 9.14624C14.056 9.2242 13.9222 9.26597 13.7852 9.26597H2.1975C1.53324 9.26597 1.26967 8.40646 1.81974 8.03409L3.40554 6.96057Z" fill="white" />
-                                                <path d="M15.5506 0.0463867H32.3454V9.17263H15.3174L18.894 6.8445H29.0798V2.23482H18.7385L15.5506 0.0463867Z" fill="white" />
-                                            </svg>
-                                        </div>
-                                        <h2 className="mt-4 text-3xl font-bold leading-none tracking-tight">
-                                            WHAT<br />WE<br />DO?
-                                        </h2>
-                                    </div>
+                        <div className="mt-8 flex flex-wrap items-center gap-x-4 gap-y-2">
+                            <Link
+                                href={route('home') + '#contact'}
+                                className="inline-flex min-h-12 w-full max-w-xs items-center justify-center gap-2 rounded-full bg-gradient-to-r from-red-600 to-red-600 px-5 text-sm font-medium text-white shadow-[0px_1px_2px_-1px_rgba(0,0,0,0.10),0px_1px_3px_0px_rgba(0,0,0,0.10)] transition-colors hover:from-red-500 hover:to-orange-500 sm:w-auto sm:max-w-none sm:px-8 sm:text-base"
+                            >
+                                <span>Learn More</span>
+                                <span className="inline-flex h-4 w-6 items-center justify-start pl-2">
+                                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M3.33398 8H12.6673" stroke="white" strokeWidth="1.33333" strokeLinecap="round" strokeLinejoin="round" />
+                                        <path d="M8 3.33337L12.6667 8.00004L8 12.6667" stroke="white" strokeWidth="1.33333" strokeLinecap="round" strokeLinejoin="round" />
+                                    </svg>
+                                </span>
+                            </Link>
+                            <Link
+                                href={route('home') + '#contact'}
+                                className="inline-flex min-h-12 w-full max-w-xs items-center justify-center rounded-full bg-white px-5 text-sm font-medium text-black shadow-[0px_1px_2px_0px_rgba(0,0,0,0.05)] ring-1 ring-slate-700 hover:bg-gray-50 sm:w-auto sm:max-w-none sm:px-8 sm:text-base"
+                            >
+                                Contact Us
+                            </Link>
+                        </div>
+                    </div>
 
-                                    <div className="grid flex-1 grid-cols-2 gap-8 p-12 lg:grid-cols-4 shadow-[10.1px_13.5px_20px_0px_rgba(0,0,0,0.06)] items-center">
-                                        <div className="flex flex-col items-center justify-center gap-1.5 text-center">
-                                            <div className="text-2xl font-bold" style={{ color: '#dc2626' }}>25+</div>
-                                            <div className="text-[8px] font-normal uppercase tracking-wide text-gray-400">Years Experience</div>
-                                        </div>
-                                        <div className="flex flex-col items-center justify-center gap-1.5 text-center">
-                                            <div className="text-2xl font-bold" style={{ color: '#dc2626' }}>3</div>
-                                            <div className="text-[8px] font-normal uppercase tracking-wide text-gray-400">Affiliated Companies</div>
-                                        </div>
-                                        <div className="flex flex-col items-center justify-center gap-1.5 text-center">
-                                            <div className="text-2xl font-bold" style={{ color: '#dc2626' }}>500+</div>
-                                            <div className="text-[8px] font-normal uppercase tracking-wide text-gray-400">Team Members</div>
-                                        </div>
-                                        <div className="flex flex-col items-center justify-center gap-1.5 text-center">
-                                            <div className="text-2xl font-bold" style={{ color: '#dc2626' }}>1000+</div>
-                                            <div className="text-[8px] font-normal uppercase tracking-wide text-gray-400">Projects Completed</div>
-                                        </div>
+                    {/* Mobile: in-flow below CTAs. md+: pinned to hero bottom, 50/50 on image & white. */}
+                    <div className="relative z-20 mt-6 w-full px-4 sm:px-6 sm:mt-8 md:pointer-events-none md:absolute md:bottom-0 md:left-0 md:right-0 md:mt-0 md:translate-y-1/2 lg:px-8">
+                        <div className="pointer-events-auto mx-auto max-w-7xl">
+                            <div className="flex flex-col overflow-hidden rounded-[3px] bg-white shadow-2xl lg:flex-row lg:min-h-[12rem]">
+                                <div
+                                    className="flex shrink-0 flex-col justify-center p-6 text-white sm:p-8 lg:w-52 lg:min-h-0 shadow-[10.1px_13.5px_20px_0px_rgba(0,0,0,0.09)]"
+                                    style={{ backgroundColor: '#dc2626' }}
+                                >
+                                    <div className="text-caption">
+                                        <svg width="33" height="10" viewBox="0 0 33 10" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M0.388672 0.673863C0.388672 0.301699 0.690371 0 1.06254 0H13.788C13.9232 0 14.0553 0.040683 14.1671 0.11676L15.6078 1.09715C16.1563 1.47039 15.8921 2.32812 15.2287 2.32812H4.3004C4.02946 2.32812 3.80983 2.54776 3.80983 2.8187C3.80983 3.08833 4.02742 3.30742 4.29705 3.30927L16.7474 3.39448C17.1178 3.39701 17.4167 3.69796 17.4167 4.06833V5.05332C17.4167 5.42548 17.115 5.72718 16.7428 5.72718H1.06254C0.690371 5.72718 0.388672 5.42548 0.388672 5.05332V0.673863Z" fill="white" />
+                                            <path d="M3.40554 6.96057C3.51706 6.88507 3.64864 6.84473 3.7833 6.84473H15.3365C15.9972 6.84473 16.2633 7.69675 15.72 8.07271L14.1687 9.14624C14.056 9.2242 13.9222 9.26597 13.7852 9.26597H2.1975C1.53324 9.26597 1.26967 8.40646 1.81974 8.03409L3.40554 6.96057Z" fill="white" />
+                                            <path d="M15.5506 0.0463867H32.3454V9.17263H15.3174L18.894 6.8445H29.0798V2.23482H18.7385L15.5506 0.0463867Z" fill="white" />
+                                        </svg>
                                     </div>
+                                    <h2 className="mt-4 text-balance text-section leading-tight">
+                                        {statsTitleLine1}
+                                        <br />
+                                        {statsTitleLine2}
+                                        <br />
+                                        {statsTitleLine3}
+                                    </h2>
+                                </div>
+
+                                <div className="grid flex-1 grid-cols-2 gap-6 p-6 shadow-[10.1px_13.5px_20px_0px_rgba(0,0,0,0.06)] sm:gap-8 sm:p-10 lg:grid-cols-4 lg:p-12 items-center">
+                                    {statsItems.map((item, index) => (
+                                        <div
+                                            // eslint-disable-next-line react/no-array-index-key
+                                            key={index}
+                                            className="flex flex-col items-center justify-center gap-1.5 text-center"
+                                        >
+                                            <div className="text-subtitle" style={{ color: '#dc2626' }}>
+                                                {item.value}
+                                            </div>
+                                            <div className="text-caption text-gray-400 text-xs">
+                                                {item.label}
+                                            </div>
+                                        </div>
+                                    ))}
                                 </div>
                             </div>
                         </div>
                     </div>
-                </div>
+                </section>
 
-                {/* White screen section below the stats section */}
-                <div className="relative z-0 bg-white pt-20 pb-32">
+                {/* Reserve space for lower half of stats card (50/50 overlap) */}
+                <div className="relative z-0 bg-white pt-10 pb-32 md:pt-[clamp(7rem,22vw,11rem)]">
                     <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-                        <div className="relative aspect-video w-full overflow-hidden rounded-[30px] bg-gray-900 shadow-2xl group -mt-16">
-                            <video
-                                ref={videoRef}
-                                className="h-full w-full object-cover rounded-[30px]"
-                                src="/2025%20Sundia%20Company%20video.mp4"
-                                onPlay={() => setIsPlaying(true)}
-                                onPause={() => setIsPlaying(false)}
-                                onClick={togglePlay}
-                            >
-                                Your browser does not support the video tag.
-                            </video>
-
-                            {!isPlaying && (
-                                <div className="absolute inset-0 flex items-center justify-center bg-black/20">
-                                    <button
+                        <div className="relative aspect-video w-full overflow-hidden rounded-[30px] bg-gray-900 shadow-2xl group">
+                            {isEmbedUrl(resolvedVideoUrl) ? (
+                                <iframe
+                                    className="h-full w-full rounded-[30px]"
+                                    src={toEmbedUrl(resolvedVideoUrl)}
+                                    title={resolvedVideoTitle}
+                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                    allowFullScreen
+                                />
+                            ) : (
+                                <>
+                                    <video
+                                        ref={videoRef}
+                                        className="h-full w-full object-cover rounded-[30px]"
+                                        src={resolvedVideoUrl}
+                                        poster={resolvedVideoThumbnail || undefined}
+                                        onPlay={() => setIsPlaying(true)}
+                                        onPause={() => setIsPlaying(false)}
                                         onClick={togglePlay}
-                                        className="flex h-20 w-20 items-center justify-center rounded-full text-white shadow-lg transition-transform hover:scale-110 active:scale-95"
-                                        style={{ backgroundColor: '#FF6E00' }}
                                     >
-                                        <svg className="ml-1 h-10 w-10" fill="currentColor" viewBox="0 0 24 24">
-                                            <path d="M8 5v14l11-7z" />
-                                        </svg>
-                                    </button>
-                                </div>
+                                        Your browser does not support the video tag.
+                                    </video>
+
+                                    {resolvedOverlayEnabled && !isPlaying && (
+                                        <div className="absolute inset-0 flex items-center justify-center bg-black/20">
+                                            <button
+                                                onClick={togglePlay}
+                                                className="flex h-20 w-20 items-center justify-center rounded-full text-white shadow-lg transition-transform hover:scale-110 active:scale-95"
+                                                style={{ backgroundColor: '#E00000' }}
+                                            >
+                                                <svg className="ml-1 h-10 w-10" fill="currentColor" viewBox="0 0 24 24">
+                                                    <path d="M8 5v14l11-7z" />
+                                                </svg>
+                                            </button>
+                                        </div>
+                                    )}
+                                </>
                             )}
                         </div>
 
                         {/* About Section - logo and details like Welcome.jsx */}
                         <div className="mt-16 rounded-[3px]">
                             <img src="/Tpsmilogo.png" alt="TPSMI LOGO" className="mx-auto h-32 w-auto" />
-                            <p className="mx-auto mt-6 max-w-4xl text-base sm:text-lg font-medium leading-7 text-gray-700">
+                            <p className="mx-auto mt-6 max-w-4xl text-body-lg text-gray-700">
                                 Total Packaging Solutions and Manufacturing, Inc. (TPSMI) offer a broad range of packaging solutions to meet our customer needs and continuously improve our operations to better respond to those needs. We provide high-quality packaging materials and services tailored to the requirements of the automotive and electronics industries.
                             </p>
                         </div>
@@ -182,7 +304,7 @@ export default function Tpsmi() {
                         
                         {/* Text content - white, left-aligned, inside red bar */}
                         <div className="absolute left-80 sm:left-96 right-12 top-1/2 -translate-y-1/2 flex items-center z-20">
-                            <p className="text-white text-lg sm:text-xl font-bold leading-relaxed tracking-wide">
+                            <p className="text-white text-body-lg font-semibold tracking-wide">
                                 Total Packaging Solutions and Manufacturing, Inc. (TPSMI) offer a broad range of packaging solutions to meet our customer needs and continuously improve our operations to better respond to those needs. We provide high-quality packaging materials and services tailored to the requirements of the automotive and electronics industries.
                             </p>
                         </div>
@@ -190,45 +312,42 @@ export default function Tpsmi() {
                 </div>
             </div>
 
-            <div className="relative h-48">
-                                <div className="absolute inset-0 bg-neutral-700 border border-black" />
-                                <div className="relative h-full flex items-center justify-center">
-                                    <div className="w-full max-w-[1222.91px] inline-flex justify-center items-start gap-6">
-                                        <div className="flex-1 self-stretch inline-flex flex-col justify-start items-start gap-1.5">
-                                            <div className="self-stretch flex flex-col justify-start items-center">
-                                                <div className="text-center justify-center text-white text-4xl font-bold font-['Inter'] leading-9">18+</div>
-                                            </div>
-                                            <div className="self-stretch flex flex-col justify-start items-center">
-                                                <div className="text-center justify-center text-white text-xs font-normal font-['Inter'] uppercase leading-4 tracking-wide">Years of Adventure</div>
-                                            </div>
-                                        </div>
-                                        <div className="flex-1 self-stretch inline-flex flex-col justify-start items-start gap-1.5">
-                                            <div className="self-stretch flex flex-col justify-start items-center">
-                                                <div className="text-center justify-center text-white text-3xl font-bold font-['Inter'] leading-9">5000+</div>
-                                            </div>
-                                            <div className="self-stretch flex flex-col justify-start items-center">
-                                                <div className="text-center justify-center text-white text-xs font-normal font-['Inter'] uppercase leading-4 tracking-wide">Vehicles Customized</div>
-                                            </div>
-                                        </div>
-                                        <div className="flex-1 self-stretch inline-flex flex-col justify-start items-start gap-1.5">
-                                            <div className="self-stretch flex flex-col justify-start items-center">
-                                                <div className="text-center justify-center text-white text-3xl font-bold font-['Inter'] leading-9">120+</div>
-                                            </div>
-                                            <div className="self-stretch flex flex-col justify-start items-center">
-                                                <div className="text-center justify-center text-white text-xs font-normal font-['Inter'] uppercase leading-4 tracking-wide">Expert Technicians</div>
-                                            </div>
-                                        </div>
-                                        <div className="flex-1 self-stretch inline-flex flex-col justify-start items-start gap-1.5">
-                                            <div className="self-stretch flex flex-col justify-start items-center">
-                                                <div className="text-center justify-center text-white text-4xl font-bold font-['Inter'] leading-9">3</div>
-                                            </div>
-                                            <div className="self-stretch flex flex-col justify-start items-center">
-                                                <div className="text-center justify-center text-white text-xs font-normal font-['Inter'] uppercase leading-4 tracking-wide">Service Centers</div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
+            <div className="relative border border-black bg-neutral-700 py-8 sm:py-10">
+                <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+                    <div className="grid grid-cols-2 gap-x-4 gap-y-8 sm:grid-cols-4 sm:gap-x-6 sm:gap-y-6 lg:gap-x-10">
+                        <div className="flex flex-col items-center justify-center gap-2 px-2 text-center sm:gap-2.5">
+                            <div className="font-['Inter'] text-3xl font-bold leading-none text-white sm:text-4xl">
+                                18+
                             </div>
+                            <div className="max-w-[9rem] font-['Inter'] text-xs font-normal uppercase leading-snug tracking-wide text-white sm:max-w-none">
+                                Years of Adventure
+                            </div>
+                        </div>
+                        <div className="flex flex-col items-center justify-center gap-2 px-2 text-center sm:gap-2.5">
+                            <div className="font-['Inter'] text-3xl font-bold leading-none text-white sm:text-4xl">
+                                5000+
+                            </div>
+                            <div className="max-w-[9rem] font-['Inter'] text-xs font-normal uppercase leading-snug tracking-wide text-white sm:max-w-none">
+                                Vehicles Customized
+                            </div>
+                        </div>
+                        <div className="flex flex-col items-center justify-center gap-2 px-2 text-center sm:gap-2.5">
+                            <div className="font-['Inter'] text-3xl font-bold leading-none text-white sm:text-4xl">
+                                120+
+                            </div>
+                            <div className="max-w-[9rem] font-['Inter'] text-xs font-normal uppercase leading-snug tracking-wide text-white sm:max-w-none">
+                                Expert Technicians
+                            </div>
+                        </div>
+                        <div className="flex flex-col items-center justify-center gap-2 px-2 text-center sm:gap-2.5">
+                            <div className="font-['Inter'] text-3xl font-bold leading-none text-white sm:text-4xl">3</div>
+                            <div className="max-w-[9rem] font-['Inter'] text-xs font-normal uppercase leading-snug tracking-wide text-white sm:max-w-none">
+                                Service Centers
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
                 {/* ISO logo - white background */}
                 <div className="flex justify-center bg-white py-12">
@@ -240,7 +359,7 @@ export default function Tpsmi() {
                 {/* Premium Packaging and Protective Solutions */}
                 <div className="bg-white py-12 pb-14">
                     <div className="w-full max-w-5xl mx-auto px-4 sm:px-6">
-                        <h2 className="text-center text-red-600 text-2xl sm:text-3xl lg:text-4xl font-normal font-['Inter'] leading-tight tracking-widest mb-16">
+                        <h2 className="text-center text-red-600 text-section font-['Inter'] tracking-widest mb-16">
                             Premium Packaging and Protective<br />Solutions for your Buisiness Needs
                         </h2>
                         <div className="grid grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-16 justify-items-center text-center">
@@ -252,7 +371,7 @@ export default function Tpsmi() {
                                         <path d="M22 32L28 36L42 24" strokeLinecap="round" strokeLinejoin="round"/>
                                     </svg>
                                 </div>
-                                <span className="text-red-600 text-sm font-extrabold font-['Inter'] uppercase tracking-wide">DURABLE MATERIALS</span>
+                                <span className="text-red-600 text-caption font-['Inter']">DURABLE MATERIALS</span>
                             </div>
                             {/* FAST DELIVERY - pickup truck, thin outline */}
                             <div className="flex flex-col items-center gap-6">
@@ -266,7 +385,7 @@ export default function Tpsmi() {
                                         <path d="M30 18L38 28" strokeLinecap="round"/>
                                     </svg>
                                 </div>
-                                <span className="text-red-600 text-sm font-extrabold font-['Inter'] uppercase tracking-wide">FAST DELIVERY</span>
+                                <span className="text-red-600 text-caption font-['Inter']">FAST DELIVERY</span>
                             </div>
                             {/* COMPETETIVE PRICING - rectangular box with dotted pattern inside, horizontal line above */}
                             <div className="flex flex-col items-center gap-6">
@@ -277,7 +396,7 @@ export default function Tpsmi() {
                                         <path d="M22 32H42M22 40H42M22 48H42" strokeLinecap="round" strokeDasharray="3 2"/>
                                     </svg>
                                 </div>
-                                <span className="text-red-600 text-sm font-extrabold font-['Inter'] uppercase tracking-wide">COMPETETIVE PRICING</span>
+                                <span className="text-red-600 text-caption font-['Inter']">COMPETETIVE PRICING</span>
                             </div>
                             {/* QUALITY ASSURED - shield with checkmark, thin outline */}
                             <div className="flex flex-col items-center gap-6">
@@ -287,7 +406,7 @@ export default function Tpsmi() {
                                         <path d="M22 34L28 40L42 26" strokeLinecap="round" strokeLinejoin="round"/>
                                     </svg>
                                 </div>
-                                <span className="text-red-600 text-sm font-extrabold font-['Inter'] uppercase tracking-wide">QUALITY ASSURED</span>
+                                <span className="text-red-600 text-caption font-['Inter']">QUALITY ASSURED</span>
                             </div>
                         </div>
                     </div>
@@ -305,44 +424,53 @@ export default function Tpsmi() {
                             filter: 'grayscale(100%)',
                         }}
                     />
-                    {/* Red/gray banner */}
-                    <div className="relative z-10 w-full h-24 overflow-hidden">
-                        <svg className="absolute inset-0 w-full h-full object-cover" viewBox="0 0 771 103" fill="none" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M0 0H320L400 103H0V0Z" fill="#E31E25"/>
-                            <path d="M320 0L400 103L771 103L771 0Z" fill="#8C8C8C"/>
+                    {/* Mobile: solid red. sm+: red/gray diagonal (SVG). */}
+                    <div className="relative z-10 w-full min-h-[5.25rem] overflow-hidden bg-[#E31E25] sm:bg-transparent sm:min-h-0 sm:h-24">
+                        <svg
+                            className="pointer-events-none absolute inset-0 hidden h-full min-h-[5.25rem] w-full sm:block sm:min-h-0"
+                            viewBox="0 0 771 103"
+                            fill="none"
+                            preserveAspectRatio="none"
+                            xmlns="http://www.w3.org/2000/svg"
+                            aria-hidden
+                        >
+                            <path d="M0 0H320L400 103H0V0Z" fill="#E31E25" />
+                            <path d="M320 0L400 103L771 103L771 0Z" fill="#8C8C8C" />
                         </svg>
-                        <div className="relative z-10 h-full flex items-center w-full pl-6 sm:pl-8 md:pl-12">
-                            <span className="text-white text-base sm:text-lg font-bold font-['Inter'] uppercase tracking-wide whitespace-nowrap" style={{ letterSpacing: '0.12em', wordSpacing: '0.2em' }}>
+                        <div className="relative z-10 flex min-h-[5.25rem] w-full items-center px-4 py-3.5 sm:min-h-0 sm:h-full sm:px-6 sm:py-0 md:pl-10 md:pr-8 lg:pl-12">
+                            <h2 className="max-w-full text-balance font-['Inter'] text-[11px] font-semibold uppercase leading-snug tracking-wide text-white sm:text-sm md:text-base lg:text-body-lg sm:leading-normal sm:tracking-[0.1em] md:tracking-[0.12em]">
                                 VACUUM FORMED PLASTIC PRODUCTS
-                            </span>
+                            </h2>
                         </div>
                     </div>
 
                     {/* Product cards 3x2 + carousel buttons */}
                     <div className="relative z-10 w-full min-h-[700px] py-16">
                     <div className="relative max-w-6xl mx-auto px-4">
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-20 lg:gap-24 justify-items-center">
-                            {[
-                                { title: 'CORRUGATED BOX', img: '/CORRUGATED BOX.png', features: ['Durable', 'Custom sizes', 'Eco-friendly'] },
-                                { title: 'BILAO BOX', img: '/Bilao Box.png', features: ['Food-grade', 'Stackable', 'Secure fit'] },
-                                { title: 'BELLY BOX', img: '/BELLY BOX.png', features: ['Heavy duty', 'Versatile', 'Cost-effective'] },
-                                { title: 'ANTI-STATIC BUBBLE SHEET POUCH', img: '/AntiStatic.png', features: ['ESD protection', 'Reusable', 'Tear resistant'] },
-                                { title: 'PE FOAM POUCH', img: '/PE FOAM PoUCH.png', features: ['Cushioning', 'Lightweight', 'Flexible'] },
-                                { title: 'BUBBLE SHEET SLEEVES', img: '/BUBBLE SHEET SLEEVES.png', features: ['Easy to use', 'Protective', 'Multiple sizes'] }
-                            ].map((product, i) => (
-                                <div key={i} className="w-96 min-h-[442px] flex flex-col overflow-hidden shadow-[0px_4px_25px_0px_rgba(0,0,0,0.25)] rounded-[20px] transition-transform duration-300 ease-out hover:scale-105 hover:shadow-none cursor-pointer">
-                                    <div className="relative w-full h-64 flex-shrink-0">
-                                        <img className="w-full h-full object-cover rounded-t-[20px]" src={product.img} alt={product.title} />
+                        <div className="grid grid-cols-1 justify-items-center gap-12 sm:grid-cols-2 sm:gap-16 lg:grid-cols-3 lg:gap-20">
+                            {visibleTpsmiProducts.map((product, i) => (
+                                <div
+                                    key={product.id ?? `${product.title}-${i}`}
+                                    className="flex w-full max-w-sm min-h-0 cursor-pointer flex-col overflow-hidden rounded-[20px] shadow-[0px_4px_25px_0px_rgba(0,0,0,0.25)] transition-transform duration-300 ease-out hover:scale-105 hover:shadow-none"
+                                >
+                                    <div className="shrink-0 rounded-t-[20px] bg-white p-3 pt-4 sm:p-4 sm:pt-5">
+                                        <div className="relative aspect-[4/3] w-full overflow-hidden rounded-xl">
+                                            <img
+                                                className="h-full w-full object-cover"
+                                                src={product.img}
+                                                alt={product.title}
+                                            />
+                                        </div>
                                     </div>
-                                    <div className="flex flex-col items-center justify-center min-h-[120px] py-4 px-5 rounded-b-[20px] bg-red-600">
-                                        <h3 className="text-white text-base font-bold font-['Inter'] uppercase text-center tracking-wide mb-4">
+                                    <div className="flex flex-col items-center rounded-b-[20px] bg-red-600 px-5 pb-6 pt-5 sm:px-6 sm:pb-7 sm:pt-6">
+                                        <h3 className="mb-3 text-center font-['Inter'] text-caption text-white sm:mb-4">
                                             {product.title}
                                         </h3>
-                                        <div className="flex flex-wrap justify-center items-center gap-x-5 gap-y-2">
+                                        <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2.5 sm:gap-x-5">
                                             {product.features.map((feature, j) => (
-                                                <div key={j} className="flex items-center gap-2">
-                                                    <span className="w-2 h-2 rounded-full bg-white flex-shrink-0" />
-                                                    <span className="text-white text-sm font-normal font-['Inter']">{feature}</span>
+                                                <div key={j} className="flex max-w-full items-center gap-2 px-0.5">
+                                                    <span className="h-2 w-2 shrink-0 rounded-full bg-white" />
+                                                    <span className="font-['Inter'] text-sm leading-snug text-white">{feature}</span>
                                                 </div>
                                             ))}
                                         </div>
@@ -351,12 +479,24 @@ export default function Tpsmi() {
                             ))}
                         </div>
                         {/* Carousel prev/next buttons */}
-                        <button type="button" className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-14 w-12 h-12 rounded-full bg-white border-2 border-neutral-300 shadow-lg flex items-center justify-center hover:bg-neutral-50 z-10" aria-label="Previous">
+                        <button
+                            type="button"
+                            onClick={goToPreviousProductPage}
+                            disabled={resolvedTpsmiProducts.length <= productsPerPage}
+                            className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-14 w-12 h-12 rounded-full bg-white border-2 border-neutral-300 shadow-lg flex items-center justify-center hover:bg-neutral-50 z-10 disabled:opacity-50 disabled:cursor-not-allowed"
+                            aria-label="Previous"
+                        >
                             <svg className="w-6 h-6 text-neutral-800" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                             </svg>
                         </button>
-                        <button type="button" className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-14 w-12 h-12 rounded-full bg-white border-2 border-neutral-300 shadow-lg flex items-center justify-center hover:bg-neutral-50 z-10" aria-label="Next">
+                        <button
+                            type="button"
+                            onClick={goToNextProductPage}
+                            disabled={resolvedTpsmiProducts.length <= productsPerPage}
+                            className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-14 w-12 h-12 rounded-full bg-white border-2 border-neutral-300 shadow-lg flex items-center justify-center hover:bg-neutral-50 z-10 disabled:opacity-50 disabled:cursor-not-allowed"
+                            aria-label="Next"
+                        >
                             <svg className="w-6 h-6 text-neutral-800" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                             </svg>
@@ -365,19 +505,119 @@ export default function Tpsmi() {
                     </div>
                 </div>
 
-                {/* Stone background block with VFP content */}
-                <div className="w-full flex justify-center bg-stone-900 min-h-[1537px] py-16">
-                    <div className="w-[1442px] max-w-full h-[1537px] bg-stone-900">
-                        <div className="w-[1328px] max-w-full h-[1287px] relative mx-auto">
-                            <div className="w-[1243.79px] max-w-full h-[1236.69px] left-[84.21px] top-[50.31px] absolute bg-white rounded-[50px] border-[5px] border-red-600" />
-                            <div data-svg-wrapper className="left-0 top-0 absolute">
-                                <svg width="750" height="101" viewBox="0 0 750 101" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <path d="M0 0H642.222L749.662 100.618H0V0Z" fill="#E31E25"/>
-                                </svg>
+                {/* Stone background — VFP product showcase (responsive; replaces fixed absolute layout) */}
+                <div className="w-full bg-stone-900 py-10 sm:py-14 lg:py-16">
+                    <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+                        <div className="overflow-hidden rounded-3xl border-4 border-red-600 bg-white shadow-2xl sm:rounded-[2.5rem] sm:border-[5px] lg:rounded-[3rem]">
+                            <div className="bg-[#E31E25] px-4 py-4 sm:px-6 sm:py-5 lg:px-10 lg:py-6">
+                                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between sm:gap-6">
+                                    <h2 className="max-w-full text-balance font-['Inter'] text-xs font-semibold uppercase leading-snug tracking-wide text-white sm:text-sm md:text-base lg:text-subtitle">
+                                        VACUUM FORMED PLASTIC PRODUCTS
+                                    </h2>
+                                    <img
+                                        src="/Tpsmilogo.png"
+                                        alt="TPSMI"
+                                        className="h-9 w-auto shrink-0 object-contain grayscale sm:h-11 lg:h-12"
+                                    />
+                                </div>
                             </div>
-                            <div className="left-[50.85px] top-[29.27px] absolute text-white text-xl sm:text-2xl font-bold font-['Inter'] leading-tight whitespace-nowrap flex items-center h-10">VACUUM FORMED PLASTIC PRODUCTS</div>
-                            <img className="w-[1014.38px] max-w-full h-[1065.10px] left-[203.29px] top-[161.69px] absolute object-cover" src="/Aircon Evaporator Cover.png" alt="Aircon Evaporator Cover" />
-                            <img className="w-36 h-24 left-[530px] top-[8px] absolute object-contain grayscale" src="/Tpsmilogo.png" alt="TPSMI" />
+                            <div className="bg-white px-4 py-6 sm:px-8 sm:py-10 lg:px-12 lg:py-12">
+                                <div className="mx-auto w-full max-w-4xl">
+                                    <img
+                                        src="/Aircon Evaporator Cover.png"
+                                        alt="Aircon Evaporator Cover"
+                                        className="mx-auto h-auto w-full object-contain object-center max-h-[min(65vh,560px)] sm:max-h-[min(70vh,640px)]"
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Full-bleed Karton banner + service cards — mobile: stack below image (no absolute overflow). md+: overlay on image. */}
+                <div className="relative left-1/2 w-screen max-w-[100vw] -translate-x-1/2 overflow-hidden">
+                    <img
+                        src="/karton.png"
+                        alt="Karton"
+                        loading="lazy"
+                        className="block h-44 w-full object-cover sm:h-52 md:h-auto md:max-h-[520px]"
+                    />
+
+                    <div className="flex flex-col gap-6 bg-stone-950 px-4 py-8 sm:gap-7 sm:px-6 sm:py-10 md:absolute md:inset-0 md:justify-center md:bg-black/40 md:px-8 md:py-10 lg:px-12 xl:px-16 md:backdrop-blur-[2px]">
+                        <div className="mx-auto grid w-full max-w-6xl grid-cols-1 gap-6 sm:gap-7 md:grid-cols-2 md:gap-5 lg:max-w-7xl xl:grid-cols-4 xl:gap-5">
+                            <div className="flex min-h-0 flex-col rounded-3xl border border-white bg-red-600 px-5 py-5 text-center shadow-[0px_4px_14px_rgba(0,0,0,0.45)] sm:px-8 sm:py-6">
+                                <div className="font-['Inter'] text-subtitle text-white">Quotation</div>
+                                <div className="mt-3 font-['Inter'] text-sm leading-relaxed text-white sm:text-body-lg">
+                                    Get a free estimate tailored to your budget and requirements.
+                                </div>
+                            </div>
+
+                            <div className="flex min-h-0 flex-col rounded-3xl border border-white bg-red-600 px-5 py-5 text-center shadow-[0px_4px_14px_rgba(0,0,0,0.45)] sm:px-8 sm:py-6">
+                                <div className="font-['Inter'] text-subtitle text-white">Delivery</div>
+                                <div className="mt-3 font-['Inter'] text-sm leading-relaxed text-white sm:text-body-lg">
+                                    We provide reliable delivery services to clients anywhere in the Philippines.
+                                </div>
+                            </div>
+
+                            <div className="flex min-h-0 flex-col rounded-3xl border border-white bg-red-600 px-5 py-5 text-center shadow-[0px_4px_14px_rgba(0,0,0,0.45)] sm:px-8 sm:py-6">
+                                <div className="font-['Inter'] text-subtitle text-white">Free Customization</div>
+                                <div className="mt-3 font-['Inter'] text-sm leading-relaxed text-white sm:text-body-lg">
+                                    Enjoy free customization of style, color, and size based on your specific needs
+                                </div>
+                            </div>
+
+                            <div className="flex min-h-0 flex-col rounded-3xl border border-white bg-red-600 px-5 py-5 text-center shadow-[0px_4px_14px_rgba(0,0,0,0.45)] sm:px-8 sm:py-6">
+                                <div className="font-['Inter'] text-subtitle text-white">Printing</div>
+                                <div className="mt-3 font-['Inter'] text-sm leading-relaxed text-white sm:text-body-lg">
+                                    We offer customized printing solutions designed to match your brand and requirements.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Customize box section (full-bleed) */}
+                <div
+                    className="relative left-1/2 m-0 w-screen max-w-[100vw] -translate-x-1/2 overflow-hidden p-0"
+                    style={{ width: '100vw' }}
+                >
+                    <div className="relative min-h-[280px] w-full py-10 sm:min-h-[360px] sm:h-[420px] sm:py-0 lg:h-[520px]">
+                        <img
+                            src="/customize box.png"
+                            alt="Customize Box"
+                            className="absolute inset-0 h-full w-full scale-110 object-cover blur-xl"
+                            aria-hidden="true"
+                        />
+                        <img
+                            src="/customize box.png"
+                            alt=""
+                            className="absolute inset-0 h-full w-full object-contain"
+                            aria-hidden="true"
+                        />
+
+                        <div className="relative z-10 flex min-h-[240px] flex-col items-center justify-center px-4 py-6 sm:absolute sm:inset-0 sm:min-h-0 sm:py-0">
+                            <div className="w-full max-w-4xl text-center">
+                                <p className="font-['Inter'] text-sm font-medium tracking-[0.15em] text-white sm:text-body-lg sm:tracking-[0.25em]">
+                                    We are more than just a packaging company;
+                                </p>
+                                <h2 className="mt-4 font-['Inter'] text-xl font-extrabold uppercase leading-tight tracking-wide text-white sm:mt-3 sm:text-3xl md:text-4xl lg:text-hero lg:tracking-widest">
+                                    WE MANUFACTURE AND CUSTOMIZE BOXES
+                                </h2>
+                                <p className="mt-3 font-['Inter'] text-sm font-medium text-white sm:text-body-lg">
+                                    of the highest quality.
+                                </p>
+                            </div>
+                            <div className="mt-8 sm:mt-6">
+                                <button
+                                    type="button"
+                                    onClick={() => router.visit(route('home') + '#contact')}
+                                    className="group inline-flex items-center justify-center px-12 sm:px-16 py-3 sm:py-4 bg-red-600 rounded-full border-2 border-white cursor-pointer select-none transition-transform duration-200 ease-out hover:scale-[1.03] active:scale-[0.99] focus:outline-none focus-visible:ring-2 focus-visible:ring-white/80 focus-visible:ring-offset-2 focus-visible:ring-offset-black/40 hover:bg-red-500 shadow-[0_10px_24px_rgba(0,0,0,0.25)]"
+                                >
+                                    <span className="text-white text-subtitle tracking-[0.25em]">
+                                        CUSTOMIZE NOW
+                                    </span>
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>

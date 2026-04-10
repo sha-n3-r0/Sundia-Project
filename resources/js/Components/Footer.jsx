@@ -12,42 +12,108 @@ export default function Footer() {
             ([entry]) => {
                 if (entry.isIntersecting) setIsInView(true);
             },
-            { threshold: 0.1, rootMargin: '0px 0px -50px 0px' }
+            { threshold: 0.08, rootMargin: '0px 0px -40px 0px' }
         );
         observer.observe(el);
         return () => observer.disconnect();
     }, []);
 
     const animate = 'transition-all duration-700 ease-out';
-    const from = 'opacity-0 translate-y-8';
+    const from = 'opacity-0 translate-y-6';
     const to = 'opacity-100 translate-y-0';
 
+    const quickLinks = [
+        { href: route('home'), label: 'HOME' },
+        { href: route('siam'), label: 'SIAM' },
+        { href: route('tpsmi'), label: 'TPSMI' },
+        { href: route('top-offroad'), label: 'TOP OFFROAD' },
+        { href: route('home') + '#contact', label: 'CONTACT US' },
+    ];
+
     return (
-        <div ref={footerRef} className="w-full flex justify-center bg-stone-900 overflow-hidden">
-            <div className="w-[1440px] max-w-full h-72 relative px-4 box-border">
-                <div className="w-full h-72 left-0 top-0 absolute bg-stone-900" />
-                <Link href={route('home')} className={`w-80 h-32 left-[133.50px] top-[10.50px] absolute block ${animate} ${isInView ? to : from}`} style={{ transitionDelay: '0ms' }}>
-                    <img className="w-80 h-32" src="/Sundialogo.png" alt="Sundia Group" />
-                </Link>
-                <div className={`w-96 left-[171px] top-[147px] absolute inline-flex flex-col justify-start items-start ${animate} ${isInView ? to : from}`} style={{ transitionDelay: '80ms' }}>
-                    <div className="self-stretch justify-center text-white/60 text-xs font-normal font-['Inter'] leading-5">
-                        At Sundia Group Philippines, we bring innovative solutions to life. Our<br />
-                        core values of being solutions-oriented, united, disciplined, having<br />
-                        integrity, and being adaptable to change drive us every day.
+        <footer
+            ref={footerRef}
+            className="w-full bg-stone-900 text-white"
+        >
+            <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 sm:py-12 lg:px-8 lg:py-14">
+                <div className="grid grid-cols-1 gap-10 md:grid-cols-2 md:gap-x-10 md:gap-y-10 lg:grid-cols-12 lg:gap-x-10 lg:gap-y-8">
+                    {/* Brand */}
+                    <div
+                        className={`md:col-span-1 lg:col-span-5 ${animate} ${isInView ? to : from}`}
+                        style={{ transitionDelay: '0ms' }}
+                    >
+                        <Link href={route('home')} className="inline-block max-w-[min(100%,20rem)]">
+                            <img
+                                className="h-auto w-full max-h-28 object-contain object-left sm:max-h-32"
+                                src="/Sundialogo.png"
+                                alt="Sundia Group"
+                            />
+                        </Link>
+                        <p className="mt-6 max-w-md text-xs font-normal leading-relaxed text-white/60 font-['Inter']">
+                            At Sundia Group Philippines, we bring innovative solutions to life. Our
+                            core values of being solutions-oriented, united, disciplined, having
+                            integrity, and being adaptable to change drive us every day.
+                        </p>
+                    </div>
+
+                    {/* Quick links */}
+                    <nav
+                        className={`flex flex-col md:col-span-1 lg:col-span-3 ${animate} ${isInView ? to : from}`}
+                        style={{ transitionDelay: '80ms' }}
+                        aria-label="Quick links"
+                    >
+                        <h2 className="text-xs font-extrabold tracking-wide text-white font-['Inter']">
+                            QUICK LINKS
+                        </h2>
+                        <ul className="mt-5 flex flex-col gap-3 sm:gap-2.5">
+                            {quickLinks.map(({ href, label }) => (
+                                <li key={label}>
+                                    <Link
+                                        href={href}
+                                        className="text-xs font-bold text-white/60 transition-colors hover:text-white font-['Inter']"
+                                    >
+                                        {label}
+                                    </Link>
+                                </li>
+                            ))}
+                        </ul>
+                    </nav>
+
+                    {/* Contact */}
+                    <div
+                        className={`flex flex-col border-t border-white/10 pt-10 md:col-span-2 md:border-t md:border-white/10 md:pt-8 lg:col-span-4 lg:border-t-0 lg:pt-0 ${animate} ${isInView ? to : from}`}
+                        style={{ transitionDelay: '140ms' }}
+                    >
+                        <h2 className="text-xs font-extrabold tracking-wide text-white font-['Inter']">
+                            CONTACT
+                        </h2>
+                        <ul className="mt-5 flex flex-col gap-2.5 text-xs font-bold text-white/60 font-['Inter']">
+                            <li>
+                                <a
+                                    href="mailto:sundia.hrd@yahoo.com"
+                                    className="break-all transition-colors hover:text-white"
+                                >
+                                    sundia.hrd@yahoo.com
+                                </a>
+                            </li>
+                            <li>
+                                <a href="tel:+63495022443" className="transition-colors hover:text-white">
+                                    (049) 502 2443
+                                </a>
+                            </li>
+                            <li>
+                                <a
+                                    href="mailto:jep.bernas@sundiagroup.com.ph"
+                                    className="break-all underline transition-colors hover:text-white"
+                                >
+                                    jep.bernas@sundiagroup.com.ph
+                                </a>
+                            </li>
+                            <li className="pt-0.5">Sundia Group</li>
+                        </ul>
                     </div>
                 </div>
-                <div className={`left-[821.25px] top-[43.50px] absolute justify-center text-white text-xs font-extrabold font-['Inter'] ${animate} ${isInView ? to : from}`} style={{ transitionDelay: '120ms' }}>QUICK LINKS</div>
-                <Link href={route('home')} className={`left-[818.25px] top-[106.50px] absolute justify-center text-white/60 text-xs font-bold font-['Inter'] hover:text-white transition-colors ${animate} ${isInView ? to : from}`} style={{ transitionDelay: '160ms' }}>HOME</Link>
-                <Link href={route('siam')} className={`left-[818.25px] top-[138.75px] absolute justify-center text-white/60 text-xs font-bold font-['Inter'] hover:text-white transition-colors ${animate} ${isInView ? to : from}`} style={{ transitionDelay: '200ms' }}>SIAM</Link>
-                <Link href={route('tpsmi')} className={`left-[818.25px] top-[171px] absolute justify-center text-white/60 text-xs font-bold font-['Inter'] hover:text-white transition-colors ${animate} ${isInView ? to : from}`} style={{ transitionDelay: '240ms' }}>TPSMI</Link>
-                <Link href={route('top-offroad')} className={`left-[818.25px] top-[203.25px] absolute justify-center text-white/60 text-xs font-bold font-['Inter'] hover:text-white transition-colors ${animate} ${isInView ? to : from}`} style={{ transitionDelay: '280ms' }}>TOP OFFROAD</Link>
-                <Link href={route('home') + '#contact'} className={`left-[818.25px] top-[236.25px] absolute justify-center text-white/60 text-xs font-bold font-['Inter'] hover:text-white transition-colors ${animate} ${isInView ? to : from}`} style={{ transitionDelay: '320ms' }}>CONTACT US</Link>
-                <div className={`left-[1170px] top-[43.50px] absolute justify-center text-white text-xs font-extrabold font-['Inter'] ${animate} ${isInView ? to : from}`} style={{ transitionDelay: '120ms' }}>CONTACT</div>
-                <div className={`left-[1170px] top-[106.50px] absolute justify-center text-white/60 text-xs font-bold font-['Inter'] ${animate} ${isInView ? to : from}`} style={{ transitionDelay: '200ms' }}>sundia.hrd@yahoo.com</div>
-                <div className={`left-[1170px] top-[138.75px] absolute justify-center text-white/60 text-xs font-bold font-['Inter'] ${animate} ${isInView ? to : from}`} style={{ transitionDelay: '240ms' }}>(049) 502 2443</div>
-                <div className={`left-[1170px] top-[171px] absolute justify-center text-white/60 text-xs font-bold font-['Inter'] underline ${animate} ${isInView ? to : from}`} style={{ transitionDelay: '280ms' }}>jep.bernas@sundiagroup.com.ph</div>
-                <div className={`left-[1170px] top-[203.25px] absolute justify-center text-white/60 text-xs font-bold font-['Inter'] ${animate} ${isInView ? to : from}`} style={{ transitionDelay: '320ms' }}>Sundia Group</div>
             </div>
-        </div>
+        </footer>
     );
 }

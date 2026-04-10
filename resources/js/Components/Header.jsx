@@ -4,7 +4,10 @@ import { useState, useEffect, useRef } from 'react';
 export default function Header() {
     const { url, props } = usePage();
     const auth = props.auth;
+    const sundia = props.sundia;
+    const navbarLogoSrc = sundia?.logo_path ?? '/Sundialogo.png';
     const [hidden, setHidden] = useState(false);
+    const [mobileNavOpen, setMobileNavOpen] = useState(false);
     const lastScrollY = useRef(0);
 
     // hide on scroll down, show on hover/top movement
@@ -34,6 +37,19 @@ export default function Header() {
         };
     }, []);
 
+    useEffect(() => {
+        setMobileNavOpen(false);
+    }, [url]);
+
+    useEffect(() => {
+        if (!mobileNavOpen) return;
+        const onKey = (e) => {
+            if (e.key === 'Escape') setMobileNavOpen(false);
+        };
+        document.addEventListener('keydown', onKey);
+        return () => document.removeEventListener('keydown', onKey);
+    }, [mobileNavOpen]);
+
     const isTopOffroadPage = route().current('top-offroad');
     const navBarColor = isTopOffroadPage ? '#FF6E00' : '#FF0000';
 
@@ -43,9 +59,11 @@ export default function Header() {
         }
     };
 
+    const currentRoute = route().current();
     const navLinks = [
         { 
             href: route('home'), 
+            routeName: 'home',
             label: 'Home',
             icon: (
                 <svg
@@ -101,6 +119,7 @@ export default function Header() {
         },
         { 
             href: route('siam'), 
+            routeName: 'siam',
             label: 'SIAM',
             icon: (
                 <svg
@@ -138,6 +157,7 @@ export default function Header() {
         },
         { 
             href: route('tpsmi'), 
+            routeName: 'tpsmi',
             label: 'TPSMI',
             icon: (
                 <svg
@@ -171,6 +191,7 @@ export default function Header() {
         },
         { 
             href: route('top-offroad'), 
+            routeName: 'top-offroad',
             label: 'TOP OFFROAD',
             icon: (
                 <svg
@@ -207,7 +228,8 @@ export default function Header() {
             )
         },
         {
-            href: '#careers',
+            href: route('careers'),
+            routeName: 'careers',
             label: 'CAREERS',
             icon: (
                 <svg
@@ -239,6 +261,39 @@ export default function Header() {
         },
     ];
 
+    const navRef = useRef(null);
+    const linkRefs = useRef([]);
+    const [lineStyle, setLineStyle] = useState({ left: 0, width: 0 });
+
+    const activeIndex = navLinks.findIndex(
+        ({ href, routeName }) =>
+            routeName != null
+                ? currentRoute === routeName
+                : href === '#careers' && url.includes('#careers')
+    );
+
+    useEffect(() => {
+        if (activeIndex === -1) return;
+        const linkEl = linkRefs.current[activeIndex];
+        const navEl = navRef.current;
+        if (!linkEl || !navEl) return;
+        const updateLine = () => {
+            if (typeof window !== 'undefined' && window.matchMedia('(max-width: 767px)').matches) {
+                setLineStyle({ left: 0, width: 0 });
+                return;
+            }
+            const linkRect = linkEl.getBoundingClientRect();
+            const navRect = navEl.getBoundingClientRect();
+            setLineStyle({
+                left: linkRect.left - navRect.left,
+                width: linkRect.width,
+            });
+        };
+        updateLine();
+        window.addEventListener('resize', updateLine);
+        return () => window.removeEventListener('resize', updateLine);
+    }, [activeIndex, currentRoute, url]);
+
     return (
         <>
         <header
@@ -254,9 +309,9 @@ export default function Header() {
             <div className="bg-[linear-gradient(to_right,_rgb(163,163,163)_0%,_rgb(209,213,219)_18%,_white_26%,_white_100%)] border-b border-gray-200">
                 <div className="mx-auto flex max-w-7xl items-center px-6 py-2">
                     <Link href="/">
-                        <img 
-                            src="/Sundialogo.png" 
-                            alt="Sundia Logo" 
+                        <img
+                            src={sundia?.logo_path ?? '/Sundialogo.png'}
+                            alt="Sundia Logo"
                             className="h-16 w-auto"
                         />
                     </Link>
@@ -266,7 +321,7 @@ export default function Header() {
             {/* Red Navigation Bar with Curved Left Edge */}
             <div className="absolute right-0 top-11 w-full flex justify-end pointer-events-none">
                 <div
-                    className="relative w-[82%] h-[73px] pointer-events-auto"
+                    className="relative h-[73px] w-1/2 md:w-[68%] lg:w-[72%] pointer-events-auto"
                 >
                     {/* SVG background that draws the slanted red bar with curved left edge */}
                     <svg
@@ -283,24 +338,28 @@ export default function Header() {
                     </svg>
 
                     {/* Nav content on top of the shape */}
-                    <div className="relative z-10 flex h-full items-center justify-end pr-12">
-                        <nav className="flex items-center gap-6 font-sans">
-                            {navLinks.map(({ href, label, icon }) => {
-                                const isHomeLink = href === route('home');
+                    <div className="relative z-10 flex h-full items-center justify-end pr-4 md:pr-12">
+                        <nav
+                            ref={navRef}
+                            className="relative hidden items-center gap-6 font-sans md:flex"
+                            aria-label="Main"
+                        >
+                            {navLinks.map(({ href, label, icon, routeName }, i) => {
                                 const isActive =
-                                    href === route('home')
-                                        ? url === '/'
-                                        : url.startsWith(href);
+                                    routeName != null
+                                        ? currentRoute === routeName
+                                        : href === '#careers' && url.includes('#careers');
 
                                 return (
                                     <Link
                                         key={href}
+                                        ref={(el) => (linkRefs.current[i] = el)}
                                         href={href}
                                         className={
-                                            'flex items-center gap-2 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] transition ' +
+                                            'group relative flex items-center gap-2 px-4 py-2 pb-3 text-xs font-semibold uppercase tracking-[0.18em] transition-all duration-300 ease-in-out ' +
                                             (isActive
-                                                ? 'text-white bg-white/15 rounded-full shadow-sm'
-                                                : 'text-white/90 hover:text-white hover:bg-white/10 rounded-full')
+                                                ? 'text-white'
+                                                : 'text-white/90 hover:text-white')
                                         }
                                     >
                                         {icon}
@@ -308,11 +367,91 @@ export default function Header() {
                                     </Link>
                                 );
                             })}
+                            {/* Single sliding underline — smooth transition when switching nav items */}
+                            <span
+                                className="pointer-events-none absolute bottom-1 h-1 rounded-full bg-white"
+                                style={{
+                                    left: lineStyle.left,
+                                    width: lineStyle.width,
+                                    transition: 'left 0.80s cubic-bezier(0.4, 0, 0.2, 1), width 0.35s cubic-bezier(0.4, 0, 0.2, 1)',
+                                }}
+                                aria-hidden
+                            />
                         </nav>
+
+                        <button
+                            type="button"
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                setMobileNavOpen((open) => !open);
+                            }}
+                            className="relative z-20 flex h-11 w-11 shrink-0 items-center justify-center rounded-md text-white md:hidden"
+                            aria-expanded={mobileNavOpen}
+                            aria-controls="mobile-nav-menu"
+                            aria-label={mobileNavOpen ? 'Close menu' : 'Open menu'}
+                        >
+                            <span className="sr-only">{mobileNavOpen ? 'Close menu' : 'Open menu'}</span>
+                            {mobileNavOpen ? (
+                                <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} aria-hidden>
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            ) : (
+                                <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} aria-hidden>
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+                                </svg>
+                            )}
+                        </button>
                     </div>
                 </div>
             </div>
         </header>
+
+        {/* Mobile menu backdrop + panel (below md) */}
+        {mobileNavOpen ? (
+            <button
+                type="button"
+                className="fixed inset-0 z-[99] bg-black/40 md:hidden"
+                aria-label="Close menu"
+                onClick={() => setMobileNavOpen(false)}
+            />
+        ) : null}
+        <nav
+            id="mobile-nav-menu"
+            className={
+                'fixed left-0 right-0 z-[101] overflow-y-auto border-t border-white/20 shadow-lg transition-[max-height,opacity] duration-300 ease-out md:hidden ' +
+                (mobileNavOpen
+                    ? 'max-h-[min(70vh,calc(100vh-7.5rem))] opacity-100'
+                    : 'pointer-events-none max-h-0 opacity-0')
+            }
+            style={{ top: '120px', backgroundColor: navBarColor }}
+            aria-hidden={!mobileNavOpen}
+            aria-label="Mobile navigation"
+        >
+            <ul className="flex flex-col py-2">
+                {navLinks.map(({ href, label, icon, routeName }) => {
+                    const isActive =
+                        routeName != null
+                            ? currentRoute === routeName
+                            : href === '#careers' && url.includes('#careers');
+                    return (
+                        <li key={href}>
+                            <Link
+                                href={href}
+                                onClick={(e) => e.stopPropagation()}
+                                className={
+                                    'flex items-center gap-3 px-6 py-4 text-sm font-semibold uppercase tracking-[0.18em] transition-colors ' +
+                                    (isActive ? 'text-white' : 'text-white/90 active:bg-white/10')
+                                }
+                            >
+                                <span className="shrink-0 opacity-90">{icon}</span>
+                                {label}
+                            </Link>
+                        </li>
+                    );
+                })}
+            </ul>
+        </nav>
+
         {/* Spacer so page content is not hidden under fixed header (logo bar ~80px + nav bar ~73px) */}
         <div className="h-[120px] shrink-0" aria-hidden="true" />
         </>

@@ -28,8 +28,7 @@ return [
     |
     */
 
-    // Use path relative to this config file so compiled views always use the real project path
-    // (avoids D:\... when app base path is wrong and tempnam() fallback errors)
+    // Use path relative to project root (avoids wrong drive / tempnam issues on some setups)
     'compiled' => env(
         'VIEW_COMPILED_PATH',
         dirname(__DIR__) . DIRECTORY_SEPARATOR . 'storage' . DIRECTORY_SEPARATOR . 'framework' . DIRECTORY_SEPARATOR . 'views'
