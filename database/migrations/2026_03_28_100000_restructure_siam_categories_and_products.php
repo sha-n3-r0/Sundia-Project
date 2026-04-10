@@ -39,7 +39,10 @@ return new class extends Migration
                 $table->boolean('is_active')->default(true);
                 $table->timestamps();
 
-                $table->index(['siam_product_category_id', 'is_active', 'display_order', 'id']);
+                $table->index(
+                    ['siam_product_category_id', 'is_active', 'display_order', 'id'],
+                    'scp_short_idx'
+                );
             });
         }
 
