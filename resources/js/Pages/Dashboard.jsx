@@ -1,8 +1,10 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import ProfileModal from '@/Components/ProfileModal';
+import Modal from '@/Components/Modal';
 import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
 import { useEffect, useRef, useState } from 'react';
 import TeamMemberCardPreview from '@/Pages/Admin/TeamMembers/TeamMemberCardPreview';
+import { publicAssetUrl } from '@/utils/publicAssetUrl';
 
 function emptyCareersCultureForm() {
     return {
@@ -30,9 +32,16 @@ function emptyCareersJobForm() {
 
 export default function Dashboard() {
     const { props } = usePage();
+    const [backgroundPreviews, setBackgroundPreviews] = useState({});
     const [showProfileModal, setShowProfileModal] = useState(false);
     const [adminTopoffroadProductCategory, setAdminTopoffroadProductCategory] = useState('car-accessories');
     const profileButtonRef = useRef(null);
+    const [showSavingPopup, setShowSavingPopup] = useState(false);
+    const [savingPopupLabel, setSavingPopupLabel] = useState('Saving…');
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+    const [deleteConfirmTitle, setDeleteConfirmTitle] = useState('Delete item?');
+    const [deleteConfirmBody, setDeleteConfirmBody] = useState('This action cannot be undone.');
+    const deleteConfirmActionRef = useRef(null);
     const sundia = props.sundia;
     const siam = props.siam;
     const tpsmi = props.tpsmi;
@@ -44,10 +53,13 @@ export default function Dashboard() {
     const contactInfos = props.contactInfos ?? [];
     const upcomingEventsFromDb = props.upcomingEvents ?? [];
     const siamProductCategories = props.siamProductCategories ?? [];
+    const serviceCards = props.serviceCards ?? [];
     const tpsmiProducts = props.tpsmiProducts ?? [];
+    const vacuumformedplastics = props.vacuumformedplastics ?? [];
     const topoffroadProducts = props.topoffroadProducts ?? [];
     const careersCultureCards = props.careersCultureCards ?? [];
     const careersJobs = props.careersJobs ?? [];
+    const backgroundPictures = props.backgroundPictures ?? {};
     const careersJobIconOptions = props.careersJobIconOptions ?? [];
     const flashLogoSuccess = props?.flash?.success_logo;
     const flashStatsSuccess = props?.flash?.success_stats;
@@ -66,8 +78,51 @@ export default function Dashboard() {
     const flashSiamProductCategorySuccess = props?.flash?.success_siam_product_category;
     const flashSiamCategoryProductSuccess = props?.flash?.success_siam_category_product;
     const flashTpsmiProductSuccess = props?.flash?.success_tpsmi_product;
+    const flashVacuumformedplasticSuccess = props?.flash?.success_vacuumformedplastic;
     const flashTopoffroadProductSuccess = props?.flash?.success_topoffroad_product;
     const flashCareersSuccess = props?.flash?.success_careers;
+    const flashBackgroundSuccess = props?.flash?.success_background;
+
+    const openDeleteConfirm = ({ title, body, onConfirm }) => {
+        deleteConfirmActionRef.current = onConfirm;
+        setDeleteConfirmTitle(title || 'Delete item?');
+        setDeleteConfirmBody(body || 'This action cannot be undone.');
+        setShowDeleteConfirm(true);
+    };
+
+    const closeDeleteConfirm = () => {
+        setShowDeleteConfirm(false);
+        deleteConfirmActionRef.current = null;
+    };
+
+    useEffect(() => {
+        const unsubStart = router.on('start', (event) => {
+            const method = event?.detail?.visit?.method?.toLowerCase?.();
+            if (!method || method === 'get') return;
+            setSavingPopupLabel(method === 'delete' ? 'Deleting…' : 'Saving…');
+            setShowSavingPopup(true);
+        });
+
+        const unsubFinish = router.on('finish', (event) => {
+            const method = event?.detail?.visit?.method?.toLowerCase?.();
+            if (!method || method === 'get') return;
+            setShowSavingPopup(false);
+        });
+
+        return () => {
+            if (typeof unsubStart === 'function') unsubStart();
+            if (typeof unsubFinish === 'function') unsubFinish();
+        };
+    }, []);
+
+    useEffect(() => {
+        return () => {
+            Object.values(backgroundPreviews).forEach((url) => {
+                if (typeof url === 'string' && url.startsWith('blob:')) URL.revokeObjectURL(url);
+            });
+        };
+    }, [backgroundPreviews]);
+
     const defaultMissionText =
         "Commits to provide solutions to every clients' need through continual improvement in every aspect of its business, efficient approach to Research and Development, and maximize use of its network while continuously expanding and building bridges among and beyond the industries it caters.";
     const defaultVisionText =
@@ -161,6 +216,23 @@ export default function Dashboard() {
     ];
 
     const [selectedCompany, setSelectedCompany] = useState(companies[0]);
+
+    useEffect(() => {
+        if (typeof window === 'undefined') return;
+        const queryCompany = new URLSearchParams(window.location.search).get('company');
+        if (!queryCompany) return;
+        const found = companies.find((company) => company.name === queryCompany);
+        if (found) {
+            setSelectedCompany(found);
+        }
+    }, []);
+
+    useEffect(() => {
+        if (typeof window === 'undefined' || !selectedCompany?.name) return;
+        const url = new URL(window.location.href);
+        url.searchParams.set('company', selectedCompany.name);
+        window.history.replaceState(null, '', url.toString());
+    }, [selectedCompany]);
 
     const defaultSubsidiariesPreview = [
         {
@@ -257,6 +329,7 @@ export default function Dashboard() {
     const previewSiamCategoriesRaw = siamProductCategories;
 
     const previewTpsmiProductsRaw = tpsmiProducts;
+    const previewVacuumformedplasticsRaw = vacuumformedplastics;
     const topoffroadProductCategories = [
         { id: 'car-accessories', label: 'Car Accessories' },
         { id: 'mags-tires', label: 'Mags & Tires' },
@@ -270,10 +343,13 @@ export default function Dashboard() {
     const previewTopoffroadProductsRaw = filteredTopoffroadProductsForAdmin;
     const [dismissedSiamPreviewKeys, setDismissedSiamPreviewKeys] = useState([]);
     const [dismissedTpsmiPreviewKeys, setDismissedTpsmiPreviewKeys] = useState([]);
+    const [dismissedVacuumformedplasticPreviewKeys, setDismissedVacuumformedplasticPreviewKeys] = useState([]);
     const [dismissedTopoffroadPreviewKeys, setDismissedTopoffroadPreviewKeys] = useState([]);
     const siamCategoryPreviewKey = (c, idx) =>
         c.id ? `id:${c.id}` : `preview:${c.name ?? ''}:${c.display_order ?? idx}`;
     const tpsmiPreviewKey = (p, idx) =>
+        p.id ? `id:${p.id}` : `preview:${p.title ?? ''}:${p.display_order ?? idx}`;
+    const vacuumformedplasticPreviewKey = (p, idx) =>
         p.id ? `id:${p.id}` : `preview:${p.title ?? ''}:${p.display_order ?? idx}`;
     const topoffroadPreviewKey = (p, idx) =>
         p.id
@@ -284,6 +360,9 @@ export default function Dashboard() {
     );
     const previewTpsmiProducts = previewTpsmiProductsRaw.filter(
         (p, idx) => !dismissedTpsmiPreviewKeys.includes(tpsmiPreviewKey(p, idx))
+    );
+    const previewVacuumformedplastics = previewVacuumformedplasticsRaw.filter(
+        (p, idx) => !dismissedVacuumformedplasticPreviewKeys.includes(vacuumformedplasticPreviewKey(p, idx))
     );
     const previewTopoffroadProducts = previewTopoffroadProductsRaw.filter(
         (p, idx) => !dismissedTopoffroadPreviewKeys.includes(topoffroadPreviewKey(p, idx))
@@ -350,7 +429,61 @@ export default function Dashboard() {
         is_active: true,
     });
 
+    const teamMemberProfileObjectUrlRef = useRef(null);
+    const [teamMemberProfilePreviewUrl, setTeamMemberProfilePreviewUrl] = useState('');
+
+    const revokeTeamMemberProfileObjectUrl = () => {
+        if (teamMemberProfileObjectUrlRef.current) {
+            URL.revokeObjectURL(teamMemberProfileObjectUrlRef.current);
+            teamMemberProfileObjectUrlRef.current = null;
+        }
+    };
+
+    const setTeamMemberProfileImageFile = (file) => {
+        revokeTeamMemberProfileObjectUrl();
+        if (file) {
+            const url = URL.createObjectURL(file);
+            teamMemberProfileObjectUrlRef.current = url;
+            setTeamMemberProfilePreviewUrl(url);
+        } else {
+            setTeamMemberProfilePreviewUrl('');
+        }
+        teamMemberForm.setData('profile_image_file', file);
+    };
+
+    const [editingTrustedCompany, setEditingTrustedCompany] = useState(null);
+    const trustedCompanyForm = useForm({
+        name: '',
+        logo_file: null,
+        display_order: 0,
+        is_active: true,
+    });
+
+    const trustedCompanyLogoObjectUrlRef = useRef(null);
+    const [trustedCompanyLogoPreviewUrl, setTrustedCompanyLogoPreviewUrl] = useState('');
+
+    const revokeTrustedCompanyLogoObjectUrl = () => {
+        if (trustedCompanyLogoObjectUrlRef.current) {
+            URL.revokeObjectURL(trustedCompanyLogoObjectUrlRef.current);
+            trustedCompanyLogoObjectUrlRef.current = null;
+        }
+    };
+
+    const setTrustedCompanyLogoFile = (file) => {
+        revokeTrustedCompanyLogoObjectUrl();
+        if (file) {
+            const url = URL.createObjectURL(file);
+            trustedCompanyLogoObjectUrlRef.current = url;
+            setTrustedCompanyLogoPreviewUrl(url);
+        } else {
+            setTrustedCompanyLogoPreviewUrl('');
+        }
+        trustedCompanyForm.setData('logo_file', file);
+    };
+
     useEffect(() => {
+        revokeTeamMemberProfileObjectUrl();
+        setTeamMemberProfilePreviewUrl('');
         if (!editingTeamMember) {
             teamMemberForm.reset();
             teamMemberForm.setData('display_order', 0);
@@ -377,20 +510,28 @@ export default function Dashboard() {
         const options = { forceFormData: true, preserveScroll: true };
 
         if (!editingTeamMember?.id) {
+            teamMemberForm.transform((data) => {
+                const next = { ...data };
+                if (!next.profile_image_file) delete next.profile_image_file;
+                return next;
+            });
             teamMemberForm.post(route('team-members.store'), options);
             return;
         }
 
-        teamMemberForm.transform((data) => ({
-            name: data.name,
-            title: data.title,
-            company: data.company,
-            company_logo: data.company_logo,
-            profile_image_file: data.profile_image_file,
-            display_order: data.display_order,
-            is_active: data.is_active,
-            _method: 'put',
-        }));
+        teamMemberForm.transform((data) => {
+            const next = {
+                name: data.name,
+                title: data.title,
+                company: data.company,
+                company_logo: data.company_logo,
+                display_order: data.display_order,
+                is_active: data.is_active,
+                _method: 'put',
+            };
+            if (data.profile_image_file) next.profile_image_file = data.profile_image_file;
+            return next;
+        });
         teamMemberForm.post(
             route('team-members.update', editingTeamMember.id),
             options,
@@ -398,19 +539,40 @@ export default function Dashboard() {
     };
 
     const destroyTeamMember = (id) => {
-        if (!confirm('Delete this team member?')) return;
-        router.delete(route('team-members.destroy', id), { preserveScroll: true });
+        openDeleteConfirm({
+            title: 'Delete team member?',
+            body: 'This will permanently remove this team member.',
+            onConfirm: () => router.delete(route('team-members.destroy', id), { preserveScroll: true }),
+        });
     };
 
-    const [editingTrustedCompany, setEditingTrustedCompany] = useState(null);
-    const trustedCompanyForm = useForm({
-        name: '',
-        logo_file: null,
-        display_order: 0,
-        is_active: true,
-    });
+    useEffect(() => {
+        if (!flashTeamMemberSuccess) return;
+        revokeTeamMemberProfileObjectUrl();
+        setTeamMemberProfilePreviewUrl('');
+        teamMemberForm.setData('profile_image_file', null);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [flashTeamMemberSuccess]);
 
     useEffect(() => {
+        if (!flashTrustedCompanySuccess) return;
+        revokeTrustedCompanyLogoObjectUrl();
+        setTrustedCompanyLogoPreviewUrl('');
+        trustedCompanyForm.setData('logo_file', null);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [flashTrustedCompanySuccess]);
+
+    useEffect(() => {
+        return () => {
+            revokeTeamMemberProfileObjectUrl();
+            revokeTrustedCompanyLogoObjectUrl();
+        };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    useEffect(() => {
+        revokeTrustedCompanyLogoObjectUrl();
+        setTrustedCompanyLogoPreviewUrl('');
         if (!editingTrustedCompany) {
             trustedCompanyForm.reset();
             trustedCompanyForm.setData('display_order', 0);
@@ -434,17 +596,25 @@ export default function Dashboard() {
         const options = { forceFormData: true, preserveScroll: true };
 
         if (!editingTrustedCompany?.id) {
+            trustedCompanyForm.transform((data) => {
+                const next = { ...data };
+                if (!next.logo_file) delete next.logo_file;
+                return next;
+            });
             trustedCompanyForm.post(route('trusted-companies.store'), options);
             return;
         }
 
-        trustedCompanyForm.transform((data) => ({
-            name: data.name,
-            logo_file: data.logo_file,
-            display_order: data.display_order,
-            is_active: data.is_active,
-            _method: 'put',
-        }));
+        trustedCompanyForm.transform((data) => {
+            const next = {
+                name: data.name,
+                display_order: data.display_order,
+                is_active: data.is_active,
+                _method: 'put',
+            };
+            if (data.logo_file) next.logo_file = data.logo_file;
+            return next;
+        });
 
         trustedCompanyForm.post(
             route('trusted-companies.update', editingTrustedCompany.id),
@@ -453,8 +623,12 @@ export default function Dashboard() {
     };
 
     const destroyTrustedCompany = (id) => {
-        if (!confirm('Delete this trusted company?')) return;
-        router.delete(route('trusted-companies.destroy', id), { preserveScroll: true });
+        openDeleteConfirm({
+            title: 'Delete trusted company?',
+            body: 'This will permanently remove this trusted company.',
+            onConfirm: () =>
+                router.delete(route('trusted-companies.destroy', id), { preserveScroll: true }),
+        });
     };
 
     const [editingContactInfo, setEditingContactInfo] = useState(null);
@@ -507,8 +681,11 @@ export default function Dashboard() {
     };
 
     const destroyContactInfo = (id) => {
-        if (!confirm('Delete this contact item?')) return;
-        router.delete(route('contact-infos.destroy', id), { preserveScroll: true });
+        openDeleteConfirm({
+            title: 'Delete contact item?',
+            body: 'This will permanently remove this contact item.',
+            onConfirm: () => router.delete(route('contact-infos.destroy', id), { preserveScroll: true }),
+        });
     };
 
     const [editingUpcomingEvent, setEditingUpcomingEvent] = useState(null);
@@ -561,8 +738,12 @@ export default function Dashboard() {
     };
 
     const destroyUpcomingEvent = (id) => {
-        if (!confirm('Delete this upcoming event?')) return;
-        router.delete(route('upcoming-events.destroy', id), { preserveScroll: true });
+        openDeleteConfirm({
+            title: 'Delete upcoming event?',
+            body: 'This will permanently remove this upcoming event.',
+            onConfirm: () =>
+                router.delete(route('upcoming-events.destroy', id), { preserveScroll: true }),
+        });
     };
 
     const [editingSiamCategory, setEditingSiamCategory] = useState(null);
@@ -666,30 +847,37 @@ export default function Dashboard() {
 
         if (!editingSiamCategory?.id) {
             siamCategoryForm.transform((data) => {
-                if (!Object.prototype.hasOwnProperty.call(data, '_method')) return data;
                 const next = { ...data };
                 delete next._method;
+                if (!next.image_file) delete next.image_file;
                 return next;
             });
             siamCategoryForm.post(route('siam-product-categories.store'), options);
             return;
         }
 
-        siamCategoryForm.transform((data) => ({
-            name: data.name,
-            card_description: data.card_description,
-            modal_short_description: data.modal_short_description,
-            image_file: data.image_file,
-            display_order: data.display_order,
-            is_active: data.is_active,
-            _method: 'put',
-        }));
+        siamCategoryForm.transform((data) => {
+            const next = {
+                name: data.name,
+                card_description: data.card_description,
+                modal_short_description: data.modal_short_description,
+                display_order: data.display_order,
+                is_active: data.is_active,
+                _method: 'put',
+            };
+            if (data.image_file) next.image_file = data.image_file;
+            return next;
+        });
         siamCategoryForm.post(route('siam-product-categories.update', editingSiamCategory.id), options);
     };
 
     const destroySiamCategory = (id) => {
-        if (!confirm('Delete this SIAM category and all its products?')) return;
-        router.delete(route('siam-product-categories.destroy', id), { preserveScroll: true });
+        openDeleteConfirm({
+            title: 'Delete SIAM category?',
+            body: 'This will delete the category and all its products. This action cannot be undone.',
+            onConfirm: () =>
+                router.delete(route('siam-product-categories.destroy', id), { preserveScroll: true }),
+        });
     };
 
     const submitSiamCategoryProduct = (e) => {
@@ -698,24 +886,27 @@ export default function Dashboard() {
 
         if (!editingSiamCategoryProduct?.id) {
             siamCategoryProductForm.transform((data) => {
-                if (!Object.prototype.hasOwnProperty.call(data, '_method')) return data;
                 const next = { ...data };
                 delete next._method;
+                if (!next.image_file) delete next.image_file;
                 return next;
             });
             siamCategoryProductForm.post(route('siam-category-products.store'), options);
             return;
         }
 
-        siamCategoryProductForm.transform((data) => ({
-            siam_product_category_id: data.siam_product_category_id,
-            title: data.title,
-            description: data.description,
-            image_file: data.image_file,
-            display_order: data.display_order,
-            is_active: data.is_active,
-            _method: 'put',
-        }));
+        siamCategoryProductForm.transform((data) => {
+            const next = {
+                siam_product_category_id: data.siam_product_category_id,
+                title: data.title,
+                description: data.description,
+                display_order: data.display_order,
+                is_active: data.is_active,
+                _method: 'put',
+            };
+            if (data.image_file) next.image_file = data.image_file;
+            return next;
+        });
         siamCategoryProductForm.post(
             route('siam-category-products.update', editingSiamCategoryProduct.id),
             options
@@ -723,17 +914,26 @@ export default function Dashboard() {
     };
 
     const destroySiamCategoryProduct = (id) => {
-        if (!confirm('Delete this product from the category?')) return;
-        router.delete(route('siam-category-products.destroy', id), { preserveScroll: true });
+        openDeleteConfirm({
+            title: 'Delete product?',
+            body: 'This will permanently remove this product from the category.',
+            onConfirm: () =>
+                router.delete(route('siam-category-products.destroy', id), { preserveScroll: true }),
+        });
     };
 
     const removeSiamPreviewCategory = (category, idx) => {
         const key = siamCategoryPreviewKey(category, idx);
-        if (!confirm('Remove this preview SIAM category from the list?')) return;
-        setDismissedSiamPreviewKeys((prev) => [...prev, key]);
-        if (editingSiamCategory && siamCategoryPreviewKey(editingSiamCategory, idx) === key) {
-            setEditingSiamCategory(null);
-        }
+        openDeleteConfirm({
+            title: 'Remove preview item?',
+            body: 'This only removes the preview item from the list (no database changes).',
+            onConfirm: () => {
+                setDismissedSiamPreviewKeys((prev) => [...prev, key]);
+                if (editingSiamCategory && siamCategoryPreviewKey(editingSiamCategory, idx) === key) {
+                    setEditingSiamCategory(null);
+                }
+            },
+        });
     };
 
     const adminSiamCategoryProducts =
@@ -783,33 +983,143 @@ export default function Dashboard() {
         const options = { forceFormData: true, preserveScroll: true };
 
         if (!editingTpsmiProduct?.id) {
+            tpsmiProductForm.transform((data) => {
+                const next = { ...data };
+                if (!next.image_file) delete next.image_file;
+                return next;
+            });
             tpsmiProductForm.post(route('tpsmi-products.store'), options);
             return;
         }
 
-        tpsmiProductForm.transform((data) => ({
-            title: data.title,
-            description: data.description,
-            image_file: data.image_file,
-            display_order: data.display_order,
-            is_active: data.is_active,
-            _method: 'put',
-        }));
+        tpsmiProductForm.transform((data) => {
+            const next = {
+                title: data.title,
+                description: data.description,
+                display_order: data.display_order,
+                is_active: data.is_active,
+                _method: 'put',
+            };
+            if (data.image_file) next.image_file = data.image_file;
+            return next;
+        });
         tpsmiProductForm.post(route('tpsmi-products.update', editingTpsmiProduct.id), options);
     };
 
     const destroyTpsmiProduct = (id) => {
-        if (!confirm('Delete this TPSMI product?')) return;
-        router.delete(route('tpsmi-products.destroy', id), { preserveScroll: true });
+        openDeleteConfirm({
+            title: 'Delete TPSMI product?',
+            body: 'This will permanently remove this product.',
+            onConfirm: () => router.delete(route('tpsmi-products.destroy', id), { preserveScroll: true }),
+        });
     };
     const removeTpsmiPreviewProduct = (product, idx) => {
         const key = tpsmiPreviewKey(product, idx);
-        if (!confirm('Remove this preview TPSMI product from the list?')) return;
-        setDismissedTpsmiPreviewKeys((prev) => [...prev, key]);
-        if (editingTpsmiProduct && tpsmiPreviewKey(editingTpsmiProduct, idx) === key) {
-            setEditingTpsmiProduct(null);
-        }
+        openDeleteConfirm({
+            title: 'Remove preview item?',
+            body: 'This only removes the preview item from the list (no database changes).',
+            onConfirm: () => {
+                setDismissedTpsmiPreviewKeys((prev) => [...prev, key]);
+                if (editingTpsmiProduct && tpsmiPreviewKey(editingTpsmiProduct, idx) === key) {
+                    setEditingTpsmiProduct(null);
+                }
+            },
+        });
     };
+
+    const [editingVacuumformedplastic, setEditingVacuumformedplastic] = useState(null);
+    const vacuumformedplasticForm = useForm({
+        title: '',
+        image_file: null,
+        display_order: 0,
+        is_active: true,
+    });
+    const [vacuumformedplasticImagePreview, setVacuumformedplasticImagePreview] = useState(null);
+
+    useEffect(() => {
+        if (!editingVacuumformedplastic) {
+            vacuumformedplasticForm.reset();
+            vacuumformedplasticForm.setData('display_order', 0);
+            vacuumformedplasticForm.setData('is_active', true);
+            vacuumformedplasticForm.clearErrors();
+            setVacuumformedplasticImagePreview(null);
+            return;
+        }
+
+        vacuumformedplasticForm.setData({
+            title: editingVacuumformedplastic.title ?? '',
+            image_file: null,
+            display_order: editingVacuumformedplastic.display_order ?? 0,
+            is_active: editingVacuumformedplastic.is_active ?? true,
+        });
+        vacuumformedplasticForm.clearErrors();
+        setVacuumformedplasticImagePreview(null);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [editingVacuumformedplastic]);
+
+    useEffect(() => {
+        if (!vacuumformedplasticForm.data.image_file) return;
+        const url = URL.createObjectURL(vacuumformedplasticForm.data.image_file);
+        setVacuumformedplasticImagePreview(url);
+        return () => URL.revokeObjectURL(url);
+    }, [vacuumformedplasticForm.data.image_file]);
+
+    const submitVacuumformedplastic = (e) => {
+        e.preventDefault();
+        const options = { forceFormData: true, preserveScroll: true };
+
+        if (!editingVacuumformedplastic?.id) {
+            vacuumformedplasticForm.transform((data) => {
+                const next = { ...data };
+                if (!next.image_file) delete next.image_file;
+                return next;
+            });
+            vacuumformedplasticForm.post(route('vacuumformedplastics.store'), options);
+            return;
+        }
+
+        vacuumformedplasticForm.transform((data) => {
+            const next = {
+                title: data.title,
+                display_order: data.display_order,
+                is_active: data.is_active,
+                _method: 'put',
+            };
+            if (data.image_file) next.image_file = data.image_file;
+            return next;
+        });
+        vacuumformedplasticForm.post(
+            route('vacuumformedplastics.update', editingVacuumformedplastic.id),
+            options
+        );
+    };
+
+    const destroyVacuumformedplastic = (id) => {
+        openDeleteConfirm({
+            title: 'Delete vacuum formed picture?',
+            body: 'This will permanently remove this picture.',
+            onConfirm: () =>
+                router.delete(route('vacuumformedplastics.destroy', id), { preserveScroll: true }),
+        });
+    };
+
+    const removeVacuumformedplasticPreviewItem = (item, idx) => {
+        const key = vacuumformedplasticPreviewKey(item, idx);
+        openDeleteConfirm({
+            title: 'Remove preview item?',
+            body: 'This only removes the preview item from the list (no database changes).',
+            onConfirm: () => {
+                setDismissedVacuumformedplasticPreviewKeys((prev) => [...prev, key]);
+                if (
+                    editingVacuumformedplastic &&
+                    vacuumformedplasticPreviewKey(editingVacuumformedplastic, idx) === key
+                ) {
+                    setEditingVacuumformedplastic(null);
+                }
+            },
+        });
+    };
+
     const [editingTopoffroadProduct, setEditingTopoffroadProduct] = useState(null);
     const topoffroadProductForm = useForm({
         category: 'car-accessories',
@@ -863,41 +1173,59 @@ export default function Dashboard() {
         const options = { forceFormData: true, preserveScroll: true };
 
         if (!editingTopoffroadProduct?.id) {
+            topoffroadProductForm.transform((data) => {
+                const next = { ...data };
+                if (!next.image_file) delete next.image_file;
+                return next;
+            });
             topoffroadProductForm.post(route('topoffroad-products.store'), options);
             return;
         }
 
-        topoffroadProductForm.transform((data) => ({
-            category: data.category,
-            title: data.title,
-            description: data.description,
-            image_file: data.image_file,
-            display_order: data.display_order,
-            is_active: data.is_active,
-            _method: 'put',
-        }));
+        topoffroadProductForm.transform((data) => {
+            const next = {
+                category: data.category,
+                title: data.title,
+                description: data.description,
+                display_order: data.display_order,
+                is_active: data.is_active,
+                _method: 'put',
+            };
+            if (data.image_file) next.image_file = data.image_file;
+            return next;
+        });
         topoffroadProductForm.post(route('topoffroad-products.update', editingTopoffroadProduct.id), options);
     };
 
     const destroyTopoffroadProduct = (id) => {
-        if (!confirm('Delete this TOP OFFROAD product?')) return;
-        router.delete(route('topoffroad-products.destroy', id), { preserveScroll: true });
+        openDeleteConfirm({
+            title: 'Delete TOP OFFROAD product?',
+            body: 'This will permanently remove this product.',
+            onConfirm: () =>
+                router.delete(route('topoffroad-products.destroy', id), { preserveScroll: true }),
+        });
     };
     const removeTopoffroadPreviewProduct = (product, idx) => {
         const key = topoffroadPreviewKey(product, idx);
-        if (!confirm('Remove this preview TOP OFFROAD product from the list?')) return;
-        setDismissedTopoffroadPreviewKeys((prev) => [...prev, key]);
-        if (
-            editingTopoffroadProduct &&
-            topoffroadPreviewKey(editingTopoffroadProduct, idx) === key
-        ) {
-            setEditingTopoffroadProduct(null);
-        }
+        openDeleteConfirm({
+            title: 'Remove preview item?',
+            body: 'This only removes the preview item from the list (no database changes).',
+            onConfirm: () => {
+                setDismissedTopoffroadPreviewKeys((prev) => [...prev, key]);
+                if (
+                    editingTopoffroadProduct &&
+                    topoffroadPreviewKey(editingTopoffroadProduct, idx) === key
+                ) {
+                    setEditingTopoffroadProduct(null);
+                }
+            },
+        });
     };
 
     const logoForm = useForm({
         logo: null,
     });
+    const [logoPreviewUrl, setLogoPreviewUrl] = useState(null);
 
     const statsForm = useForm({
         stats_title_line1: sundiaContent?.stats_title_line1 ?? 'WHAT',
@@ -1007,6 +1335,15 @@ export default function Dashboard() {
     const careersCultureForm = useForm(emptyCareersCultureForm());
     const careersJobForm = useForm(emptyCareersJobForm());
 
+    const [editingServiceCard, setEditingServiceCard] = useState(null);
+    const serviceCardForm = useForm({
+        image_file: null,
+        alt_text: '',
+        sort_order: 0,
+        is_active: true,
+    });
+    const [serviceCardPreviewUrl, setServiceCardPreviewUrl] = useState(null);
+
     const [videoFilePreviewUrl, setVideoFilePreviewUrl] = useState(null);
     const [thumbFilePreviewUrl, setThumbFilePreviewUrl] = useState(null);
     const [siamVideoFilePreviewUrl, setSiamVideoFilePreviewUrl] = useState(null);
@@ -1017,6 +1354,7 @@ export default function Dashboard() {
     const [topoffroadThumbFilePreviewUrl, setTopoffroadThumbFilePreviewUrl] = useState(null);
     const [subsidiaryLogoPreview, setSubsidiaryLogoPreview] = useState(null);
     const [subsidiaryBgPreview, setSubsidiaryBgPreview] = useState(null);
+    const [careersCultureImagePreviewUrl, setCareersCultureImagePreviewUrl] = useState(null);
 
     useEffect(() => {
         if (!videoForm.data.video_file) return;
@@ -1087,6 +1425,26 @@ export default function Dashboard() {
         setSubsidiaryBgPreview(url);
         return () => URL.revokeObjectURL(url);
     }, [subsidiaryForm.data.background_file]);
+
+    useEffect(() => {
+        if (!careersCultureForm.data.image_file) {
+            setCareersCultureImagePreviewUrl(null);
+            return;
+        }
+        const url = URL.createObjectURL(careersCultureForm.data.image_file);
+        setCareersCultureImagePreviewUrl(url);
+        return () => URL.revokeObjectURL(url);
+    }, [careersCultureForm.data.image_file]);
+
+    useEffect(() => {
+        if (!logoForm.data.logo) {
+            setLogoPreviewUrl(null);
+            return;
+        }
+        const url = URL.createObjectURL(logoForm.data.logo);
+        setLogoPreviewUrl(url);
+        return () => URL.revokeObjectURL(url);
+    }, [logoForm.data.logo]);
 
     useEffect(() => {
         if (!careersEditingCulture) {
@@ -1333,6 +1691,75 @@ export default function Dashboard() {
         });
     };
 
+    const resetServiceCardForm = () => {
+        setEditingServiceCard(null);
+        serviceCardForm.reset();
+        setServiceCardPreviewUrl(null);
+    };
+
+    const startEditServiceCard = (card) => {
+        setEditingServiceCard(card);
+        serviceCardForm.setData({
+            image_file: null,
+            alt_text: card.alt_text || '',
+            sort_order: card.sort_order ?? 0,
+            is_active: card.is_active,
+        });
+        setServiceCardPreviewUrl(card.image_path || null);
+    };
+
+    const handleServiceCardImageChange = (e) => {
+        const file = e.target.files?.[0] ?? null;
+        serviceCardForm.setData('image_file', file);
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = (event) => setServiceCardPreviewUrl(event.target.result);
+            reader.readAsDataURL(file);
+        }
+    };
+
+    const submitServiceCard = (e) => {
+        e.preventDefault();
+        if (!editingServiceCard && !serviceCardForm.data.image_file) {
+            serviceCardForm.setError('image_file', 'Upload an image first.');
+            return;
+        }
+
+        const options = { forceFormData: true, preserveScroll: true };
+        serviceCardForm.transform((data) => {
+            const payload = {
+                alt_text: data.alt_text,
+                sort_order: data.sort_order,
+                is_active: data.is_active,
+            };
+            if (data.image_file) {
+                payload.image_file = data.image_file;
+            }
+            if (editingServiceCard?.id) {
+                payload._method = 'put';
+            }
+            return payload;
+        });
+
+        if (editingServiceCard?.id) {
+            serviceCardForm.post(route('admin.service-cards.update', editingServiceCard.id), options);
+            return;
+        }
+
+        serviceCardForm.post(route('admin.service-cards.store'), options);
+    };
+
+    const destroyServiceCard = (id) => {
+        openDeleteConfirm({
+            title: 'Delete service card?',
+            body: 'This will permanently remove the card from the SIAM gallery.',
+            onConfirm: () =>
+                router.delete(route('admin.service-cards.destroy', id), {
+                    preserveScroll: true,
+                }),
+        });
+    };
+
     const startCreateSubsidiary = () => {
         setEditingSubsidiary(null);
         subsidiaryForm.setData(emptySubsidiaryFormState);
@@ -1392,22 +1819,35 @@ export default function Dashboard() {
     };
 
     const destroySubsidiary = (id) => {
-        if (!confirm('Delete this subsidiary?')) return;
-        router.delete(`/subsidiaries/${id}`, {
-            preserveScroll: true,
+        openDeleteConfirm({
+            title: 'Delete subsidiary?',
+            body: 'This will permanently remove this subsidiary.',
+            onConfirm: () =>
+                router.delete(`/subsidiaries/${id}`, {
+                    preserveScroll: true,
+                }),
         });
     };
 
     const submitCareersCulture = (e) => {
         e.preventDefault();
         const opts = { forceFormData: true, preserveScroll: true };
-        // Use real PUT for updates — no _method spoofing (avoids lingering transform breaking POST /store).
-        careersCultureForm.transform((data) => data);
+        // forceFormData encodes null files as ""; omit the key so Laravel does not validate a fake "image" field.
+        careersCultureForm.transform((data) => {
+            const next = { ...data };
+            if (!next.image_file) {
+                delete next.image_file;
+            }
+            if (careersEditingCulture?.id) {
+                next._method = 'put';
+            }
+            return next;
+        });
         if (!careersEditingCulture?.id) {
             careersCultureForm.post(route('admin.career-culture-cards.store'), opts);
             return;
         }
-        careersCultureForm.put(
+        careersCultureForm.post(
             route('admin.career-culture-cards.update', careersEditingCulture.id),
             opts,
         );
@@ -1436,13 +1876,21 @@ export default function Dashboard() {
     };
 
     const destroyCareersCulture = (id) => {
-        if (!confirm('Delete this culture card?')) return;
-        router.delete(route('admin.career-culture-cards.destroy', id), { preserveScroll: true });
+        openDeleteConfirm({
+            title: 'Delete culture card?',
+            body: 'This will permanently remove this culture card.',
+            onConfirm: () =>
+                router.delete(route('admin.career-culture-cards.destroy', id), { preserveScroll: true }),
+        });
     };
 
     const destroyCareersJob = (id) => {
-        if (!confirm('Delete this job opening?')) return;
-        router.delete(route('admin.career-jobs.destroy', id), { preserveScroll: true });
+        openDeleteConfirm({
+            title: 'Delete job opening?',
+            body: 'This will permanently remove this job opening.',
+            onConfirm: () =>
+                router.delete(route('admin.career-jobs.destroy', id), { preserveScroll: true }),
+        });
     };
 
     const setCareersResponsibility = (index, value) => {
@@ -1464,26 +1912,106 @@ export default function Dashboard() {
     };
 
     return (
-        <AuthenticatedLayout>
+        <>
             <Head title="Dashboard" />
+
+            <Modal
+                show={showSavingPopup}
+                closeable={false}
+                maxWidth="sm"
+                panelClassName="overflow-hidden"
+                backdropClassName="absolute inset-0 bg-white/80 backdrop-blur-sm"
+            >
+                <div className="p-5">
+                    <div className="flex items-center gap-3">
+                        <div className="h-10 w-10 shrink-0 rounded-xl bg-red-50 ring-1 ring-red-200 flex items-center justify-center">
+                            <div className="h-5 w-5 animate-spin rounded-full border-2 border-red-600 border-t-transparent" />
+                        </div>
+                        <div className="min-w-0">
+                            <div className="text-sm font-semibold text-neutral-900">{savingPopupLabel}</div>
+                            <div className="text-xs text-neutral-600">Please wait, your changes are being processed.</div>
+                        </div>
+                    </div>
+
+                    <div className="mt-4 h-2 w-full overflow-hidden rounded-full bg-neutral-100">
+                        <div className="h-full w-1/2 animate-[dashboardSavingBar_1.1s_ease-in-out_infinite] rounded-full bg-red-600" />
+                    </div>
+                </div>
+            </Modal>
+
+            <Modal
+                show={showDeleteConfirm}
+                onClose={closeDeleteConfirm}
+                maxWidth="sm"
+                panelClassName="overflow-hidden"
+                backdropClassName="absolute inset-0 bg-white/80 backdrop-blur-sm"
+            >
+                <div className="p-5">
+                    <div className="flex items-start gap-3">
+                        <div className="mt-0.5 h-10 w-10 shrink-0 rounded-xl bg-red-50 ring-1 ring-red-200 flex items-center justify-center">
+                            <svg
+                                viewBox="0 0 24 24"
+                                className="h-5 w-5 text-red-600"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                aria-hidden="true"
+                            >
+                                <path d="M12 9v4" />
+                                <path d="M12 17h.01" />
+                                <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+                            </svg>
+                        </div>
+                        <div className="min-w-0">
+                            <div className="text-sm font-semibold text-neutral-900">{deleteConfirmTitle}</div>
+                            <div className="mt-1 text-xs text-neutral-600">{deleteConfirmBody}</div>
+                        </div>
+                    </div>
+
+                    <div className="mt-5 flex items-center justify-end gap-2">
+                        <button
+                            type="button"
+                            className="inline-flex items-center justify-center rounded-lg border border-neutral-200 bg-white px-3 py-2 text-xs font-semibold text-neutral-700 shadow-sm hover:bg-neutral-50"
+                            onClick={closeDeleteConfirm}
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            type="button"
+                            className="inline-flex items-center justify-center rounded-lg bg-red-600 px-3 py-2 text-xs font-semibold text-white shadow-sm hover:bg-red-700"
+                            onClick={() => {
+                                const action = deleteConfirmActionRef.current;
+                                closeDeleteConfirm();
+                                if (typeof action === 'function') action();
+                            }}
+                        >
+                            Delete
+                        </button>
+                    </div>
+                </div>
+            </Modal>
 
             <div className="bg-neutral-50">
                 {/* Keep layout height locked; only main panel scrolls */}
-                <div className="flex h-[calc(100vh-4rem)] overflow-hidden">
+                <div className="flex h-screen overflow-hidden">
                     {/* Sidebar */}
                     <aside className="w-72 shrink-0 bg-white shadow-2xl flex h-full flex-col sticky top-0 overflow-hidden">
-                        <div className="border-b border-neutral-200 px-6 py-6">
+                        <div className="border-b border-red-700/40 bg-gradient-to-r from-red-600 to-red-700 px-6 py-6">
                             <div className="flex items-center gap-3">
-                                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-red-600 to-red-700 shadow-md">
-                                    <span className="text-lg font-extrabold tracking-tight text-white">
-                                        S
-                                    </span>
+                                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white shadow-md ring-1 ring-white/60">
+                                        <img
+                                            src={publicAssetUrl('Slogo.png')}
+                                            alt="Sundia"
+                                            className="h-8 w-8 object-contain"
+                                        />
                                 </div>
                                 <div className="flex flex-col">
-                                    <span className="text-[10px] font-semibold uppercase tracking-[0.25em] text-red-600">
+                                    <span className="text-[10px] font-semibold uppercase tracking-[0.25em] text-red-100">
                                         Sundia Group
                                     </span>
-                                    <span className="text-xs font-medium text-neutral-700">
+                                    <span className="text-xs font-medium text-white/90">
                                         Admin Navigation
                                     </span>
                                 </div>
@@ -1580,7 +2108,7 @@ export default function Dashboard() {
                                 {selectedCompany.name === 'SIAM' && (
                                     <section className="space-y-6 rounded-[3px] bg-neutral-50 p-5 shadow-sm">
                                         {/* "What we do" stats */}
-                                        <div className="rounded-[3px] border border-neutral-200 bg-white p-5">
+                                        <div className="rounded-[3px] border border-neutral-200 bg-white p-5 border-t-2 border-t-red-600 shadow-sm rounded-b-[3px]">
                                             <form onSubmit={submitSiamStats} className="space-y-6">
                                                 <div>
                                                     <h4 className="text-xs font-semibold uppercase tracking-widest text-neutral-700">
@@ -1606,7 +2134,7 @@ export default function Dashboard() {
                                                                             e.target.value
                                                                         )
                                                                     }
-                                                                    className="w-full rounded border border-neutral-300 px-2 py-1 text-[11px]"
+                                                                    className="w-full rounded border border-neutral-300 focus:border-red-500 focus:ring focus:ring-red-500/20 px-2 py-1 text-[11px]"
                                                                 />
                                                                 <input
                                                                     type="text"
@@ -1617,7 +2145,7 @@ export default function Dashboard() {
                                                                             e.target.value
                                                                         )
                                                                     }
-                                                                    className="w-full rounded border border-neutral-300 px-2 py-1 text-[11px]"
+                                                                    className="w-full rounded border border-neutral-300 focus:border-red-500 focus:ring focus:ring-red-500/20 px-2 py-1 text-[11px]"
                                                                 />
                                                                 <input
                                                                     type="text"
@@ -1628,7 +2156,7 @@ export default function Dashboard() {
                                                                             e.target.value
                                                                         )
                                                                     }
-                                                                    className="w-full rounded border border-neutral-300 px-2 py-1 text-[11px]"
+                                                                    className="w-full rounded border border-neutral-300 focus:border-red-500 focus:ring focus:ring-red-500/20 px-2 py-1 text-[11px]"
                                                                 />
                                                             </div>
                                                         </div>
@@ -1656,7 +2184,7 @@ export default function Dashboard() {
                                                                                 };
                                                                                 siamStatsForm.setData('stats_items', next);
                                                                             }}
-                                                                            className="mb-1 w-full rounded border border-neutral-300 px-2 py-1 text-[11px]"
+                                                                            className="mb-1 w-full rounded border border-neutral-300 focus:border-red-500 focus:ring focus:ring-red-500/20 px-2 py-1 text-[11px]"
                                                                             placeholder="25+"
                                                                         />
                                                                         <input
@@ -1672,7 +2200,7 @@ export default function Dashboard() {
                                                                                 };
                                                                                 siamStatsForm.setData('stats_items', next);
                                                                             }}
-                                                                            className="w-full rounded border border-neutral-300 px-2 py-1 text-[11px]"
+                                                                            className="w-full rounded border border-neutral-300 focus:border-red-500 focus:ring focus:ring-red-500/20 px-2 py-1 text-[11px]"
                                                                             placeholder="Years Experience"
                                                                         />
                                                                     </div>
@@ -1686,7 +2214,7 @@ export default function Dashboard() {
                                                     <button
                                                         type="submit"
                                                         disabled={siamStatsForm.processing}
-                                                        className="inline-flex items-center justify-center rounded-full bg-neutral-900 px-5 py-2 text-[11px] font-semibold uppercase tracking-widest text-white transition-colors hover:bg-black disabled:opacity-60"
+                                                        className="inline-flex items-center justify-center rounded-full bg-red-600 px-5 py-2 text-[11px] font-semibold uppercase tracking-widest text-white transition-colors hover:bg-red-700 border border-transparent shadow-sm disabled:opacity-60"
                                                     >
                                                         {siamStatsForm.processing ? 'Saving...' : 'Save stats'}
                                                     </button>
@@ -1703,7 +2231,7 @@ export default function Dashboard() {
                                 )}
                                 {selectedCompany.name === 'SIAM' && (
                                     <section className="space-y-6 rounded-[3px] bg-neutral-50 p-5 shadow-sm">
-                                        <div className="rounded-[3px] border border-neutral-200 bg-white p-5">
+                                        <div className="rounded-[3px] border border-neutral-200 bg-white p-5 border-t-2 border-t-red-600 shadow-sm rounded-b-[3px]">
                                             <form onSubmit={submitSiamVideo} className="space-y-6">
                                                 <div>
                                                     <h4 className="text-xs font-semibold uppercase tracking-widest text-neutral-700">
@@ -1727,7 +2255,7 @@ export default function Dashboard() {
                                                                         e.target.value
                                                                     )
                                                                 }
-                                                                className="w-full rounded border border-neutral-300 px-2 py-1 text-[11px]"
+                                                                className="w-full rounded border border-neutral-300 focus:border-red-500 focus:ring focus:ring-red-500/20 px-2 py-1 text-[11px]"
                                                                 placeholder="SIAM Page Video"
                                                             />
 
@@ -1761,7 +2289,7 @@ export default function Dashboard() {
                                                                         e.target.value
                                                                     )
                                                                 }
-                                                                className="w-full rounded border border-neutral-300 px-2 py-1 text-[11px]"
+                                                                className="w-full rounded border border-neutral-300 focus:border-red-500 focus:ring focus:ring-red-500/20 px-2 py-1 text-[11px]"
                                                                 placeholder="https://www.youtube.com/watch?v=..."
                                                             />
 
@@ -1870,7 +2398,7 @@ export default function Dashboard() {
                                                     <button
                                                         type="submit"
                                                         disabled={siamVideoForm.processing}
-                                                        className="inline-flex items-center justify-center rounded-full bg-neutral-900 px-5 py-2 text-[11px] font-semibold uppercase tracking-widest text-white transition-colors hover:bg-black disabled:opacity-60"
+                                                        className="inline-flex items-center justify-center rounded-full bg-red-600 px-5 py-2 text-[11px] font-semibold uppercase tracking-widest text-white transition-colors hover:bg-red-700 border border-transparent shadow-sm disabled:opacity-60"
                                                     >
                                                         {siamVideoForm.processing
                                                             ? 'Uploading / Saving…'
@@ -1883,7 +2411,7 @@ export default function Dashboard() {
                                 )}
                                 {selectedCompany.name === 'SIAM' && (
                                     <section className="space-y-6 rounded-[3px] bg-neutral-50 p-5 shadow-sm">
-                                        <div className="rounded-[3px] border border-neutral-200 bg-white p-5 space-y-5">
+                                        <div className="rounded-[3px] border border-neutral-200 bg-white p-5 border-t-2 border-t-red-600 shadow-sm rounded-b-[3px] space-y-5">
                                             <div>
                                                 <h4 className="text-xs font-semibold uppercase tracking-widest text-neutral-700">
                                                     SIAM product categories
@@ -1902,7 +2430,10 @@ export default function Dashboard() {
                                                         <div className="flex items-center gap-3">
                                                             <div className="h-14 w-20 overflow-hidden rounded border border-neutral-200 bg-white">
                                                                 <img
-                                                                    src={c.card_image_path || 'https://placehold.co/350x269'}
+                                                                    src={
+                                                                        publicAssetUrl(c.card_image_path) ||
+                                                                        'https://placehold.co/350x269'
+                                                                    }
                                                                     alt={c.name || 'SIAM category'}
                                                                     className="h-full w-full object-cover"
                                                                 />
@@ -1957,7 +2488,7 @@ export default function Dashboard() {
                                                             type="text"
                                                             value={siamCategoryForm.data.name}
                                                             onChange={(e) => siamCategoryForm.setData('name', e.target.value)}
-                                                            className="mt-1 w-full rounded border border-neutral-300 px-2 py-1 text-[11px]"
+                                                            className="mt-1 w-full rounded border border-neutral-300 focus:border-red-500 focus:ring focus:ring-red-500/20 px-2 py-1 text-[11px]"
                                                             required
                                                         />
                                                     </div>
@@ -1975,7 +2506,7 @@ export default function Dashboard() {
                                                                     Number(e.target.value || 0)
                                                                 )
                                                             }
-                                                            className="mt-1 w-full rounded border border-neutral-300 px-2 py-1 text-[11px]"
+                                                            className="mt-1 w-full rounded border border-neutral-300 focus:border-red-500 focus:ring focus:ring-red-500/20 px-2 py-1 text-[11px]"
                                                         />
                                                     </div>
                                                     <div className="md:col-span-2">
@@ -1988,7 +2519,7 @@ export default function Dashboard() {
                                                             onChange={(e) =>
                                                                 siamCategoryForm.setData('card_description', e.target.value)
                                                             }
-                                                            className="mt-1 w-full rounded border border-neutral-300 px-2 py-1 text-[11px]"
+                                                            className="mt-1 w-full rounded border border-neutral-300 focus:border-red-500 focus:ring focus:ring-red-500/20 px-2 py-1 text-[11px]"
                                                         />
                                                     </div>
                                                     <div className="md:col-span-2">
@@ -2004,7 +2535,7 @@ export default function Dashboard() {
                                                                     e.target.value
                                                                 )
                                                             }
-                                                            className="mt-1 w-full rounded border border-neutral-300 px-2 py-1 text-[11px]"
+                                                            className="mt-1 w-full rounded border border-neutral-300 focus:border-red-500 focus:ring focus:ring-red-500/20 px-2 py-1 text-[11px]"
                                                         />
                                                     </div>
                                                     <div>
@@ -2043,7 +2574,7 @@ export default function Dashboard() {
                                                         <img
                                                             src={
                                                                 siamCategoryImagePreview ||
-                                                                editingSiamCategory?.card_image_path
+                                                                publicAssetUrl(editingSiamCategory?.card_image_path)
                                                             }
                                                             alt="SIAM category preview"
                                                             className="h-full w-full object-cover"
@@ -2070,7 +2601,7 @@ export default function Dashboard() {
                                                     <button
                                                         type="submit"
                                                         disabled={siamCategoryForm.processing}
-                                                        className="rounded-full bg-neutral-900 px-5 py-2 text-[10px] font-semibold uppercase tracking-widest text-white hover:bg-black disabled:opacity-60"
+                                                        className="rounded-full bg-red-600 px-5 py-2 text-[10px] font-semibold uppercase tracking-widest text-white transition-colors hover:bg-red-700 border border-transparent shadow-sm disabled:opacity-60"
                                                     >
                                                         {siamCategoryForm.processing
                                                             ? 'Saving...'
@@ -2082,7 +2613,7 @@ export default function Dashboard() {
                                             </form>
                                         </div>
 
-                                        <div className="rounded-[3px] border border-neutral-200 bg-white p-5 space-y-5">
+                                        <div className="rounded-[3px] border border-neutral-200 bg-white p-5 border-t-2 border-t-red-600 shadow-sm rounded-b-[3px] space-y-5">
                                             <div>
                                                 <h4 className="text-xs font-semibold uppercase tracking-widest text-neutral-700">
                                                     Products inside a category
@@ -2103,7 +2634,7 @@ export default function Dashboard() {
                                                         setAdminSiamCategoryForProducts(v ? Number(v) : null);
                                                         setEditingSiamCategoryProduct(null);
                                                     }}
-                                                    className="mt-1 w-full max-w-md rounded border border-neutral-300 px-2 py-1 text-[11px]"
+                                                    className="mt-1 w-full max-w-md rounded border border-neutral-300 focus:border-red-500 focus:ring focus:ring-red-500/20 px-2 py-1 text-[11px]"
                                                 >
                                                     {siamProductCategories.map((c) => (
                                                         <option key={c.id} value={c.id}>
@@ -2128,7 +2659,10 @@ export default function Dashboard() {
                                                         <div className="flex items-center gap-3">
                                                             <div className="h-14 w-20 overflow-hidden rounded border border-neutral-200 bg-white">
                                                                 <img
-                                                                    src={p.image_path || 'https://placehold.co/350x269'}
+                                                                    src={
+                                                                        publicAssetUrl(p.image_path) ||
+                                                                        'https://placehold.co/350x269'
+                                                                    }
                                                                     alt={p.title || 'Product'}
                                                                     className="h-full w-full object-cover"
                                                                 />
@@ -2186,7 +2720,7 @@ export default function Dashboard() {
                                                                     e.target.value
                                                                 )
                                                             }
-                                                            className="mt-1 w-full rounded border border-neutral-300 px-2 py-1 text-[11px]"
+                                                            className="mt-1 w-full rounded border border-neutral-300 focus:border-red-500 focus:ring focus:ring-red-500/20 px-2 py-1 text-[11px]"
                                                             required
                                                         >
                                                             <option value="">Select category</option>
@@ -2207,7 +2741,7 @@ export default function Dashboard() {
                                                             onChange={(e) =>
                                                                 siamCategoryProductForm.setData('title', e.target.value)
                                                             }
-                                                            className="mt-1 w-full rounded border border-neutral-300 px-2 py-1 text-[11px]"
+                                                            className="mt-1 w-full rounded border border-neutral-300 focus:border-red-500 focus:ring focus:ring-red-500/20 px-2 py-1 text-[11px]"
                                                             required
                                                         />
                                                     </div>
@@ -2225,7 +2759,7 @@ export default function Dashboard() {
                                                                     Number(e.target.value || 0)
                                                                 )
                                                             }
-                                                            className="mt-1 w-full rounded border border-neutral-300 px-2 py-1 text-[11px]"
+                                                            className="mt-1 w-full rounded border border-neutral-300 focus:border-red-500 focus:ring focus:ring-red-500/20 px-2 py-1 text-[11px]"
                                                         />
                                                     </div>
                                                     <div className="md:col-span-2">
@@ -2241,7 +2775,7 @@ export default function Dashboard() {
                                                                     e.target.value
                                                                 )
                                                             }
-                                                            className="mt-1 w-full rounded border border-neutral-300 px-2 py-1 text-[11px]"
+                                                            className="mt-1 w-full rounded border border-neutral-300 focus:border-red-500 focus:ring focus:ring-red-500/20 px-2 py-1 text-[11px]"
                                                         />
                                                     </div>
                                                     <div>
@@ -2284,7 +2818,7 @@ export default function Dashboard() {
                                                         <img
                                                             src={
                                                                 siamCategoryProductImagePreview ||
-                                                                editingSiamCategoryProduct?.image_path
+                                                                publicAssetUrl(editingSiamCategoryProduct?.image_path)
                                                             }
                                                             alt="SIAM product preview"
                                                             className="h-full w-full object-cover"
@@ -2311,7 +2845,7 @@ export default function Dashboard() {
                                                     <button
                                                         type="submit"
                                                         disabled={siamCategoryProductForm.processing}
-                                                        className="rounded-full bg-neutral-900 px-5 py-2 text-[10px] font-semibold uppercase tracking-widest text-white hover:bg-black disabled:opacity-60"
+                                                        className="rounded-full bg-red-600 px-5 py-2 text-[10px] font-semibold uppercase tracking-widest text-white transition-colors hover:bg-red-700 border border-transparent shadow-sm disabled:opacity-60"
                                                     >
                                                         {siamCategoryProductForm.processing
                                                             ? 'Saving...'
@@ -2324,9 +2858,175 @@ export default function Dashboard() {
                                         </div>
                                     </section>
                                 )}
+                                {selectedCompany.name === 'SIAM' && (
+                                    <section className="space-y-6 rounded-[3px] bg-neutral-50 p-5 shadow-sm">
+                                        <div className="rounded-[3px] border border-neutral-200 bg-white p-5 border-t-2 border-t-red-600 shadow-sm rounded-b-[3px] space-y-5">
+                                            <div>
+                                                <h4 className="text-xs font-semibold uppercase tracking-widest text-neutral-700">
+                                                    SIAM service cards
+                                                </h4>
+                                                <p className="mt-2 text-xs text-neutral-500">
+                                                    Upload a card image first. These cards show as a clean image gallery on the public SIAM page.
+                                                </p>
+                                            </div>
+
+                                            <form onSubmit={submitServiceCard} className="space-y-6">
+                                                <div className="grid gap-4 lg:grid-cols-[1.3fr,0.9fr]">
+                                                    <div className="space-y-4">
+                                                        <div>
+                                                            <label className="block text-[10px] font-semibold uppercase tracking-widest text-neutral-600">
+                                                                Image file
+                                                            </label>
+                                                            <input
+                                                                type="file"
+                                                                accept="image/*"
+                                                                onChange={handleServiceCardImageChange}
+                                                                className="mt-1 block w-full text-[11px] text-neutral-700 file:mr-3 file:rounded-full file:border-0 file:bg-red-600 file:px-4 file:py-1.5 file:text-[11px] file:font-semibold file:uppercase file:tracking-widest file:text-white hover:file:bg-red-700"
+                                                            />
+                                                            {serviceCardForm.errors.image_file && (
+                                                                <p className="mt-1 text-[10px] text-red-600">{serviceCardForm.errors.image_file}</p>
+                                                            )}
+                                                            <p className="mt-2 text-[10px] text-neutral-500">
+                                                                Required before the card appears on the public SIAM page.
+                                                            </p>
+                                                        </div>
+
+                                                        <div className="grid gap-4 md:grid-cols-2">
+                                                            <div>
+                                                                <label className="block text-[10px] font-semibold uppercase tracking-widest text-neutral-600">
+                                                                    Sort order
+                                                                </label>
+                                                                <input
+                                                                    type="number"
+                                                                    value={serviceCardForm.data.sort_order}
+                                                                    onChange={(e) =>
+                                                                        serviceCardForm.setData('sort_order', parseInt(e.target.value, 10) || 0)
+                                                                    }
+                                                                    className="mt-1 block w-full rounded border border-neutral-300 focus:border-red-500 focus:ring focus:ring-red-500/20 px-2 py-1 text-[11px]"
+                                                                />
+                                                            </div>
+                                                            <div className="flex items-center gap-2">
+                                                                <input
+                                                                    type="checkbox"
+                                                                    id="service-card-active"
+                                                                    checked={serviceCardForm.data.is_active}
+                                                                    onChange={(e) => serviceCardForm.setData('is_active', e.target.checked)}
+                                                                    className="h-4 w-4 text-red-600 border-neutral-300 rounded"
+                                                                />
+                                                                <label htmlFor="service-card-active" className="text-[11px] text-neutral-700">
+                                                                    Active
+                                                                </label>
+                                                            </div>
+                                                        </div>
+
+                                                        <div className="flex flex-col gap-2 sm:flex-row sm:justify-end">
+                                                            {editingServiceCard && (
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={resetServiceCardForm}
+                                                                    className="inline-flex items-center justify-center rounded-full border border-neutral-300 bg-white px-4 py-2 text-xs font-semibold text-neutral-700 hover:bg-neutral-50"
+                                                                >
+                                                                    Cancel edit
+                                                                </button>
+                                                            )}
+                                                            <button
+                                                                type="submit"
+                                                                disabled={serviceCardForm.processing}
+                                                                className="inline-flex items-center justify-center rounded-full bg-red-600 px-4 py-2 text-xs font-semibold uppercase tracking-widest text-white transition-colors hover:bg-red-700 disabled:opacity-60"
+                                                            >
+                                                                {editingServiceCard ? 'Update card' : 'Create card'}
+                                                            </button>
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="space-y-3">
+                                                        <p className="text-[10px] font-semibold uppercase tracking-widest text-neutral-600">
+                                                            Image preview
+                                                        </p>
+                                                        <div className="aspect-[4/3] overflow-hidden rounded-lg border border-neutral-200 bg-neutral-100">
+                                                            {serviceCardPreviewUrl ? (
+                                                                <img
+                                                                    src={serviceCardPreviewUrl}
+                                                                    alt="Preview"
+                                                                    className="h-full w-full object-cover"
+                                                                />
+                                                            ) : (
+                                                                <div className="flex h-full items-center justify-center text-xs text-neutral-500">
+                                                                    Select an image to preview
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </form>
+
+                                            {serviceCards.length === 0 ? (
+                                                <div className="text-center border border-dashed border-gray-300 p-6 rounded-lg">
+                                                    <p className="text-sm text-neutral-500">No service cards have been uploaded yet.</p>
+                                                </div>
+                                            ) : (
+                                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                                    {serviceCards.map((card) => (
+                                                        <div key={card.id} className="border rounded-lg overflow-hidden">
+                                                            <div className="aspect-[4/3] bg-gray-100 relative">
+                                                                {card.image_path ? (
+                                                                    <img
+                                                                        src={publicAssetUrl(card.image_path)}
+                                                                        alt={card.alt_text || 'SIAM service card'}
+                                                                        className="w-full h-full object-cover"
+                                                                    />
+                                                                ) : (
+                                                                    <div className="flex h-full items-center justify-center text-xs text-neutral-400">
+                                                                        No image
+                                                                    </div>
+                                                                )}
+                                                                <div className="absolute top-2 right-2">
+                                                                    <button
+                                                                        onClick={() =>
+                                                                            router.put(route('admin.service-cards.update', card.id), {
+                                                                                is_active: !card.is_active,
+                                                                            })
+                                                                        }
+                                                                        className={`px-2 py-1 text-xs font-semibold rounded ${
+                                                                            card.is_active
+                                                                                ? 'bg-green-100 text-green-800'
+                                                                                : 'bg-red-100 text-red-800'
+                                                                        }`}
+                                                                    >
+                                                                        {card.is_active ? 'Active' : 'Inactive'}
+                                                                    </button>
+                                                                </div>
+                                                            </div>
+                                                            <div className="flex items-center justify-between gap-2 p-3 text-xs text-neutral-500">
+                                                                <span>Order: {card.sort_order}</span>
+                                                                <span>ID: {card.id}</span>
+                                                            </div>
+                                                            <div className="flex gap-2 border-t border-neutral-200 bg-neutral-50 p-3">
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => startEditServiceCard(card)}
+                                                                    className="flex-1 rounded-full bg-gray-500 px-3 py-2 text-[11px] font-semibold text-white hover:bg-gray-600"
+                                                                >
+                                                                    Edit
+                                                                </button>
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => destroyServiceCard(card.id)}
+                                                                    className="flex-1 rounded-full bg-red-600 px-3 py-2 text-[11px] font-semibold text-white hover:bg-red-700"
+                                                                >
+                                                                    Delete
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </div>
+                                    </section>
+                                )}
                                 {selectedCompany.name === 'TPSMI' && (
                                     <section className="space-y-6 rounded-[3px] bg-neutral-50 p-5 shadow-sm">
-                                        <div className="rounded-[3px] border border-neutral-200 bg-white p-5">
+                                        <div className="rounded-[3px] border border-neutral-200 bg-white p-5 border-t-2 border-t-red-600 shadow-sm rounded-b-[3px]">
                                             <form onSubmit={submitTpsmiStats} className="space-y-6">
                                                 <div>
                                                     <h4 className="text-xs font-semibold uppercase tracking-widest text-neutral-700">
@@ -2352,7 +3052,7 @@ export default function Dashboard() {
                                                                             e.target.value
                                                                         )
                                                                     }
-                                                                    className="w-full rounded border border-neutral-300 px-2 py-1 text-[11px]"
+                                                                    className="w-full rounded border border-neutral-300 focus:border-red-500 focus:ring focus:ring-red-500/20 px-2 py-1 text-[11px]"
                                                                 />
                                                                 <input
                                                                     type="text"
@@ -2363,7 +3063,7 @@ export default function Dashboard() {
                                                                             e.target.value
                                                                         )
                                                                     }
-                                                                    className="w-full rounded border border-neutral-300 px-2 py-1 text-[11px]"
+                                                                    className="w-full rounded border border-neutral-300 focus:border-red-500 focus:ring focus:ring-red-500/20 px-2 py-1 text-[11px]"
                                                                 />
                                                                 <input
                                                                     type="text"
@@ -2374,7 +3074,7 @@ export default function Dashboard() {
                                                                             e.target.value
                                                                         )
                                                                     }
-                                                                    className="w-full rounded border border-neutral-300 px-2 py-1 text-[11px]"
+                                                                    className="w-full rounded border border-neutral-300 focus:border-red-500 focus:ring focus:ring-red-500/20 px-2 py-1 text-[11px]"
                                                                 />
                                                             </div>
                                                         </div>
@@ -2402,7 +3102,7 @@ export default function Dashboard() {
                                                                                 };
                                                                                 tpsmiStatsForm.setData('stats_items', next);
                                                                             }}
-                                                                            className="mb-1 w-full rounded border border-neutral-300 px-2 py-1 text-[11px]"
+                                                                            className="mb-1 w-full rounded border border-neutral-300 focus:border-red-500 focus:ring focus:ring-red-500/20 px-2 py-1 text-[11px]"
                                                                             placeholder="25+"
                                                                         />
                                                                         <input
@@ -2418,7 +3118,7 @@ export default function Dashboard() {
                                                                                 };
                                                                                 tpsmiStatsForm.setData('stats_items', next);
                                                                             }}
-                                                                            className="w-full rounded border border-neutral-300 px-2 py-1 text-[11px]"
+                                                                            className="w-full rounded border border-neutral-300 focus:border-red-500 focus:ring focus:ring-red-500/20 px-2 py-1 text-[11px]"
                                                                             placeholder="Years Experience"
                                                                         />
                                                                     </div>
@@ -2432,7 +3132,7 @@ export default function Dashboard() {
                                                     <button
                                                         type="submit"
                                                         disabled={tpsmiStatsForm.processing}
-                                                        className="inline-flex items-center justify-center rounded-full bg-neutral-900 px-5 py-2 text-[11px] font-semibold uppercase tracking-widest text-white transition-colors hover:bg-black disabled:opacity-60"
+                                                        className="inline-flex items-center justify-center rounded-full bg-red-600 px-5 py-2 text-[11px] font-semibold uppercase tracking-widest text-white transition-colors hover:bg-red-700 border border-transparent shadow-sm disabled:opacity-60"
                                                     >
                                                         {tpsmiStatsForm.processing ? 'Saving...' : 'Save stats'}
                                                     </button>
@@ -2450,7 +3150,7 @@ export default function Dashboard() {
 
                                 {selectedCompany.name === 'TPSMI' && (
                                     <section className="space-y-6 rounded-[3px] bg-neutral-50 p-5 shadow-sm">
-                                        <div className="rounded-[3px] border border-neutral-200 bg-white p-5">
+                                        <div className="rounded-[3px] border border-neutral-200 bg-white p-5 border-t-2 border-t-red-600 shadow-sm rounded-b-[3px]">
                                             <form onSubmit={submitTpsmiVideo} className="space-y-6">
                                                 <div>
                                                     <h4 className="text-xs font-semibold uppercase tracking-widest text-neutral-700">
@@ -2474,7 +3174,7 @@ export default function Dashboard() {
                                                                         e.target.value
                                                                     )
                                                                 }
-                                                                className="w-full rounded border border-neutral-300 px-2 py-1 text-[11px]"
+                                                                className="w-full rounded border border-neutral-300 focus:border-red-500 focus:ring focus:ring-red-500/20 px-2 py-1 text-[11px]"
                                                                 placeholder="TPSMI Page Video"
                                                             />
 
@@ -2508,7 +3208,7 @@ export default function Dashboard() {
                                                                         e.target.value
                                                                     )
                                                                 }
-                                                                className="w-full rounded border border-neutral-300 px-2 py-1 text-[11px]"
+                                                                className="w-full rounded border border-neutral-300 focus:border-red-500 focus:ring focus:ring-red-500/20 px-2 py-1 text-[11px]"
                                                                 placeholder="https://www.youtube.com/watch?v=..."
                                                             />
 
@@ -2614,7 +3314,7 @@ export default function Dashboard() {
                                                     <button
                                                         type="submit"
                                                         disabled={tpsmiVideoForm.processing}
-                                                        className="inline-flex items-center justify-center rounded-full bg-neutral-900 px-5 py-2 text-[11px] font-semibold uppercase tracking-widest text-white transition-colors hover:bg-black disabled:opacity-60"
+                                                        className="inline-flex items-center justify-center rounded-full bg-red-600 px-5 py-2 text-[11px] font-semibold uppercase tracking-widest text-white transition-colors hover:bg-red-700 border border-transparent shadow-sm disabled:opacity-60"
                                                     >
                                                         {tpsmiVideoForm.processing ? 'Uploading / Saving…' : 'Save video'}
                                                     </button>
@@ -2625,7 +3325,7 @@ export default function Dashboard() {
                                 )}
                                 {selectedCompany.name === 'TPSMI' && (
                                     <section className="space-y-6 rounded-[3px] bg-neutral-50 p-5 shadow-sm">
-                                        <div className="rounded-[3px] border border-neutral-200 bg-white p-5 space-y-5">
+                                        <div className="rounded-[3px] border border-neutral-200 bg-white p-5 border-t-2 border-t-red-600 shadow-sm rounded-b-[3px] space-y-5">
                                             <div>
                                                 <h4 className="text-xs font-semibold uppercase tracking-widest text-neutral-700">
                                                     TPSMI Vacuum Formed Plastic Products
@@ -2644,7 +3344,11 @@ export default function Dashboard() {
                                                         <div className="flex items-center gap-3">
                                                             <div className="h-14 w-20 overflow-hidden rounded border border-neutral-200 bg-white">
                                                                 <img
-                                                                    src={p.image_path || 'https://placehold.co/350x269'}
+                                                                    src={
+                                                                        p.image_path
+                                                                            ? publicAssetUrl(p.image_path)
+                                                                            : 'https://placehold.co/350x269'
+                                                                    }
                                                                     alt={p.title || 'TPSMI product'}
                                                                     className="h-full w-full object-cover"
                                                                 />
@@ -2699,7 +3403,7 @@ export default function Dashboard() {
                                                             type="text"
                                                             value={tpsmiProductForm.data.title}
                                                             onChange={(e) => tpsmiProductForm.setData('title', e.target.value)}
-                                                            className="mt-1 w-full rounded border border-neutral-300 px-2 py-1 text-[11px]"
+                                                            className="mt-1 w-full rounded border border-neutral-300 focus:border-red-500 focus:ring focus:ring-red-500/20 px-2 py-1 text-[11px]"
                                                             required
                                                         />
                                                     </div>
@@ -2718,7 +3422,7 @@ export default function Dashboard() {
                                                                     Number(e.target.value || 0)
                                                                 )
                                                             }
-                                                            className="mt-1 w-full rounded border border-neutral-300 px-2 py-1 text-[11px]"
+                                                            className="mt-1 w-full rounded border border-neutral-300 focus:border-red-500 focus:ring focus:ring-red-500/20 px-2 py-1 text-[11px]"
                                                         />
                                                     </div>
 
@@ -2730,28 +3434,11 @@ export default function Dashboard() {
                                                             rows={3}
                                                             value={tpsmiProductForm.data.description}
                                                             onChange={(e) => tpsmiProductForm.setData('description', e.target.value)}
-                                                            className="mt-1 w-full rounded border border-neutral-300 px-2 py-1 text-[11px]"
+                                                            className="mt-1 w-full rounded border border-neutral-300 focus:border-red-500 focus:ring focus:ring-red-500/20 px-2 py-1 text-[11px]"
                                                         />
                                                     </div>
 
-                                                    <div>
-                                                        <label className="block text-[10px] font-semibold uppercase tracking-widest text-neutral-600">
-                                                            Product image
-                                                        </label>
-                                                        <input
-                                                            type="file"
-                                                            accept="image/*"
-                                                            onChange={(e) =>
-                                                                tpsmiProductForm.setData(
-                                                                    'image_file',
-                                                                    e.target.files?.[0] ?? null
-                                                                )
-                                                            }
-                                                            className="mt-1 block w-full text-[11px] text-neutral-700 file:mr-3 file:rounded-full file:border-0 file:bg-red-600 file:px-4 file:py-1.5 file:text-[11px] file:font-semibold file:uppercase file:tracking-widest file:text-white hover:file:bg-red-700"
-                                                        />
-                                                    </div>
-
-                                                    <div className="flex items-end">
+                                                    <div className="flex items-end md:col-span-2">
                                                         <label className="inline-flex items-center gap-2 text-[10px] font-semibold uppercase tracking-widest text-neutral-600">
                                                             <input
                                                                 type="checkbox"
@@ -2766,19 +3453,53 @@ export default function Dashboard() {
                                                     </div>
                                                 </div>
 
-                                                {(tpsmiProductImagePreview ||
-                                                    editingTpsmiProduct?.image_path) && (
-                                                    <div className="h-20 w-28 overflow-hidden rounded border border-neutral-200 bg-white">
-                                                        <img
-                                                            src={
-                                                                tpsmiProductImagePreview ||
-                                                                editingTpsmiProduct?.image_path
-                                                            }
-                                                            alt="TPSMI product preview"
-                                                            className="h-full w-full object-cover"
-                                                        />
+                                                <div className="space-y-2">
+                                                    <p className="text-[10px] font-semibold uppercase tracking-widest text-neutral-600">
+                                                        Product image
+                                                    </p>
+                                                    <p className="text-[10px] text-neutral-500">
+                                                        Upload a product photo; files are stored in public uploads like the Sundia navbar logo.
+                                                    </p>
+                                                    <div className="flex items-center gap-6">
+                                                        <div className="flex h-16 w-40 shrink-0 items-center justify-center overflow-hidden rounded-md border border-dashed border-neutral-300 bg-white">
+                                                            {tpsmiProductImagePreview ? (
+                                                                <img
+                                                                    src={tpsmiProductImagePreview}
+                                                                    alt="New TPSMI product image preview"
+                                                                    className="h-full w-full object-cover"
+                                                                />
+                                                            ) : editingTpsmiProduct?.image_path ? (
+                                                                <img
+                                                                    src={publicAssetUrl(editingTpsmiProduct.image_path)}
+                                                                    alt="Current TPSMI product image"
+                                                                    className="h-full w-full object-cover"
+                                                                />
+                                                            ) : (
+                                                                <span className="text-[10px] text-neutral-400">
+                                                                    No image set
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                        <div className="flex min-w-0 flex-1 flex-col gap-3">
+                                                            <input
+                                                                type="file"
+                                                                accept="image/*"
+                                                                onChange={(e) =>
+                                                                    tpsmiProductForm.setData(
+                                                                        'image_file',
+                                                                        e.target.files?.[0] ?? null
+                                                                    )
+                                                                }
+                                                                className="block w-full max-w-md text-[11px] text-neutral-700 file:mr-3 file:rounded-full file:border-0 file:bg-red-600 file:px-4 file:py-1.5 file:text-[11px] file:font-semibold file:uppercase file:tracking-widest file:text-white hover:file:bg-red-700"
+                                                            />
+                                                            {tpsmiProductForm.errors.image_file && (
+                                                                <p className="text-[10px] text-red-600">
+                                                                    {tpsmiProductForm.errors.image_file}
+                                                                </p>
+                                                            )}
+                                                        </div>
                                                     </div>
-                                                )}
+                                                </div>
 
                                                 {flashTpsmiProductSuccess && (
                                                     <div className="rounded border border-green-200 bg-green-50 px-3 py-2 text-[11px] text-green-800">
@@ -2800,7 +3521,7 @@ export default function Dashboard() {
                                                     <button
                                                         type="submit"
                                                         disabled={tpsmiProductForm.processing}
-                                                        className="rounded-full bg-neutral-900 px-5 py-2 text-[10px] font-semibold uppercase tracking-widest text-white hover:bg-black disabled:opacity-60"
+                                                        className="rounded-full bg-red-600 px-5 py-2 text-[10px] font-semibold uppercase tracking-widest text-white transition-colors hover:bg-red-700 border border-transparent shadow-sm disabled:opacity-60"
                                                     >
                                                         {tpsmiProductForm.processing
                                                             ? 'Saving...'
@@ -2810,12 +3531,202 @@ export default function Dashboard() {
                                                     </button>
                                                 </div>
                                             </form>
+
+                                            <div className="space-y-4 rounded border border-neutral-200 bg-neutral-50 p-4">
+                                                <h5 className="text-[11px] font-semibold uppercase tracking-widest text-neutral-700">
+                                                    Current Vacuum Formed Plastic Pictures
+                                                </h5>
+                                                <p className="text-[10px] text-neutral-500">
+                                                    These are the pictures currently fetched by the TPSMI page slider.
+                                                </p>
+
+                                                <div className="space-y-2">
+                                                    {previewVacuumformedplastics.map((item, idx) => (
+                                                        <div
+                                                            key={item.id ?? `vacuumformedplastic-row-${idx}`}
+                                                            className="flex flex-col gap-3 rounded border border-neutral-200 bg-white p-3 md:flex-row md:items-center md:justify-between"
+                                                        >
+                                                            <div className="flex items-center gap-3">
+                                                                <div className="h-14 w-20 overflow-hidden rounded border border-neutral-200 bg-white">
+                                                                    <img
+                                                                        src={
+                                                                            item.image_path
+                                                                                ? publicAssetUrl(item.image_path)
+                                                                                : 'https://placehold.co/350x269'
+                                                                        }
+                                                                        alt={item.title || 'Vacuum formed plastic picture'}
+                                                                        className="h-full w-full object-cover"
+                                                                    />
+                                                                </div>
+                                                                <div>
+                                                                    <p className="text-[11px] font-semibold uppercase tracking-widest text-neutral-700">
+                                                                        {item.title || 'Untitled picture'}
+                                                                    </p>
+                                                                    <p className="mt-1 text-[10px] text-neutral-400">
+                                                                        Order: {item.display_order ?? 0} | Active:{' '}
+                                                                        {item.is_active ? 'Yes' : 'No'}
+                                                                    </p>
+                                                                </div>
+                                                            </div>
+                                                            <div className="flex gap-2">
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => setEditingVacuumformedplastic(item)}
+                                                                    className="rounded-full border border-neutral-300 px-3 py-1 text-[10px] font-semibold uppercase tracking-widest text-neutral-700 hover:bg-neutral-100"
+                                                                >
+                                                                    Edit
+                                                                </button>
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() =>
+                                                                        item.id
+                                                                            ? destroyVacuumformedplastic(item.id)
+                                                                            : removeVacuumformedplasticPreviewItem(item, idx)
+                                                                    }
+                                                                    className="rounded-full border border-red-200 px-3 py-1 text-[10px] font-semibold uppercase tracking-widest text-red-600 hover:bg-red-50"
+                                                                >
+                                                                    Delete
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                </div>
+
+                                                <form
+                                                    onSubmit={submitVacuumformedplastic}
+                                                    className="space-y-4 rounded border border-neutral-200 bg-white p-4"
+                                                >
+                                                    <h5 className="text-[11px] font-semibold uppercase tracking-widest text-neutral-700">
+                                                        {editingVacuumformedplastic ? 'Edit picture' : 'Add picture'}
+                                                    </h5>
+                                                    <div className="grid gap-4 md:grid-cols-2">
+                                                        <div>
+                                                            <label className="block text-[10px] font-semibold uppercase tracking-widest text-neutral-600">
+                                                                Title
+                                                            </label>
+                                                            <input
+                                                                type="text"
+                                                                value={vacuumformedplasticForm.data.title}
+                                                                onChange={(e) =>
+                                                                    vacuumformedplasticForm.setData('title', e.target.value)
+                                                                }
+                                                                className="mt-1 w-full rounded border border-neutral-300 focus:border-red-500 focus:ring focus:ring-red-500/20 px-2 py-1 text-[11px]"
+                                                                placeholder="Optional title"
+                                                            />
+                                                        </div>
+                                                        <div>
+                                                            <label className="block text-[10px] font-semibold uppercase tracking-widest text-neutral-600">
+                                                                Display order
+                                                            </label>
+                                                            <input
+                                                                type="number"
+                                                                min="0"
+                                                                value={vacuumformedplasticForm.data.display_order}
+                                                                onChange={(e) =>
+                                                                    vacuumformedplasticForm.setData(
+                                                                        'display_order',
+                                                                        Number(e.target.value || 0)
+                                                                    )
+                                                                }
+                                                                className="mt-1 w-full rounded border border-neutral-300 focus:border-red-500 focus:ring focus:ring-red-500/20 px-2 py-1 text-[11px]"
+                                                            />
+                                                        </div>
+                                                        <div className="flex items-end md:col-span-2">
+                                                            <label className="inline-flex items-center gap-2 text-[10px] font-semibold uppercase tracking-widest text-neutral-600">
+                                                                <input
+                                                                    type="checkbox"
+                                                                    checked={vacuumformedplasticForm.data.is_active}
+                                                                    onChange={(e) =>
+                                                                        vacuumformedplasticForm.setData('is_active', e.target.checked)
+                                                                    }
+                                                                    className="h-3 w-3 rounded border-neutral-300"
+                                                                />
+                                                                <span>Active</span>
+                                                            </label>
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="space-y-2">
+                                                        <p className="text-[10px] font-semibold uppercase tracking-widest text-neutral-600">
+                                                            Picture image
+                                                        </p>
+                                                        <div className="flex items-center gap-6">
+                                                            <div className="flex h-16 w-40 shrink-0 items-center justify-center overflow-hidden rounded-md border border-dashed border-neutral-300 bg-white">
+                                                                {vacuumformedplasticImagePreview ? (
+                                                                    <img
+                                                                        src={vacuumformedplasticImagePreview}
+                                                                        alt="New vacuum formed plastic image preview"
+                                                                        className="h-full w-full object-cover"
+                                                                    />
+                                                                ) : editingVacuumformedplastic?.image_path ? (
+                                                                    <img
+                                                                        src={publicAssetUrl(editingVacuumformedplastic.image_path)}
+                                                                        alt="Current vacuum formed plastic image"
+                                                                        className="h-full w-full object-cover"
+                                                                    />
+                                                                ) : (
+                                                                    <span className="text-[10px] text-neutral-400">
+                                                                        No image set
+                                                                    </span>
+                                                                )}
+                                                            </div>
+                                                            <div className="flex min-w-0 flex-1 flex-col gap-3">
+                                                                <input
+                                                                    type="file"
+                                                                    accept="image/*"
+                                                                    onChange={(e) =>
+                                                                        vacuumformedplasticForm.setData(
+                                                                            'image_file',
+                                                                            e.target.files?.[0] ?? null
+                                                                        )
+                                                                    }
+                                                                    className="block w-full max-w-md text-[11px] text-neutral-700 file:mr-3 file:rounded-full file:border-0 file:bg-red-600 file:px-4 file:py-1.5 file:text-[11px] file:font-semibold file:uppercase file:tracking-widest file:text-white hover:file:bg-red-700"
+                                                                />
+                                                                {vacuumformedplasticForm.errors.image_file && (
+                                                                    <p className="text-[10px] text-red-600">
+                                                                        {vacuumformedplasticForm.errors.image_file}
+                                                                    </p>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    {flashVacuumformedplasticSuccess && (
+                                                        <div className="rounded border border-green-200 bg-green-50 px-3 py-2 text-[11px] text-green-800">
+                                                            {flashVacuumformedplasticSuccess}
+                                                        </div>
+                                                    )}
+
+                                                    <div className="flex items-center justify-end gap-2">
+                                                        {editingVacuumformedplastic && (
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => setEditingVacuumformedplastic(null)}
+                                                                className="rounded-full border border-neutral-300 px-4 py-1.5 text-[10px] font-semibold uppercase tracking-widest text-neutral-700 hover:bg-neutral-100"
+                                                            >
+                                                                Cancel
+                                                            </button>
+                                                        )}
+                                                        <button
+                                                            type="submit"
+                                                            disabled={vacuumformedplasticForm.processing}
+                                                            className="rounded-full bg-red-600 px-5 py-2 text-[10px] font-semibold uppercase tracking-widest text-white transition-colors hover:bg-red-700 border border-transparent shadow-sm disabled:opacity-60"
+                                                        >
+                                                            {vacuumformedplasticForm.processing
+                                                                ? 'Saving...'
+                                                                : editingVacuumformedplastic
+                                                                ? 'Update picture'
+                                                                : 'Add picture'}
+                                                        </button>
+                                                    </div>
+                                                </form>
+                                            </div>
                                         </div>
                                     </section>
                                 )}
                                 {selectedCompany.name === 'TOP OFFROAD' && (
                                     <section className="space-y-6 rounded-[3px] bg-neutral-50 p-5 shadow-sm">
-                                        <div className="rounded-[3px] border border-neutral-200 bg-white p-5">
+                                        <div className="rounded-[3px] border border-neutral-200 bg-white p-5 border-t-2 border-t-red-600 shadow-sm rounded-b-[3px]">
                                             <form onSubmit={submitTopoffroadStats} className="space-y-6">
                                                 <div>
                                                     <h4 className="text-xs font-semibold uppercase tracking-widest text-neutral-700">
@@ -2841,7 +3752,7 @@ export default function Dashboard() {
                                                                             e.target.value
                                                                         )
                                                                     }
-                                                                    className="w-full rounded border border-neutral-300 px-2 py-1 text-[11px]"
+                                                                    className="w-full rounded border border-neutral-300 focus:border-red-500 focus:ring focus:ring-red-500/20 px-2 py-1 text-[11px]"
                                                                 />
                                                                 <input
                                                                     type="text"
@@ -2852,7 +3763,7 @@ export default function Dashboard() {
                                                                             e.target.value
                                                                         )
                                                                     }
-                                                                    className="w-full rounded border border-neutral-300 px-2 py-1 text-[11px]"
+                                                                    className="w-full rounded border border-neutral-300 focus:border-red-500 focus:ring focus:ring-red-500/20 px-2 py-1 text-[11px]"
                                                                 />
                                                                 <input
                                                                     type="text"
@@ -2863,7 +3774,7 @@ export default function Dashboard() {
                                                                             e.target.value
                                                                         )
                                                                     }
-                                                                    className="w-full rounded border border-neutral-300 px-2 py-1 text-[11px]"
+                                                                    className="w-full rounded border border-neutral-300 focus:border-red-500 focus:ring focus:ring-red-500/20 px-2 py-1 text-[11px]"
                                                                 />
                                                             </div>
                                                         </div>
@@ -2891,7 +3802,7 @@ export default function Dashboard() {
                                                                                 };
                                                                                 topoffroadStatsForm.setData('stats_items', next);
                                                                             }}
-                                                                            className="mb-1 w-full rounded border border-neutral-300 px-2 py-1 text-[11px]"
+                                                                            className="mb-1 w-full rounded border border-neutral-300 focus:border-red-500 focus:ring focus:ring-red-500/20 px-2 py-1 text-[11px]"
                                                                             placeholder="25+"
                                                                         />
                                                                         <input
@@ -2907,7 +3818,7 @@ export default function Dashboard() {
                                                                                 };
                                                                                 topoffroadStatsForm.setData('stats_items', next);
                                                                             }}
-                                                                            className="w-full rounded border border-neutral-300 px-2 py-1 text-[11px]"
+                                                                            className="w-full rounded border border-neutral-300 focus:border-red-500 focus:ring focus:ring-red-500/20 px-2 py-1 text-[11px]"
                                                                             placeholder="Years Experience"
                                                                         />
                                                                     </div>
@@ -2921,7 +3832,7 @@ export default function Dashboard() {
                                                     <button
                                                         type="submit"
                                                         disabled={topoffroadStatsForm.processing}
-                                                        className="inline-flex items-center justify-center rounded-full bg-neutral-900 px-5 py-2 text-[11px] font-semibold uppercase tracking-widest text-white transition-colors hover:bg-black disabled:opacity-60"
+                                                        className="inline-flex items-center justify-center rounded-full bg-red-600 px-5 py-2 text-[11px] font-semibold uppercase tracking-widest text-white transition-colors hover:bg-red-700 border border-transparent shadow-sm disabled:opacity-60"
                                                     >
                                                         {topoffroadStatsForm.processing ? 'Saving...' : 'Save stats'}
                                                     </button>
@@ -2939,7 +3850,7 @@ export default function Dashboard() {
 
                                 {selectedCompany.name === 'TOP OFFROAD' && (
                                     <section className="space-y-6 rounded-[3px] bg-neutral-50 p-5 shadow-sm">
-                                        <div className="rounded-[3px] border border-neutral-200 bg-white p-5">
+                                        <div className="rounded-[3px] border border-neutral-200 bg-white p-5 border-t-2 border-t-red-600 shadow-sm rounded-b-[3px]">
                                             <form onSubmit={submitTopoffroadVideo} className="space-y-6">
                                                 <div>
                                                     <h4 className="text-xs font-semibold uppercase tracking-widest text-neutral-700">
@@ -2963,7 +3874,7 @@ export default function Dashboard() {
                                                                         e.target.value
                                                                     )
                                                                 }
-                                                                className="w-full rounded border border-neutral-300 px-2 py-1 text-[11px]"
+                                                                className="w-full rounded border border-neutral-300 focus:border-red-500 focus:ring focus:ring-red-500/20 px-2 py-1 text-[11px]"
                                                                 placeholder="TOP OFFROAD Page Video"
                                                             />
 
@@ -2994,7 +3905,7 @@ export default function Dashboard() {
                                                                         e.target.value
                                                                     )
                                                                 }
-                                                                className="w-full rounded border border-neutral-300 px-2 py-1 text-[11px]"
+                                                                className="w-full rounded border border-neutral-300 focus:border-red-500 focus:ring focus:ring-red-500/20 px-2 py-1 text-[11px]"
                                                                 placeholder="https://www.youtube.com/watch?v=..."
                                                             />
 
@@ -3100,7 +4011,7 @@ export default function Dashboard() {
                                                     <button
                                                         type="submit"
                                                         disabled={topoffroadVideoForm.processing}
-                                                        className="inline-flex items-center justify-center rounded-full bg-neutral-900 px-5 py-2 text-[11px] font-semibold uppercase tracking-widest text-white transition-colors hover:bg-black disabled:opacity-60"
+                                                        className="inline-flex items-center justify-center rounded-full bg-red-600 px-5 py-2 text-[11px] font-semibold uppercase tracking-widest text-white transition-colors hover:bg-red-700 border border-transparent shadow-sm disabled:opacity-60"
                                                     >
                                                         {topoffroadVideoForm.processing ? 'Uploading / Saving…' : 'Save video'}
                                                     </button>
@@ -3111,7 +4022,7 @@ export default function Dashboard() {
                                 )}
                                 {selectedCompany.name === 'TOP OFFROAD' && (
                                     <section className="space-y-6 rounded-[3px] bg-neutral-50 p-5 shadow-sm">
-                                        <div className="rounded-[3px] border border-neutral-200 bg-white p-5 space-y-5">
+                                        <div className="rounded-[3px] border border-neutral-200 bg-white p-5 border-t-2 border-t-red-600 shadow-sm rounded-b-[3px] space-y-5">
                                             <div>
                                                 <h4 className="text-xs font-semibold uppercase tracking-widest text-neutral-700">
                                                     TOP OFFROAD Products
@@ -3164,7 +4075,11 @@ export default function Dashboard() {
                                                         <div className="flex items-center gap-3">
                                                             <div className="h-14 w-20 overflow-hidden rounded border border-neutral-200 bg-white">
                                                                 <img
-                                                                    src={p.image_path || 'https://placehold.co/350x269'}
+                                                                    src={
+                                                                        p.image_path
+                                                                            ? publicAssetUrl(p.image_path)
+                                                                            : 'https://placehold.co/350x269'
+                                                                    }
                                                                     alt={p.title || 'TOP OFFROAD product'}
                                                                     className="h-full w-full object-cover"
                                                                 />
@@ -3226,7 +4141,7 @@ export default function Dashboard() {
                                                             type="text"
                                                             value={topoffroadProductForm.data.title}
                                                             onChange={(e) => topoffroadProductForm.setData('title', e.target.value)}
-                                                            className="mt-1 w-full rounded border border-neutral-300 px-2 py-1 text-[11px]"
+                                                            className="mt-1 w-full rounded border border-neutral-300 focus:border-red-500 focus:ring focus:ring-red-500/20 px-2 py-1 text-[11px]"
                                                             required
                                                         />
                                                         {topoffroadProductForm.errors.title && (
@@ -3250,7 +4165,7 @@ export default function Dashboard() {
                                                                     Number(e.target.value || 0)
                                                                 )
                                                             }
-                                                            className="mt-1 w-full rounded border border-neutral-300 px-2 py-1 text-[11px]"
+                                                            className="mt-1 w-full rounded border border-neutral-300 focus:border-red-500 focus:ring focus:ring-red-500/20 px-2 py-1 text-[11px]"
                                                         />
                                                         {topoffroadProductForm.errors.display_order && (
                                                             <p className="mt-1 text-[10px] text-red-600">
@@ -3267,7 +4182,7 @@ export default function Dashboard() {
                                                             rows={3}
                                                             value={topoffroadProductForm.data.description}
                                                             onChange={(e) => topoffroadProductForm.setData('description', e.target.value)}
-                                                            className="mt-1 w-full rounded border border-neutral-300 px-2 py-1 text-[11px]"
+                                                            className="mt-1 w-full rounded border border-neutral-300 focus:border-red-500 focus:ring focus:ring-red-500/20 px-2 py-1 text-[11px]"
                                                         />
                                                         {topoffroadProductForm.errors.description && (
                                                             <p className="mt-1 text-[10px] text-red-600">
@@ -3281,29 +4196,7 @@ export default function Dashboard() {
                                                         )}
                                                     </div>
 
-                                                    <div>
-                                                        <label className="block text-[10px] font-semibold uppercase tracking-widest text-neutral-600">
-                                                            Product image
-                                                        </label>
-                                                        <input
-                                                            type="file"
-                                                            accept="image/*"
-                                                            onChange={(e) =>
-                                                                topoffroadProductForm.setData(
-                                                                    'image_file',
-                                                                    e.target.files?.[0] ?? null
-                                                                )
-                                                            }
-                                                            className="mt-1 block w-full text-[11px] text-neutral-700 file:mr-3 file:rounded-full file:border-0 file:bg-red-600 file:px-4 file:py-1.5 file:text-[11px] file:font-semibold file:uppercase file:tracking-widest file:text-white hover:file:bg-red-700"
-                                                        />
-                                                        {topoffroadProductForm.errors.image_file && (
-                                                            <p className="mt-1 text-[10px] text-red-600">
-                                                                {topoffroadProductForm.errors.image_file}
-                                                            </p>
-                                                        )}
-                                                    </div>
-
-                                                    <div className="flex items-end">
+                                                    <div className="flex items-end md:col-span-2">
                                                         <label className="inline-flex items-center gap-2 text-[10px] font-semibold uppercase tracking-widest text-neutral-600">
                                                             <input
                                                                 type="checkbox"
@@ -3318,19 +4211,53 @@ export default function Dashboard() {
                                                     </div>
                                                 </div>
 
-                                                {(topoffroadProductImagePreview ||
-                                                    editingTopoffroadProduct?.image_path) && (
-                                                    <div className="h-20 w-28 overflow-hidden rounded border border-neutral-200 bg-white">
-                                                        <img
-                                                            src={
-                                                                topoffroadProductImagePreview ||
-                                                                editingTopoffroadProduct?.image_path
-                                                            }
-                                                            alt="TOP OFFROAD product preview"
-                                                            className="h-full w-full object-cover"
-                                                        />
+                                                <div className="space-y-2">
+                                                    <p className="text-[10px] font-semibold uppercase tracking-widest text-neutral-600">
+                                                        Product image
+                                                    </p>
+                                                    <p className="text-[10px] text-neutral-500">
+                                                        Upload a product photo; files are stored in public uploads like the Sundia navbar logo.
+                                                    </p>
+                                                    <div className="flex items-center gap-6">
+                                                        <div className="flex h-16 w-40 shrink-0 items-center justify-center overflow-hidden rounded-md border border-dashed border-neutral-300 bg-white">
+                                                            {topoffroadProductImagePreview ? (
+                                                                <img
+                                                                    src={topoffroadProductImagePreview}
+                                                                    alt="New TOP OFFROAD product image preview"
+                                                                    className="h-full w-full object-cover"
+                                                                />
+                                                            ) : editingTopoffroadProduct?.image_path ? (
+                                                                <img
+                                                                    src={publicAssetUrl(editingTopoffroadProduct.image_path)}
+                                                                    alt="Current TOP OFFROAD product image"
+                                                                    className="h-full w-full object-cover"
+                                                                />
+                                                            ) : (
+                                                                <span className="text-[10px] text-neutral-400">
+                                                                    No image set
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                        <div className="flex min-w-0 flex-1 flex-col gap-3">
+                                                            <input
+                                                                type="file"
+                                                                accept="image/*"
+                                                                onChange={(e) =>
+                                                                    topoffroadProductForm.setData(
+                                                                        'image_file',
+                                                                        e.target.files?.[0] ?? null
+                                                                    )
+                                                                }
+                                                                className="block w-full max-w-md text-[11px] text-neutral-700 file:mr-3 file:rounded-full file:border-0 file:bg-red-600 file:px-4 file:py-1.5 file:text-[11px] file:font-semibold file:uppercase file:tracking-widest file:text-white hover:file:bg-red-700"
+                                                            />
+                                                            {topoffroadProductForm.errors.image_file && (
+                                                                <p className="text-[10px] text-red-600">
+                                                                    {topoffroadProductForm.errors.image_file}
+                                                                </p>
+                                                            )}
+                                                        </div>
                                                     </div>
-                                                )}
+                                                </div>
 
                                                 {flashTopoffroadProductSuccess && (
                                                     <div className="rounded border border-green-200 bg-green-50 px-3 py-2 text-[11px] text-green-800">
@@ -3352,7 +4279,7 @@ export default function Dashboard() {
                                                     <button
                                                         type="submit"
                                                         disabled={topoffroadProductForm.processing}
-                                                        className="rounded-full bg-neutral-900 px-5 py-2 text-[10px] font-semibold uppercase tracking-widest text-white hover:bg-black disabled:opacity-60"
+                                                        className="rounded-full bg-red-600 px-5 py-2 text-[10px] font-semibold uppercase tracking-widest text-white transition-colors hover:bg-red-700 border border-transparent shadow-sm disabled:opacity-60"
                                                     >
                                                         {topoffroadProductForm.processing
                                                             ? 'Saving...'
@@ -3367,7 +4294,7 @@ export default function Dashboard() {
                                 )}
                                 {selectedCompany.name === 'CAREERS' && (
                                     <section className="space-y-6">
-                                        <div className="rounded-[3px] border border-neutral-200 bg-white p-5 shadow-sm">
+                                        <div className="rounded-[3px] border border-neutral-200 bg-white p-5 border-t-2 border-t-red-600 shadow-sm rounded-b-[3px] shadow-sm">
                                             <div className="flex flex-wrap items-start justify-between gap-4">
                                                 <div>
                                                     <h4 className="text-xs font-semibold uppercase tracking-widest text-neutral-700">
@@ -3412,7 +4339,7 @@ export default function Dashboard() {
                                                                 onChange={(e) =>
                                                                     careersCultureForm.setData('title', e.target.value)
                                                                 }
-                                                                className="mt-1 w-full rounded border border-neutral-300 px-2 py-1.5 text-[11px]"
+                                                                className="mt-1 w-full rounded border border-neutral-300 focus:border-red-500 focus:ring focus:ring-red-500/20 px-2 py-1.5 text-[11px]"
                                                             />
                                                             {careersCultureForm.errors.title && (
                                                                 <p className="mt-1 text-[11px] text-red-600">
@@ -3430,7 +4357,7 @@ export default function Dashboard() {
                                                                 onChange={(e) =>
                                                                     careersCultureForm.setData('body', e.target.value)
                                                                 }
-                                                                className="mt-1 w-full rounded border border-neutral-300 px-2 py-1.5 text-[11px]"
+                                                                className="mt-1 w-full rounded border border-neutral-300 focus:border-red-500 focus:ring focus:ring-red-500/20 px-2 py-1.5 text-[11px]"
                                                             />
                                                             {careersCultureForm.errors.body && (
                                                                 <p className="mt-1 text-[11px] text-red-600">
@@ -3451,7 +4378,7 @@ export default function Dashboard() {
                                                                         e.target.value,
                                                                     )
                                                                 }
-                                                                className="mt-1 w-full rounded border border-neutral-300 px-2 py-1.5 text-[11px]"
+                                                                className="mt-1 w-full rounded border border-neutral-300 focus:border-red-500 focus:ring focus:ring-red-500/20 px-2 py-1.5 text-[11px]"
                                                                 placeholder="/coordination.jpg"
                                                             />
                                                             <p className="mt-1 text-[10px] text-neutral-500">
@@ -3478,6 +4405,23 @@ export default function Dashboard() {
                                                                 }
                                                                 className="mt-1 block w-full text-[11px] text-neutral-600"
                                                             />
+                                                            {careersCultureImagePreviewUrl ? (
+                                                                <div className="mt-3 flex h-32 w-full max-w-[200px] items-center justify-center overflow-hidden rounded bg-neutral-100 border border-neutral-200">
+                                                                    <img
+                                                                        src={careersCultureImagePreviewUrl}
+                                                                        alt="Culture Image Preview"
+                                                                        className="h-full w-full object-cover"
+                                                                    />
+                                                                </div>
+                                                            ) : careersEditingCulture?.image_path ? (
+                                                                <div className="mt-3 flex h-32 w-full max-w-[200px] items-center justify-center overflow-hidden rounded bg-neutral-100 border border-neutral-200">
+                                                                    <img
+                                                                        src={encodeURI(careersEditingCulture.image_path)}
+                                                                        alt="Current Culture Image"
+                                                                        className="h-full w-full object-cover"
+                                                                    />
+                                                                </div>
+                                                            ) : null}
                                                             {careersCultureForm.errors.image_file && (
                                                                 <p className="mt-1 text-[11px] text-red-600">
                                                                     {careersCultureForm.errors.image_file}
@@ -3499,7 +4443,7 @@ export default function Dashboard() {
                                                                             Number(e.target.value),
                                                                         )
                                                                     }
-                                                                    className="mt-1 w-full rounded border border-neutral-300 px-2 py-1.5 text-[11px]"
+                                                                    className="mt-1 w-full rounded border border-neutral-300 focus:border-red-500 focus:ring focus:ring-red-500/20 px-2 py-1.5 text-[11px]"
                                                                 />
                                                             </div>
                                                             <div className="flex items-end pb-1">
@@ -3527,7 +4471,7 @@ export default function Dashboard() {
                                                         <button
                                                             type="submit"
                                                             disabled={careersCultureForm.processing}
-                                                            className="rounded-full bg-neutral-900 px-5 py-2 text-[10px] font-semibold uppercase tracking-widest text-white hover:bg-black disabled:opacity-60"
+                                                            className="rounded-full bg-red-600 px-5 py-2 text-[10px] font-semibold uppercase tracking-widest text-white transition-colors hover:bg-red-700 border border-transparent shadow-sm disabled:opacity-60"
                                                         >
                                                             {careersCultureForm.processing
                                                                 ? 'Saving...'
@@ -3597,7 +4541,7 @@ export default function Dashboard() {
                                             </div>
                                         </div>
 
-                                        <div className="rounded-[3px] border border-neutral-200 bg-white p-5 shadow-sm">
+                                        <div className="rounded-[3px] border border-neutral-200 bg-white p-5 border-t-2 border-t-red-600 shadow-sm rounded-b-[3px] shadow-sm">
                                             <div className="flex flex-wrap items-start justify-between gap-4">
                                                 <div>
                                                     <h4 className="text-xs font-semibold uppercase tracking-widest text-neutral-700">
@@ -3642,7 +4586,7 @@ export default function Dashboard() {
                                                                 onChange={(e) =>
                                                                     careersJobForm.setData('title', e.target.value)
                                                                 }
-                                                                className="mt-1 w-full rounded border border-neutral-300 px-2 py-1.5 text-[11px]"
+                                                                className="mt-1 w-full rounded border border-neutral-300 focus:border-red-500 focus:ring focus:ring-red-500/20 px-2 py-1.5 text-[11px]"
                                                             />
                                                             {careersJobForm.errors.title && (
                                                                 <p className="mt-1 text-[11px] text-red-600">
@@ -3664,7 +4608,7 @@ export default function Dashboard() {
                                                                             e.target.value,
                                                                         )
                                                                     }
-                                                                    className="mt-1 w-full rounded border border-neutral-300 px-2 py-1.5 text-[11px]"
+                                                                    className="mt-1 w-full rounded border border-neutral-300 focus:border-red-500 focus:ring focus:ring-red-500/20 px-2 py-1.5 text-[11px]"
                                                                     placeholder="Full-time"
                                                                 />
                                                             </div>
@@ -3681,7 +4625,7 @@ export default function Dashboard() {
                                                                             e.target.value,
                                                                         )
                                                                     }
-                                                                    className="mt-1 w-full rounded border border-neutral-300 px-2 py-1.5 text-[11px]"
+                                                                    className="mt-1 w-full rounded border border-neutral-300 focus:border-red-500 focus:ring focus:ring-red-500/20 px-2 py-1.5 text-[11px]"
                                                                 />
                                                             </div>
                                                         </div>
@@ -3695,7 +4639,7 @@ export default function Dashboard() {
                                                                 onChange={(e) =>
                                                                     careersJobForm.setData('summary', e.target.value)
                                                                 }
-                                                                className="mt-1 w-full rounded border border-neutral-300 px-2 py-1.5 text-[11px]"
+                                                                className="mt-1 w-full rounded border border-neutral-300 focus:border-red-500 focus:ring focus:ring-red-500/20 px-2 py-1.5 text-[11px]"
                                                             />
                                                             {careersJobForm.errors.summary && (
                                                                 <p className="mt-1 text-[11px] text-red-600">
@@ -3720,7 +4664,7 @@ export default function Dashboard() {
                                                                                         e.target.value,
                                                                                     )
                                                                                 }
-                                                                                className="min-w-0 flex-1 rounded border border-neutral-300 px-2 py-1.5 text-[11px]"
+                                                                                className="min-w-0 flex-1 rounded border border-neutral-300 focus:border-red-500 focus:ring focus:ring-red-500/20 px-2 py-1.5 text-[11px]"
                                                                                 placeholder={`Bullet ${idx + 1}`}
                                                                             />
                                                                             <button
@@ -3762,7 +4706,7 @@ export default function Dashboard() {
                                                                             Number(e.target.value),
                                                                         )
                                                                     }
-                                                                    className="mt-1 w-full rounded border border-neutral-300 px-2 py-1.5 text-[11px]"
+                                                                    className="mt-1 w-full rounded border border-neutral-300 focus:border-red-500 focus:ring focus:ring-red-500/20 px-2 py-1.5 text-[11px]"
                                                                 >
                                                                     {careersJobIconOptions.map((opt) => (
                                                                         <option key={opt.value} value={opt.value}>
@@ -3785,7 +4729,7 @@ export default function Dashboard() {
                                                                             Number(e.target.value),
                                                                         )
                                                                     }
-                                                                    className="mt-1 w-full rounded border border-neutral-300 px-2 py-1.5 text-[11px]"
+                                                                    className="mt-1 w-full rounded border border-neutral-300 focus:border-red-500 focus:ring focus:ring-red-500/20 px-2 py-1.5 text-[11px]"
                                                                 />
                                                             </div>
                                                         </div>
@@ -3808,7 +4752,7 @@ export default function Dashboard() {
                                                         <button
                                                             type="submit"
                                                             disabled={careersJobForm.processing}
-                                                            className="rounded-full bg-neutral-900 px-5 py-2 text-[10px] font-semibold uppercase tracking-widest text-white hover:bg-black disabled:opacity-60"
+                                                            className="rounded-full bg-red-600 px-5 py-2 text-[10px] font-semibold uppercase tracking-widest text-white transition-colors hover:bg-red-700 border border-transparent shadow-sm disabled:opacity-60"
                                                         >
                                                             {careersJobForm.processing
                                                                 ? 'Saving...'
@@ -3872,8 +4816,139 @@ export default function Dashboard() {
                                 )}
                                 {selectedCompany.name === 'SUNDIA' && (
                                     <section className="space-y-6 rounded-[3px] bg-neutral-50 p-5 shadow-sm">
+                                        {/* Background Pictures */}
+                                        <div className="rounded-[3px] border border-neutral-200 bg-white p-5 border-t-2 border-t-red-600 shadow-sm rounded-b-[3px]">
+                                            <h4 className="text-xs font-semibold uppercase tracking-widest text-neutral-700">
+                                                Page Background Pictures
+                                            </h4>
+                                            <p className="mt-2 text-xs text-neutral-500 mb-6">
+                                                Manage the background pictures for different pages across the site.
+                                            </p>
+                                            <div className="grid gap-6">
+                                                {['Home', 'Siam', 'Tpsmi', 'Top offroad', 'Careers'].map((page) => {
+                                                    const savedImages = backgroundPictures?.[page]?.images ?? [];
+                                                    const defaultSlots = Number(backgroundPictures?.[page]?.slot_count || 1);
+                                                    const slots = backgroundPreviews?.[`${page}-slot-count`] ?? Math.max(1, defaultSlots);
+
+                                                    return (
+                                                        <div
+                                                            key={page}
+                                                            className="flex flex-col gap-3 rounded border border-neutral-200 p-4 bg-neutral-50/50"
+                                                        >
+                                                            <div className="flex items-center justify-between">
+                                                                <span className="text-[11px] font-semibold uppercase tracking-widest text-neutral-700">
+                                                                    {page} Background{slots > 1 ? 's' : ''}
+                                                                </span>
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => {
+                                                                        setBackgroundPreviews((prev) => ({
+                                                                            ...prev,
+                                                                            [`${page}-slot-count`]: (prev?.[`${page}-slot-count`] ?? Math.max(1, defaultSlots)) + 1,
+                                                                        }));
+                                                                    }}
+                                                                    className="rounded bg-red-600 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-widest text-white hover:bg-red-700 transition-colors"
+                                                                >
+                                                                    Add image slot
+                                                                </button>
+                                                            </div>
+                                                            <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
+                                                                {Array.from({ length: slots }, (_, slot) => {
+                                                                    const previewKey = `${page}-${slot}`;
+                                                                    const imagePath = backgroundPreviews[previewKey] || savedImages?.[slot] || null;
+
+                                                                    return (
+                                                                        <form
+                                                                            key={previewKey}
+                                                                            onSubmit={(e) => {
+                                                                                e.preventDefault();
+                                                                                const formData = new FormData(e.target);
+                                                                                formData.append('page_name', page);
+                                                                                formData.append('slot', String(slot));
+                                                                                router.post(route('admin.background-pictures.update'), formData, {
+                                                                                    forceFormData: true,
+                                                                                    preserveScroll: true,
+                                                                                    onSuccess: () => {
+                                                                                        setBackgroundPreviews((prev) => {
+                                                                                            const next = { ...prev };
+                                                                                            if (next[previewKey]) URL.revokeObjectURL(next[previewKey]);
+                                                                                            delete next[previewKey];
+                                                                                            return next;
+                                                                                        });
+                                                                                        e.target.reset();
+                                                                                    },
+                                                                                });
+                                                                            }}
+                                                                            className="rounded border border-neutral-200 bg-white p-3"
+                                                                        >
+                                                                            <div className="mb-2 flex items-center justify-between">
+                                                                                <span className="text-[10px] font-semibold uppercase tracking-widest text-neutral-700">
+                                                                                    {slots > 1 ? `Background ${slot + 1}` : 'Background'}
+                                                                                </span>
+                                                                                <button
+                                                                                    type="submit"
+                                                                                    className="rounded bg-neutral-900 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-widest text-white hover:bg-neutral-800 transition-colors"
+                                                                                >
+                                                                                    Save
+                                                                                </button>
+                                                                            </div>
+                                                                            <div className="flex flex-col gap-4 mt-2">
+                                                                                <div className="flex aspect-video w-full shrink-0 items-center justify-center overflow-hidden rounded border border-neutral-200 bg-white shadow-sm">
+                                                                                    {imagePath ? (
+                                                                                        <img
+                                                                                            src={publicAssetUrl(imagePath)}
+                                                                                            alt={`${page} bg ${slot + 1}`}
+                                                                                            className="w-full h-full object-cover"
+                                                                                        />
+                                                                                    ) : (
+                                                                                        <span className="text-[10px] text-neutral-400">No Image</span>
+                                                                                    )}
+                                                                                </div>
+                                                                                <div className="flex flex-col gap-2 w-full">
+                                                                                    <input
+                                                                                        type="file"
+                                                                                        name="image_file"
+                                                                                        accept="image/*"
+                                                                                        onChange={(e) => {
+                                                                                            const file = e.target.files?.[0];
+                                                                                            setBackgroundPreviews((prev) => {
+                                                                                                const next = { ...prev };
+                                                                                                if (next[previewKey]) URL.revokeObjectURL(next[previewKey]);
+                                                                                                if (file) next[previewKey] = URL.createObjectURL(file);
+                                                                                                else delete next[previewKey];
+                                                                                                return next;
+                                                                                            });
+                                                                                        }}
+                                                                                        className="block w-full text-[10px] text-neutral-700 file:mr-3 file:rounded file:border-0 file:bg-red-600 file:px-3 file:py-1 file:text-[10px] file:font-semibold file:uppercase file:text-white hover:file:bg-red-700 transition-colors cursor-pointer"
+                                                                                    />
+                                                                                    <label className="flex items-center gap-2 text-[10px] uppercase font-semibold text-neutral-600 cursor-pointer mt-1">
+                                                                                        <input
+                                                                                            type="checkbox"
+                                                                                            name="remove_image"
+                                                                                            value="1"
+                                                                                            className="rounded border-neutral-300 text-red-600 focus:ring-red-500"
+                                                                                        />
+                                                                                        Remove current image
+                                                                                    </label>
+                                                                                </div>
+                                                                            </div>
+                                                                        </form>
+                                                                    );
+                                                                })}
+                                                            </div>
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
+                                            {flashBackgroundSuccess && (
+                                                <div className="mt-4 rounded border border-green-200 bg-green-50 px-3 py-2 text-[11px] text-green-800 font-medium">
+                                                    {flashBackgroundSuccess}
+                                                </div>
+                                            )}
+                                        </div>
+
                                         {/* Navbar logo */}
-                                        <div className="rounded-[3px] border border-neutral-200 bg-white p-5">
+                                        <div className="rounded-[3px] border border-neutral-200 bg-white p-5 border-t-2 border-t-red-600 shadow-sm rounded-b-[3px]">
                                             <form onSubmit={submitLogo} className="space-y-6">
                                                 <h4 className="text-xs font-semibold uppercase tracking-widest text-neutral-700">
                                                     Navbar Logo
@@ -3884,7 +4959,13 @@ export default function Dashboard() {
 
                                                 <div className="mt-4 flex items-center gap-6">
                                                     <div className="flex h-16 w-40 items-center justify-center rounded-md border border-dashed border-neutral-300 bg-white">
-                                                        {sundia?.logo_path ? (
+                                                {logoPreviewUrl ? (
+                                                    <img
+                                                        src={logoPreviewUrl}
+                                                        alt="New Sundia logo preview"
+                                                        className="max-h-12 w-auto object-contain"
+                                                    />
+                                                ) : sundia?.logo_path ? (
                                                             <img
                                                                 src={sundia.logo_path}
                                                                 alt="Current Sundia logo"
@@ -3925,7 +5006,7 @@ export default function Dashboard() {
                                                     <button
                                                         type="submit"
                                                         disabled={logoForm.processing}
-                                                        className="inline-flex items-center justify-center rounded-full bg-neutral-900 px-5 py-2 text-[11px] font-semibold uppercase tracking-widest text-white transition-colors hover:bg-black disabled:opacity-60"
+                                                        className="inline-flex items-center justify-center rounded-full bg-red-600 px-5 py-2 text-[11px] font-semibold uppercase tracking-widest text-white transition-colors hover:bg-red-700 border border-transparent shadow-sm disabled:opacity-60"
                                                     >
                                                         {logoForm.processing ? 'Saving...' : 'Save logo'}
                                                     </button>
@@ -3934,7 +5015,7 @@ export default function Dashboard() {
                                         </div>
 
                                         {/* Upcoming events (homepage hero) */}
-                                        <div className="rounded-[3px] border border-neutral-200 bg-white p-5">
+                                        <div className="rounded-[3px] border border-neutral-200 bg-white p-5 border-t-2 border-t-red-600 shadow-sm rounded-b-[3px]">
                                             <h4 className="text-xs font-semibold uppercase tracking-widest text-neutral-700">
                                                 Upcoming events
                                             </h4>
@@ -4018,7 +5099,7 @@ export default function Dashboard() {
                                                             onChange={(e) =>
                                                                 upcomingEventForm.setData('title', e.target.value)
                                                             }
-                                                            className="w-full rounded border border-neutral-300 px-2 py-1 text-[11px]"
+                                                            className="w-full rounded border border-neutral-300 focus:border-red-500 focus:ring focus:ring-red-500/20 px-2 py-1 text-[11px]"
                                                             placeholder="SUNDIA COMPANY OUTING"
                                                         />
                                                         {upcomingEventForm.errors.title && (
@@ -4038,7 +5119,7 @@ export default function Dashboard() {
                                                             onChange={(e) =>
                                                                 upcomingEventForm.setData('location', e.target.value)
                                                             }
-                                                            className="w-full rounded border border-neutral-300 px-2 py-1 text-[11px]"
+                                                            className="w-full rounded border border-neutral-300 focus:border-red-500 focus:ring focus:ring-red-500/20 px-2 py-1 text-[11px]"
                                                             placeholder="Lobo Batangas"
                                                         />
                                                         {upcomingEventForm.errors.location && (
@@ -4062,7 +5143,7 @@ export default function Dashboard() {
                                                                         e.target.value.toUpperCase()
                                                                     )
                                                                 }
-                                                                className="w-full rounded border border-neutral-300 px-2 py-1 text-[11px]"
+                                                                className="w-full rounded border border-neutral-300 focus:border-red-500 focus:ring focus:ring-red-500/20 px-2 py-1 text-[11px]"
                                                                 placeholder="MAR"
                                                                 maxLength={12}
                                                             />
@@ -4082,7 +5163,7 @@ export default function Dashboard() {
                                                                 onChange={(e) =>
                                                                     upcomingEventForm.setData('day_label', e.target.value)
                                                                 }
-                                                                className="w-full rounded border border-neutral-300 px-2 py-1 text-[11px]"
+                                                                className="w-full rounded border border-neutral-300 focus:border-red-500 focus:ring focus:ring-red-500/20 px-2 py-1 text-[11px]"
                                                                 placeholder="30"
                                                                 maxLength={8}
                                                             />
@@ -4109,7 +5190,7 @@ export default function Dashboard() {
                                                                         Number(e.target.value)
                                                                     )
                                                                 }
-                                                                className="w-full rounded border border-neutral-300 px-2 py-1 text-[11px]"
+                                                                className="w-full rounded border border-neutral-300 focus:border-red-500 focus:ring focus:ring-red-500/20 px-2 py-1 text-[11px]"
                                                             />
                                                             {upcomingEventForm.errors.display_order && (
                                                                 <p className="text-[10px] text-red-600">
@@ -4149,7 +5230,7 @@ export default function Dashboard() {
                                                         <button
                                                             type="submit"
                                                             disabled={upcomingEventForm.processing}
-                                                            className="inline-flex items-center justify-center rounded-full bg-neutral-900 px-5 py-2 text-[11px] font-semibold uppercase tracking-widest text-white transition-colors hover:bg-black disabled:opacity-60"
+                                                            className="inline-flex items-center justify-center rounded-full bg-red-600 px-5 py-2 text-[11px] font-semibold uppercase tracking-widest text-white transition-colors hover:bg-red-700 border border-transparent shadow-sm disabled:opacity-60"
                                                         >
                                                             {upcomingEventForm.processing
                                                                 ? 'Saving...'
@@ -4163,7 +5244,7 @@ export default function Dashboard() {
                                         </div>
 
                                         {/* "What we do" stats */}
-                                        <div className="rounded-[3px] border border-neutral-200 bg-white p-5">
+                                        <div className="rounded-[3px] border border-neutral-200 bg-white p-5 border-t-2 border-t-red-600 shadow-sm rounded-b-[3px]">
                                             <form onSubmit={submitStats} className="space-y-6">
                                                 <div>
                                                     <h4 className="text-xs font-semibold uppercase tracking-widest text-neutral-700">
@@ -4189,7 +5270,7 @@ export default function Dashboard() {
                                                                             e.target.value
                                                                         )
                                                                     }
-                                                                    className="w-full rounded border border-neutral-300 px-2 py-1 text-[11px]"
+                                                                    className="w-full rounded border border-neutral-300 focus:border-red-500 focus:ring focus:ring-red-500/20 px-2 py-1 text-[11px]"
                                                                 />
                                                                 <input
                                                                     type="text"
@@ -4200,7 +5281,7 @@ export default function Dashboard() {
                                                                             e.target.value
                                                                         )
                                                                     }
-                                                                    className="w-full rounded border border-neutral-300 px-2 py-1 text-[11px]"
+                                                                    className="w-full rounded border border-neutral-300 focus:border-red-500 focus:ring focus:ring-red-500/20 px-2 py-1 text-[11px]"
                                                                 />
                                                                 <input
                                                                     type="text"
@@ -4211,7 +5292,7 @@ export default function Dashboard() {
                                                                             e.target.value
                                                                         )
                                                                     }
-                                                                    className="w-full rounded border border-neutral-300 px-2 py-1 text-[11px]"
+                                                                    className="w-full rounded border border-neutral-300 focus:border-red-500 focus:ring focus:ring-red-500/20 px-2 py-1 text-[11px]"
                                                                 />
                                                             </div>
                                                         </div>
@@ -4239,7 +5320,7 @@ export default function Dashboard() {
                                                                                 };
                                                                                 statsForm.setData('stats_items', next);
                                                                             }}
-                                                                            className="mb-1 w-full rounded border border-neutral-300 px-2 py-1 text-[11px]"
+                                                                            className="mb-1 w-full rounded border border-neutral-300 focus:border-red-500 focus:ring focus:ring-red-500/20 px-2 py-1 text-[11px]"
                                                                             placeholder="25+"
                                                                         />
                                                                         <input
@@ -4255,7 +5336,7 @@ export default function Dashboard() {
                                                                                 };
                                                                                 statsForm.setData('stats_items', next);
                                                                             }}
-                                                                            className="w-full rounded border border-neutral-300 px-2 py-1 text-[11px]"
+                                                                            className="w-full rounded border border-neutral-300 focus:border-red-500 focus:ring focus:ring-red-500/20 px-2 py-1 text-[11px]"
                                                                             placeholder="Years Experience"
                                                                         />
                                                                     </div>
@@ -4269,7 +5350,7 @@ export default function Dashboard() {
                                                     <button
                                                         type="submit"
                                                         disabled={statsForm.processing}
-                                                        className="inline-flex items-center justify-center rounded-full bg-neutral-900 px-5 py-2 text-[11px] font-semibold uppercase tracking-widest text-white transition-colors hover:bg-black disabled:opacity-60"
+                                                        className="inline-flex items-center justify-center rounded-full bg-red-600 px-5 py-2 text-[11px] font-semibold uppercase tracking-widest text-white transition-colors hover:bg-red-700 border border-transparent shadow-sm disabled:opacity-60"
                                                     >
                                                         {statsForm.processing ? 'Saving...' : 'Save stats'}
                                                     </button>
@@ -4283,7 +5364,7 @@ export default function Dashboard() {
                                         </div>
 
                                         {/* Homepage video settings */}
-                                        <div className="rounded-[3px] border border-neutral-200 bg-white p-5">
+                                        <div className="rounded-[3px] border border-neutral-200 bg-white p-5 border-t-2 border-t-red-600 shadow-sm rounded-b-[3px]">
                                             <form onSubmit={submitVideo} className="space-y-6">
                                                 <div>
                                                     <h4 className="text-xs font-semibold uppercase tracking-widest text-neutral-700">
@@ -4304,7 +5385,7 @@ export default function Dashboard() {
                                                                 onChange={(e) =>
                                                                     videoForm.setData('video_title', e.target.value)
                                                                 }
-                                                                className="w-full rounded border border-neutral-300 px-2 py-1 text-[11px]"
+                                                                className="w-full rounded border border-neutral-300 focus:border-red-500 focus:ring focus:ring-red-500/20 px-2 py-1 text-[11px]"
                                                                 placeholder="Sundia Group Company Video"
                                                             />
 
@@ -4335,7 +5416,7 @@ export default function Dashboard() {
                                                                 onChange={(e) =>
                                                                     videoForm.setData('video_url', e.target.value)
                                                                 }
-                                                                className="w-full rounded border border-neutral-300 px-2 py-1 text-[11px]"
+                                                                className="w-full rounded border border-neutral-300 focus:border-red-500 focus:ring focus:ring-red-500/20 px-2 py-1 text-[11px]"
                                                                 placeholder="https://www.youtube.com/watch?v=..."
                                                             />
 
@@ -4438,7 +5519,7 @@ export default function Dashboard() {
                                                     <button
                                                         type="submit"
                                                         disabled={videoForm.processing}
-                                                        className="inline-flex items-center justify-center rounded-full bg-neutral-900 px-5 py-2 text-[11px] font-semibold uppercase tracking-widest text-white transition-colors hover:bg-black disabled:opacity-60"
+                                                        className="inline-flex items-center justify-center rounded-full bg-red-600 px-5 py-2 text-[11px] font-semibold uppercase tracking-widest text-white transition-colors hover:bg-red-700 border border-transparent shadow-sm disabled:opacity-60"
                                                     >
                                                         {videoForm.processing ? 'Uploading / Saving…' : 'Save video'}
                                                     </button>
@@ -4447,7 +5528,7 @@ export default function Dashboard() {
                                         </div>
 
                                         {/* Mission & Vision */}
-                                        <div className="rounded-[3px] border border-neutral-200 bg-white p-5">
+                                        <div className="rounded-[3px] border border-neutral-200 bg-white p-5 border-t-2 border-t-red-600 shadow-sm rounded-b-[3px]">
                                             <form
                                                 onSubmit={submitMissionVision}
                                                 className="space-y-6"
@@ -4479,7 +5560,7 @@ export default function Dashboard() {
                                                                 )
                                                             }
                                                             rows={8}
-                                                            className="w-full rounded border border-neutral-300 px-2 py-1 text-[11px]"
+                                                            className="w-full rounded border border-neutral-300 focus:border-red-500 focus:ring focus:ring-red-500/20 px-2 py-1 text-[11px]"
                                                             placeholder="Enter mission text…"
                                                         />
                                                         {missionVisionForm.errors
@@ -4511,7 +5592,7 @@ export default function Dashboard() {
                                                                 )
                                                             }
                                                             rows={8}
-                                                            className="w-full rounded border border-neutral-300 px-2 py-1 text-[11px]"
+                                                            className="w-full rounded border border-neutral-300 focus:border-red-500 focus:ring focus:ring-red-500/20 px-2 py-1 text-[11px]"
                                                             placeholder="Enter vision text…"
                                                         />
                                                         {missionVisionForm.errors
@@ -4533,7 +5614,7 @@ export default function Dashboard() {
                                                         disabled={
                                                             missionVisionForm.processing
                                                         }
-                                                        className="inline-flex items-center justify-center rounded-full bg-neutral-900 px-5 py-2 text-[11px] font-semibold uppercase tracking-widest text-white transition-colors hover:bg-black disabled:opacity-60"
+                                                        className="inline-flex items-center justify-center rounded-full bg-red-600 px-5 py-2 text-[11px] font-semibold uppercase tracking-widest text-white transition-colors hover:bg-red-700 border border-transparent shadow-sm disabled:opacity-60"
                                                     >
                                                         {missionVisionForm.processing
                                                             ? 'Saving...'
@@ -4698,7 +5779,7 @@ export default function Dashboard() {
                                                             onChange={(e) =>
                                                                 subsidiaryForm.setData('name', e.target.value)
                                                             }
-                                                            className="w-full rounded border border-neutral-300 px-2 py-1 text-[11px]"
+                                                            className="w-full rounded border border-neutral-300 focus:border-red-500 focus:ring focus:ring-red-500/20 px-2 py-1 text-[11px]"
                                                             placeholder="SD TRADING C."
                                                         />
                                                         {subsidiaryForm.errors.name && (
@@ -4718,7 +5799,7 @@ export default function Dashboard() {
                                                                 subsidiaryForm.setData('description', e.target.value)
                                                             }
                                                             rows={4}
-                                                            className="w-full rounded border border-neutral-300 px-2 py-1 text-[11px]"
+                                                            className="w-full rounded border border-neutral-300 focus:border-red-500 focus:ring focus:ring-red-500/20 px-2 py-1 text-[11px]"
                                                             placeholder="Short description shown on the card."
                                                         />
                                                         {subsidiaryForm.errors.description && (
@@ -4777,7 +5858,7 @@ export default function Dashboard() {
                                                                         Number(e.target.value),
                                                                     )
                                                                 }
-                                                                className="w-full rounded border border-neutral-300 px-2 py-1 text-[11px]"
+                                                                className="w-full rounded border border-neutral-300 focus:border-red-500 focus:ring focus:ring-red-500/20 px-2 py-1 text-[11px]"
                                                             />
                                                             {subsidiaryForm.errors.display_order && (
                                                                 <p className="text-[10px] text-red-600">
@@ -4911,7 +5992,7 @@ export default function Dashboard() {
                                                         <button
                                                             type="submit"
                                                             disabled={subsidiaryForm.processing}
-                                                            className="inline-flex items-center justify-center rounded-full bg-neutral-900 px-5 py-2 text-[11px] font-semibold uppercase tracking-widest text-white transition-colors hover:bg-black disabled:opacity-60"
+                                                            className="inline-flex items-center justify-center rounded-full bg-red-600 px-5 py-2 text-[11px] font-semibold uppercase tracking-widest text-white transition-colors hover:bg-red-700 border border-transparent shadow-sm disabled:opacity-60"
                                                         >
                                                             {subsidiaryForm.processing
                                                                 ? 'Saving…'
@@ -4951,7 +6032,16 @@ export default function Dashboard() {
                                                         {previewTeamMembers.map((m, idx) => (
                                                             <div key={m.id ?? `tm-${idx}`} className="flex-shrink-0">
                                                                 <TeamMemberCardPreview
-                                                                    member={m}
+                                                                    member={
+                                                                        editingTeamMember?.id === m.id &&
+                                                                        teamMemberProfilePreviewUrl
+                                                                            ? {
+                                                                                  ...m,
+                                                                                  local_profile_preview_url:
+                                                                                      teamMemberProfilePreviewUrl,
+                                                                              }
+                                                                            : m
+                                                                    }
                                                                     mode="admin"
                                                                     onEdit={(member) => setEditingTeamMember(member)}
                                                                 />
@@ -5012,7 +6102,7 @@ export default function Dashboard() {
                                                             type="text"
                                                             value={teamMemberForm.data.name}
                                                             onChange={(e) => teamMemberForm.setData('name', e.target.value)}
-                                                            className="w-full rounded border border-neutral-300 px-2 py-1 text-[11px]"
+                                                            className="w-full rounded border border-neutral-300 focus:border-red-500 focus:ring focus:ring-red-500/20 px-2 py-1 text-[11px]"
                                                             placeholder="MR. JUAN DELA CRUZ"
                                                         />
                                                         {teamMemberForm.errors.name && (
@@ -5030,7 +6120,7 @@ export default function Dashboard() {
                                                             type="text"
                                                             value={teamMemberForm.data.title}
                                                             onChange={(e) => teamMemberForm.setData('title', e.target.value)}
-                                                            className="w-full rounded border border-neutral-300 px-2 py-1 text-[11px]"
+                                                            className="w-full rounded border border-neutral-300 focus:border-red-500 focus:ring focus:ring-red-500/20 px-2 py-1 text-[11px]"
                                                             placeholder="PRESIDENT"
                                                         />
                                                         {teamMemberForm.errors.title && (
@@ -5049,7 +6139,7 @@ export default function Dashboard() {
                                                                 type="text"
                                                                 value={teamMemberForm.data.company}
                                                                 onChange={(e) => teamMemberForm.setData('company', e.target.value)}
-                                                                className="w-full rounded border border-neutral-300 px-2 py-1 text-[11px]"
+                                                                className="w-full rounded border border-neutral-300 focus:border-red-500 focus:ring focus:ring-red-500/20 px-2 py-1 text-[11px]"
                                                                 placeholder="SUNDIA"
                                                             />
                                                             {teamMemberForm.errors.company && (
@@ -5068,7 +6158,7 @@ export default function Dashboard() {
                                                                 onChange={(e) =>
                                                                     teamMemberForm.setData('company_logo', e.target.value)
                                                                 }
-                                                                className="w-full rounded border border-neutral-300 px-2 py-1 text-[11px]"
+                                                                className="w-full rounded border border-neutral-300 focus:border-red-500 focus:ring focus:ring-red-500/20 px-2 py-1 text-[11px]"
                                                             >
                                                                 <option value="">Select logo</option>
                                                                 <option value="sundia">Sundia</option>
@@ -5091,13 +6181,21 @@ export default function Dashboard() {
                                                             type="file"
                                                             accept="image/*"
                                                             onChange={(e) =>
-                                                                teamMemberForm.setData(
-                                                                    'profile_image_file',
+                                                                setTeamMemberProfileImageFile(
                                                                     e.target.files?.[0] ?? null,
                                                                 )
                                                             }
                                                             className="w-full text-[11px] file:mr-3 file:rounded-full file:border-0 file:bg-red-600 file:px-4 file:py-1 file:text-[11px] file:font-semibold file:text-white hover:file:bg-red-700"
                                                         />
+                                                        {teamMemberProfilePreviewUrl && (
+                                                            <div className="mt-2 overflow-hidden rounded border border-neutral-200 bg-neutral-100">
+                                                                <img
+                                                                    src={teamMemberProfilePreviewUrl}
+                                                                    alt=""
+                                                                    className="max-h-40 w-full object-cover"
+                                                                />
+                                                            </div>
+                                                        )}
                                                         {teamMemberForm.errors.profile_image_file && (
                                                             <p className="text-[10px] text-red-600">
                                                                 {teamMemberForm.errors.profile_image_file}
@@ -5120,7 +6218,7 @@ export default function Dashboard() {
                                                                         Number(e.target.value),
                                                                     )
                                                                 }
-                                                                className="w-full rounded border border-neutral-300 px-2 py-1 text-[11px]"
+                                                                className="w-full rounded border border-neutral-300 focus:border-red-500 focus:ring focus:ring-red-500/20 px-2 py-1 text-[11px]"
                                                             />
                                                             {teamMemberForm.errors.display_order && (
                                                                 <p className="text-[10px] text-red-600">
@@ -5159,7 +6257,7 @@ export default function Dashboard() {
                                                         <button
                                                             type="submit"
                                                             disabled={teamMemberForm.processing}
-                                                            className="inline-flex items-center justify-center rounded-full bg-neutral-900 px-5 py-2 text-[11px] font-semibold uppercase tracking-widest text-white transition-colors hover:bg-black disabled:opacity-60"
+                                                            className="inline-flex items-center justify-center rounded-full bg-red-600 px-5 py-2 text-[11px] font-semibold uppercase tracking-widest text-white transition-colors hover:bg-red-700 border border-transparent shadow-sm disabled:opacity-60"
                                                         >
                                                             {teamMemberForm.processing
                                                                 ? 'Saving...'
@@ -5202,7 +6300,14 @@ export default function Dashboard() {
                                                                 className="flex w-56 flex-shrink-0 flex-col rounded-[3px] border border-neutral-200 bg-white p-3"
                                                             >
                                                                 <div className="flex h-20 items-center justify-center rounded bg-black">
-                                                                    {c.logo_path ? (
+                                                                    {editingTrustedCompany?.id === c.id &&
+                                                                    trustedCompanyLogoPreviewUrl ? (
+                                                                        <img
+                                                                            src={trustedCompanyLogoPreviewUrl}
+                                                                            alt={c.name}
+                                                                            className="max-h-14 w-auto object-contain"
+                                                                        />
+                                                                    ) : c.logo_path ? (
                                                                         <img
                                                                             src={c.logo_path}
                                                                             alt={c.name}
@@ -5274,7 +6379,7 @@ export default function Dashboard() {
                                                             type="text"
                                                             value={trustedCompanyForm.data.name}
                                                             onChange={(e) => trustedCompanyForm.setData('name', e.target.value)}
-                                                            className="w-full rounded border border-neutral-300 px-2 py-1 text-[11px]"
+                                                            className="w-full rounded border border-neutral-300 focus:border-red-500 focus:ring focus:ring-red-500/20 px-2 py-1 text-[11px]"
                                                             placeholder="Siam Direct"
                                                         />
                                                         {trustedCompanyForm.errors.name && (
@@ -5292,10 +6397,21 @@ export default function Dashboard() {
                                                             type="file"
                                                             accept="image/*"
                                                             onChange={(e) =>
-                                                                trustedCompanyForm.setData('logo_file', e.target.files?.[0] ?? null)
+                                                                setTrustedCompanyLogoFile(
+                                                                    e.target.files?.[0] ?? null,
+                                                                )
                                                             }
                                                             className="block w-full text-[11px] text-neutral-700 file:mr-3 file:rounded-full file:border-0 file:bg-neutral-900 file:px-4 file:py-2 file:text-[10px] file:font-semibold file:uppercase file:tracking-widest file:text-white hover:file:bg-black"
                                                         />
+                                                        {trustedCompanyLogoPreviewUrl && (
+                                                            <div className="mt-2 flex justify-center overflow-hidden rounded border border-neutral-200 bg-neutral-900 p-2">
+                                                                <img
+                                                                    src={trustedCompanyLogoPreviewUrl}
+                                                                    alt=""
+                                                                    className="max-h-16 w-auto object-contain"
+                                                                />
+                                                            </div>
+                                                        )}
                                                         {trustedCompanyForm.errors.logo_file && (
                                                             <p className="text-[10px] text-red-600">
                                                                 {trustedCompanyForm.errors.logo_file}
@@ -5318,7 +6434,7 @@ export default function Dashboard() {
                                                                         Number(e.target.value),
                                                                     )
                                                                 }
-                                                                className="w-full rounded border border-neutral-300 px-2 py-1 text-[11px]"
+                                                                className="w-full rounded border border-neutral-300 focus:border-red-500 focus:ring focus:ring-red-500/20 px-2 py-1 text-[11px]"
                                                             />
                                                             {trustedCompanyForm.errors.display_order && (
                                                                 <p className="text-[10px] text-red-600">
@@ -5374,7 +6490,7 @@ export default function Dashboard() {
                                                         <button
                                                             type="submit"
                                                             disabled={trustedCompanyForm.processing}
-                                                            className="inline-flex items-center justify-center rounded-full bg-neutral-900 px-5 py-2 text-[11px] font-semibold uppercase tracking-widest text-white transition-colors hover:bg-black disabled:opacity-60"
+                                                            className="inline-flex items-center justify-center rounded-full bg-red-600 px-5 py-2 text-[11px] font-semibold uppercase tracking-widest text-white transition-colors hover:bg-red-700 border border-transparent shadow-sm disabled:opacity-60"
                                                         >
                                                             {trustedCompanyForm.processing
                                                                 ? 'Saving...'
@@ -5505,7 +6621,7 @@ export default function Dashboard() {
                                                                         contactInfoForm.setData('icon', t);
                                                                     }
                                                                 }}
-                                                                className="w-full rounded border border-neutral-300 px-2 py-1 text-[11px]"
+                                                                className="w-full rounded border border-neutral-300 focus:border-red-500 focus:ring focus:ring-red-500/20 px-2 py-1 text-[11px]"
                                                             >
                                                                 {['Address', 'Phone', 'Email', 'Hours'].map((t) => (
                                                                     <option key={t} value={t}>
@@ -5527,7 +6643,7 @@ export default function Dashboard() {
                                                             <select
                                                                 value={contactInfoForm.data.icon || ''}
                                                                 onChange={(e) => contactInfoForm.setData('icon', e.target.value)}
-                                                                className="w-full rounded border border-neutral-300 px-2 py-1 text-[11px]"
+                                                                className="w-full rounded border border-neutral-300 focus:border-red-500 focus:ring focus:ring-red-500/20 px-2 py-1 text-[11px]"
                                                             >
                                                                 <option value="address">Address pin</option>
                                                                 <option value="phone">Phone</option>
@@ -5550,7 +6666,7 @@ export default function Dashboard() {
                                                             type="text"
                                                             value={contactInfoForm.data.title}
                                                             onChange={(e) => contactInfoForm.setData('title', e.target.value)}
-                                                            className="w-full rounded border border-neutral-300 px-2 py-1 text-[11px]"
+                                                            className="w-full rounded border border-neutral-300 focus:border-red-500 focus:ring focus:ring-red-500/20 px-2 py-1 text-[11px]"
                                                             placeholder="ADDRESS"
                                                         />
                                                         {contactInfoForm.errors.title && (
@@ -5568,7 +6684,7 @@ export default function Dashboard() {
                                                             rows={4}
                                                             value={contactInfoForm.data.value}
                                                             onChange={(e) => contactInfoForm.setData('value', e.target.value)}
-                                                            className="w-full rounded border border-neutral-300 px-2 py-1 text-[11px]"
+                                                            className="w-full rounded border border-neutral-300 focus:border-red-500 focus:ring focus:ring-red-500/20 px-2 py-1 text-[11px]"
                                                             placeholder="Use new lines for line breaks"
                                                         />
                                                         {contactInfoForm.errors.value && (
@@ -5590,7 +6706,7 @@ export default function Dashboard() {
                                                                 onChange={(e) =>
                                                                     contactInfoForm.setData('display_order', Number(e.target.value))
                                                                 }
-                                                                className="w-full rounded border border-neutral-300 px-2 py-1 text-[11px]"
+                                                                className="w-full rounded border border-neutral-300 focus:border-red-500 focus:ring focus:ring-red-500/20 px-2 py-1 text-[11px]"
                                                             />
                                                             {contactInfoForm.errors.display_order && (
                                                                 <p className="text-[10px] text-red-600">
@@ -5629,7 +6745,7 @@ export default function Dashboard() {
                                                         <button
                                                             type="submit"
                                                             disabled={contactInfoForm.processing}
-                                                            className="inline-flex items-center justify-center rounded-full bg-neutral-900 px-5 py-2 text-[11px] font-semibold uppercase tracking-widest text-white transition-colors hover:bg-black disabled:opacity-60"
+                                                            className="inline-flex items-center justify-center rounded-full bg-red-600 px-5 py-2 text-[11px] font-semibold uppercase tracking-widest text-white transition-colors hover:bg-red-700 border border-transparent shadow-sm disabled:opacity-60"
                                                         >
                                                             {contactInfoForm.processing
                                                                 ? 'Saving...'
@@ -5675,6 +6791,7 @@ export default function Dashboard() {
                     </section>
                 </div>
             </div>
-        </AuthenticatedLayout>
+        </>
     );
 }
+

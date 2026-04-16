@@ -1,7 +1,7 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, router, useForm, usePage } from '@inertiajs/react';
 import TeamMemberCardPreview from './TeamMemberCardPreview';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 export default function Index({ members = [], logoOptions = [] }) {
     const { props } = usePage();
@@ -19,15 +19,34 @@ export default function Index({ members = [], logoOptions = [] }) {
     });
 
     const [localProfilePreviewUrl, setLocalProfilePreviewUrl] = useState(null);
+    const profilePreviewObjectUrlRef = useRef(null);
+
+    const revokeProfilePreview = () => {
+        if (profilePreviewObjectUrlRef.current) {
+            URL.revokeObjectURL(profilePreviewObjectUrlRef.current);
+            profilePreviewObjectUrlRef.current = null;
+        }
+    };
+
+    const onProfileImageChange = (e) => {
+        const file = e.target.files?.[0] ?? null;
+        revokeProfilePreview();
+        if (file) {
+            const url = URL.createObjectURL(file);
+            profilePreviewObjectUrlRef.current = url;
+            setLocalProfilePreviewUrl(url);
+        } else {
+            setLocalProfilePreviewUrl(null);
+        }
+        form.setData('profile_image_file', file);
+    };
 
     useEffect(() => {
-        if (!form.data.profile_image_file) return;
-        const url = URL.createObjectURL(form.data.profile_image_file);
-        setLocalProfilePreviewUrl(url);
-        return () => URL.revokeObjectURL(url);
-    }, [form.data.profile_image_file]);
+        return () => revokeProfilePreview();
+    }, []);
 
     useEffect(() => {
+        revokeProfilePreview();
         if (!editing) {
             form.setData({
                 name: '',
@@ -216,7 +235,7 @@ export default function Index({ members = [], logoOptions = [] }) {
                                             <input
                                                 type="file"
                                                 accept="image/*"
-                                                onChange={(e) => form.setData('profile_image_file', e.target.files?.[0] ?? null)}
+                                                onChange={onProfileImageChange}
                                                 className="mt-1 block w-full text-sm text-gray-700 file:mr-3 file:rounded-md file:border-0 file:bg-red-600 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-white hover:file:bg-red-700"
                                             />
                                             {form.errors.profile_image_file && (

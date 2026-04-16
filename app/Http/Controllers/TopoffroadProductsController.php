@@ -15,6 +15,8 @@ class TopoffroadProductsController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
+        $this->discardGhostFileField($request, 'image_file');
+
         $validated = $request->validate([
             'category' => self::CATEGORY_RULE,
             'title' => ['required', 'string', 'max:255'],
@@ -35,9 +37,9 @@ class TopoffroadProductsController extends Controller
             $product->topoffroad_product_category_id = $this->resolveTopoffroadCategoryId($validated['category']);
         }
 
-        if ($request->hasFile('image_file')) {
-            $path = $request->file('image_file')->store('topoffroad-products', 'public');
-            $product->image_path = '/storage/' . $path;
+        $publicImagePath = $this->storePublicUpload($request, 'image_file', 'uploads/topoffroad-products');
+        if ($publicImagePath) {
+            $product->image_path = $publicImagePath;
         }
 
         $product->save();
@@ -49,6 +51,8 @@ class TopoffroadProductsController extends Controller
 
     public function update(Request $request, TopoffroadProducts $topoffroadProduct): RedirectResponse
     {
+        $this->discardGhostFileField($request, 'image_file');
+
         $validated = $request->validate([
             'category' => self::CATEGORY_RULE,
             'title' => ['required', 'string', 'max:255'],
@@ -70,9 +74,9 @@ class TopoffroadProductsController extends Controller
             $topoffroadProduct->topoffroad_product_category_id = $this->resolveTopoffroadCategoryId($validated['category']);
         }
 
-        if ($request->hasFile('image_file')) {
-            $path = $request->file('image_file')->store('topoffroad-products', 'public');
-            $topoffroadProduct->image_path = '/storage/' . $path;
+        $publicImagePath = $this->storePublicUpload($request, 'image_file', 'uploads/topoffroad-products');
+        if ($publicImagePath) {
+            $topoffroadProduct->image_path = $publicImagePath;
         }
 
         $topoffroadProduct->save();

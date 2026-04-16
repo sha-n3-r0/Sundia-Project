@@ -10,6 +10,8 @@ class TpsmiProductsController extends Controller
 {
     public function store(Request $request): RedirectResponse
     {
+        $this->discardGhostFileField($request, 'image_file');
+
         $validated = $request->validate([
             'title' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
@@ -24,20 +26,22 @@ class TpsmiProductsController extends Controller
         $product->display_order = (int) ($validated['display_order'] ?? 0);
         $product->is_active = (bool) ($validated['is_active'] ?? true);
 
-        if ($request->hasFile('image_file')) {
-            $path = $request->file('image_file')->store('tpsmi-products', 'public');
-            $product->image_path = '/storage/' . $path;
+        $publicImagePath = $this->storePublicUpload($request, 'image_file', 'uploads/tpsmi-products');
+        if ($publicImagePath) {
+            $product->image_path = $publicImagePath;
         }
 
         $product->save();
 
         return redirect()
-            ->route('dashboard')
+            ->route('dashboard', ['company' => 'TPSMI'])
             ->with('success_tpsmi_product', 'TPSMI product created.');
     }
 
     public function update(Request $request, TpsmiProducts $tpsmiProduct): RedirectResponse
     {
+        $this->discardGhostFileField($request, 'image_file');
+
         $validated = $request->validate([
             'title' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
@@ -53,15 +57,15 @@ class TpsmiProductsController extends Controller
         $tpsmiProduct->display_order = (int) ($validated['display_order'] ?? $tpsmiProduct->display_order);
         $tpsmiProduct->is_active = (bool) ($validated['is_active'] ?? $tpsmiProduct->is_active);
 
-        if ($request->hasFile('image_file')) {
-            $path = $request->file('image_file')->store('tpsmi-products', 'public');
-            $tpsmiProduct->image_path = '/storage/' . $path;
+        $publicImagePath = $this->storePublicUpload($request, 'image_file', 'uploads/tpsmi-products');
+        if ($publicImagePath) {
+            $tpsmiProduct->image_path = $publicImagePath;
         }
 
         $tpsmiProduct->save();
 
         return redirect()
-            ->route('dashboard')
+            ->route('dashboard', ['company' => 'TPSMI'])
             ->with('success_tpsmi_product', 'TPSMI product updated.');
     }
 
@@ -70,7 +74,7 @@ class TpsmiProductsController extends Controller
         $tpsmiProduct->delete();
 
         return redirect()
-            ->route('dashboard')
+            ->route('dashboard', ['company' => 'TPSMI'])
             ->with('success_tpsmi_product', 'TPSMI product deleted.');
     }
 }

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\TeamMember;
+use App\Support\PublicUrl;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -30,7 +31,7 @@ class TeamMemberController extends Controller
                     'name' => $m->name,
                     'title' => $m->title,
                     'company' => $m->company,
-                    'profile_image_path' => $m->profile_image_path,
+                    'profile_image_path' => PublicUrl::web($m->profile_image_path),
                     'company_logo' => $m->company_logo,
                     'display_order' => (int) $m->display_order,
                     'is_active' => (bool) $m->is_active,
@@ -58,9 +59,9 @@ class TeamMemberController extends Controller
         $member->display_order = (int) ($validated['display_order'] ?? 0);
         $member->is_active = (bool) ($validated['is_active'] ?? true);
 
-        if ($request->hasFile('profile_image_file')) {
-            $path = $request->file('profile_image_file')->store('team-members', 'public');
-            $member->profile_image_path = '/storage/' . $path;
+        $profileUrl = $this->storePublicUpload($request, 'profile_image_file', 'uploads/team-members');
+        if ($profileUrl) {
+            $member->profile_image_path = $profileUrl;
         }
 
         $member->save();
@@ -101,9 +102,9 @@ class TeamMemberController extends Controller
             $teamMember->is_active = (bool) ($validated['is_active'] ?? $teamMember->is_active);
         }
 
-        if ($request->hasFile('profile_image_file')) {
-            $path = $request->file('profile_image_file')->store('team-members', 'public');
-            $teamMember->profile_image_path = '/storage/' . $path;
+        $profileUrl = $this->storePublicUpload($request, 'profile_image_file', 'uploads/team-members');
+        if ($profileUrl) {
+            $teamMember->profile_image_path = $profileUrl;
         }
 
         $teamMember->save();

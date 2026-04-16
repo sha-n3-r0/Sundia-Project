@@ -36,9 +36,9 @@ class SundiaController extends Controller
             'content' => $validated['content'] ?? null,
         ];
 
-        if ($request->hasFile('logo')) {
-            $path = $request->file('logo')->store('logos', 'public');
-            $data['logo_path'] = '/storage/' . $path;
+        $publicLogoPath = $this->storePublicUpload($request, 'logo', 'uploads/logos');
+        if ($publicLogoPath) {
+            $data['logo_path'] = $publicLogoPath;
         }
 
         $sundia = Sundia::create($data);
@@ -64,9 +64,9 @@ class SundiaController extends Controller
             'content' => ['nullable', 'array'],
         ]);
 
-        if ($request->hasFile('logo')) {
-            $path = $request->file('logo')->store('logos', 'public');
-            $sundium->logo_path = '/storage/' . $path;
+        $publicLogoPath = $this->storePublicUpload($request, 'logo', 'uploads/logos');
+        if ($publicLogoPath) {
+            $sundium->logo_path = $publicLogoPath;
         }
 
         if (array_key_exists('content', $validated)) {
@@ -135,9 +135,9 @@ class SundiaController extends Controller
 
         $sundia = Sundia::firstOrCreate([]);
 
-        if ($request->hasFile('logo')) {
-            $path = $request->file('logo')->store('logos', 'public');
-            $sundia->logo_path = '/storage/' . $path;
+        $publicLogoPath = $this->storePublicUpload($request, 'logo', 'uploads/logos');
+        if ($publicLogoPath) {
+            $sundia->logo_path = $publicLogoPath;
         }
 
         // Content may be stored in multiple legacy/incorrect formats; normalize to an associative array.

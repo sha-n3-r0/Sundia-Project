@@ -1,13 +1,19 @@
 import Footer from '@/Components/Footer';
 import Header from '@/Components/Header';
+import { publicAssetUrl } from '@/utils/publicAssetUrl';
 import { Head, Link, router, usePage } from '@inertiajs/react';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 export default function Tpsmi() {
     const { props } = usePage();
+    const backgroundPicture = props.backgroundPicture;
+    const heroBackgroundImage =
+        publicAssetUrl(backgroundPicture?.images?.[0] || backgroundPicture?.image_path) ||
+        '/tpsmi.jpg';
     const tpsmi = props.tpsmi;
     const tpsmiPageVideo = props.tpsmiPageVideo;
     const tpsmiProducts = props.tpsmiProducts ?? [];
+    const vacuumformedplastics = props.vacuumformedplastics ?? [];
 
     const statsTitleLine1 = tpsmi?.content?.stats_title_line1 ?? 'WHAT';
     const statsTitleLine2 = tpsmi?.content?.stats_title_line2 ?? 'WE';
@@ -22,6 +28,35 @@ export default function Tpsmi() {
 
     const videoRef = useRef(null);
     const [isPlaying, setIsPlaying] = useState(false);
+    const [currentVfpIndex, setCurrentVfpIndex] = useState(0);
+    const dbVfpImages = vacuumformedplastics
+        .filter((item) => item?.is_active !== false)
+        .map((item, index) => ({
+            src: item?.image_path ? publicAssetUrl(item.image_path) : '',
+            alt: item?.title || `Vacuum formed plastic ${index + 1}`,
+        }))
+        .filter((item) => Boolean(item.src));
+    const vfpImages = dbVfpImages.length
+        ? dbVfpImages
+        : [
+              { src: '/Aircon Evaporator Cover.png', alt: 'Aircon Evaporator Cover' },
+              { src: '/Tpsmiprod.JPG', alt: 'TPSMI Product 1' },
+              { src: '/MetalFabrication.png', alt: 'TPSMI Product 2' },
+          ];
+
+    const nextVfpImage = () => {
+        setCurrentVfpIndex((prev) => (prev + 1) % vfpImages.length);
+    };
+
+    const prevVfpImage = () => {
+        setCurrentVfpIndex((prev) => (prev - 1 + vfpImages.length) % vfpImages.length);
+    };
+
+    useEffect(() => {
+        if (currentVfpIndex >= vfpImages.length) {
+            setCurrentVfpIndex(0);
+        }
+    }, [currentVfpIndex, vfpImages.length]);
 
     // Prefer legacy owner-dashboard format: `tpsmi.content.video` (title/url/thumbnail/active).
     const activeTpsmiContentVideo =
@@ -134,10 +169,10 @@ export default function Tpsmi() {
     return (
         <>
             <Head title="TPSMI" />
-            <div className="min-h-screen font-['Inter'] antialiased bg-white">
+            <div id="about" className="min-h-screen font-['Inter'] antialiased bg-white">
                 <section
                     className="relative flex min-h-[46vh] flex-col overflow-visible bg-cover bg-center sm:min-h-[56vh] lg:min-h-[68vh]"
-                    style={{ backgroundImage: "url('/tpsmi.jpg')" }}
+                    style={{ backgroundImage: `url('${heroBackgroundImage}')` }}
                 >
                     <div className="pointer-events-none absolute inset-0 z-0 bg-gradient-to-r from-black to-black/30" />
 
@@ -280,33 +315,69 @@ export default function Tpsmi() {
                 </div>
 
                 {/* Featured section - with background image and red bar */}
-                <div className="relative w-screen bg-white py-20 overflow-visible" style={{ marginLeft: 'calc(-50vw + 50%)' }}>
+                <div
+                    className="relative w-screen overflow-hidden bg-white py-14 sm:py-16 lg:py-20"
+                    style={{ marginLeft: 'calc(-50vw + 50%)' }}
+                >
                     <div className="absolute left-0 top-0 w-full h-full z-0 overflow-hidden">
-                        <img 
-                            src="/production.jpg" 
-                            alt="Background" 
+                        <img
+                            src="/production.jpg"
+                            alt="Background"
                             className="w-full h-full object-cover grayscale opacity-20"
                         />
                         <div className="absolute inset-0 bg-white/60" />
                     </div>
-                    
-                    <div className="relative h-[380px] pl-25 sm:pl-20 lg:pl-24 pr-0 z-10" style={{ marginLeft: '96px' }}>
-                        {/* Red bar - extends flush to right edge, rounded only on left */}
-                        <div
-                            className="absolute left-24 sm:left-28 right-0 top-0 h-full rounded-tl-[100px] rounded-bl-[100px] shadow-lg"
-                            style={{ backgroundColor: '#E31E25' }}
-                        />
-                        
-                        {/* White circle with logo - overlaps left edge of red bar */}
-                        <div className="absolute left-0 top-1/2 -translate-y-1/2 w-64 h-64 sm:w-72 sm:h-72 bg-white rounded-full shadow-xl flex items-center justify-center p-8 z-20">
-                            <img className="w-full h-full object-contain" src="/Tpsmilogo.png" alt="TPSMI Logo" />
+
+                    {/* Mobile/tablet layout (kept responsive) */}
+                    <div className="relative z-10 mx-auto w-full max-w-7xl px-4 sm:px-6 lg:hidden">
+                        <div className="flex flex-col items-center gap-6">
+                            <div className="w-52 h-52 sm:w-64 sm:h-64 bg-white rounded-full shadow-xl flex items-center justify-center p-7 sm:p-8">
+                                <img className="w-full h-full object-contain" src="/Tpsmilogo.png" alt="TPSMI Logo" />
+                            </div>
+                            <div
+                                className="w-full overflow-hidden rounded-[28px] shadow-lg"
+                                style={{ backgroundColor: '#E31E25' }}
+                            >
+                                <div className="px-6 py-8 sm:px-10 sm:py-10">
+                                    <p className="text-white text-sm sm:text-base font-semibold tracking-wide leading-relaxed">
+                                        Total Packaging Solutions and Manufacturing, Inc. (TPSMI) offer a broad range of
+                                        packaging solutions to meet our customer needs and continuously improve our
+                                        operations to better respond to those needs. We provide high-quality packaging
+                                        materials and services tailored to the requirements of the automotive and
+                                        electronics industries.
+                                    </p>
+                                </div>
+                            </div>
                         </div>
-                        
-                        {/* Text content - white, left-aligned, inside red bar */}
-                        <div className="absolute left-80 sm:left-96 right-12 top-1/2 -translate-y-1/2 flex items-center z-20">
-                            <p className="text-white text-body-lg font-semibold tracking-wide">
-                                Total Packaging Solutions and Manufacturing, Inc. (TPSMI) offer a broad range of packaging solutions to meet our customer needs and continuously improve our operations to better respond to those needs. We provide high-quality packaging materials and services tailored to the requirements of the automotive and electronics industries.
-                            </p>
+                    </div>
+
+                    {/* Desktop layout (restored to original design) */}
+                    <div className="relative z-10 hidden lg:block">
+                        <div
+                            className="relative h-[380px] pl-25 sm:pl-20 lg:pl-24 pr-0"
+                            style={{ marginLeft: '96px' }}
+                        >
+                            {/* Red bar - extends flush to right edge, rounded only on left */}
+                            <div
+                                className="absolute left-24 sm:left-28 right-0 top-0 h-full rounded-tl-[100px] rounded-bl-[100px] shadow-lg"
+                                style={{ backgroundColor: '#E31E25' }}
+                            />
+
+                            {/* White circle with logo - overlaps left edge of red bar */}
+                            <div className="absolute left-0 top-1/2 -translate-y-1/2 w-64 h-64 sm:w-72 sm:h-72 bg-white rounded-full shadow-xl flex items-center justify-center p-8 z-20">
+                                <img className="w-full h-full object-contain" src="/Tpsmilogo.png" alt="TPSMI Logo" />
+                            </div>
+
+                            {/* Text content - white, left-aligned, inside red bar */}
+                            <div className="absolute left-80 sm:left-96 right-12 top-1/2 -translate-y-1/2 flex items-center z-20">
+                                <p className="text-white text-body-lg font-semibold tracking-wide">
+                                    Total Packaging Solutions and Manufacturing, Inc. (TPSMI) offer a broad range of
+                                    packaging solutions to meet our customer needs and continuously improve our
+                                    operations to better respond to those needs. We provide high-quality packaging
+                                    materials and services tailored to the requirements of the automotive and
+                                    electronics industries.
+                                </p>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -349,105 +420,105 @@ export default function Tpsmi() {
                 </div>
             </div>
 
-                {/* ISO logo - white background */}
-                <div className="flex justify-center bg-white py-12">
-                    <img src="/iso.png" alt="ISO" className="h-26 w-auto object-contain" />
-                </div>
-                {/* separator line below ISO logo */}
-                <div className="w-full border-t-8 border-gray-200" />
+            {/* ISO logo - white background */}
+            <div className="flex justify-center bg-white py-12">
+                <img src="/iso.png" alt="ISO" className="h-26 w-auto object-contain" />
+            </div>
+            {/* separator line below ISO logo */}
+            <div className="w-full border-t-8 border-gray-200" />
 
-                {/* Premium Packaging and Protective Solutions */}
-                <div className="bg-white py-12 pb-14">
-                    <div className="w-full max-w-5xl mx-auto px-4 sm:px-6">
-                        <h2 className="text-center text-red-600 text-section font-['Inter'] tracking-widest mb-16">
-                            Premium Packaging and Protective<br />Solutions for your Buisiness Needs
+            {/* Premium Packaging and Protective Solutions */}
+            <div className="bg-white py-12 pb-14">
+                <div className="w-full max-w-5xl mx-auto px-4 sm:px-6">
+                    <h2 className="text-center text-red-600 text-section font-['Inter'] tracking-widest mb-16">
+                        Premium Packaging and Protective<br />Solutions for your Buisiness Needs
+                    </h2>
+                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-16 justify-items-center text-center">
+                        {/* DURABLE MATERIALS - hexagon with checkmark, thin outline */}
+                        <div className="flex flex-col items-center gap-6">
+                            <div className="w-20 h-20 flex items-center justify-center text-neutral-500" style={{ color: '#737373' }}>
+                                <svg className="w-16 h-16" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" strokeWidth="1.5" stroke="currentColor">
+                                    <path d="M32 10L52 22V42L32 54L12 42V22L32 10Z" strokeLinejoin="round" />
+                                    <path d="M22 32L28 36L42 24" strokeLinecap="round" strokeLinejoin="round" />
+                                </svg>
+                            </div>
+                            <span className="text-red-600 text-caption font-['Inter']">DURABLE MATERIALS</span>
+                        </div>
+                        {/* FAST DELIVERY - pickup truck, thin outline */}
+                        <div className="flex flex-col items-center gap-6">
+                            <div className="w-20 h-20 flex items-center justify-center text-neutral-500" style={{ color: '#737373' }}>
+                                <svg className="w-16 h-16" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" strokeWidth="1.5" stroke="currentColor">
+                                    <path d="M6 38V26L26 26L30 18H44L52 28V38" strokeLinecap="round" strokeLinejoin="round" />
+                                    <path d="M52 38H42L38 30H26L22 38H6" strokeLinecap="round" strokeLinejoin="round" />
+                                    <circle cx="16" cy="46" r="4" />
+                                    <circle cx="46" cy="46" r="4" />
+                                    <path d="M20 46H42" strokeLinecap="round" />
+                                    <path d="M30 18L38 28" strokeLinecap="round" />
+                                </svg>
+                            </div>
+                            <span className="text-red-600 text-caption font-['Inter']">FAST DELIVERY</span>
+                        </div>
+                        {/* COMPETETIVE PRICING - rectangular box with dotted pattern inside, horizontal line above */}
+                        <div className="flex flex-col items-center gap-6">
+                            <div className="w-20 h-20 flex items-center justify-center text-neutral-500" style={{ color: '#737373' }}>
+                                <svg className="w-16 h-16" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" strokeWidth="1.5" stroke="currentColor">
+                                    <path d="M18 22H46V54H18V22Z" strokeLinejoin="round" />
+                                    <path d="M22 18H42" strokeLinecap="round" />
+                                    <path d="M22 32H42M22 40H42M22 48H42" strokeLinecap="round" strokeDasharray="3 2" />
+                                </svg>
+                            </div>
+                            <span className="text-red-600 text-caption font-['Inter']">COMPETETIVE PRICING</span>
+                        </div>
+                        {/* QUALITY ASSURED - shield with checkmark, thin outline */}
+                        <div className="flex flex-col items-center gap-6">
+                            <div className="w-20 h-20 flex items-center justify-center text-neutral-500" style={{ color: '#737373' }}>
+                                <svg className="w-16 h-16" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" strokeWidth="1.5" stroke="currentColor">
+                                    <path d="M32 10L10 20V34C10 46 32 58 32 58C32 58 54 46 54 34V20L32 10Z" strokeLinejoin="round" />
+                                    <path d="M22 34L28 40L42 26" strokeLinecap="round" strokeLinejoin="round" />
+                                </svg>
+                            </div>
+                            <span className="text-red-600 text-caption font-['Inter']">QUALITY ASSURED</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* VACUUM FORMED PLASTIC PRODUCTS - whole section on grayscale bg.jpg */}
+            <div className="relative w-full overflow-hidden min-h-[800px]">
+                <div
+                    className="absolute inset-0 z-0 min-h-full"
+                    style={{
+                        backgroundImage: "url('/bg.jpg')",
+                        backgroundSize: 'cover',
+                        backgroundPosition: 'center',
+                        backgroundRepeat: 'no-repeat',
+                        filter: 'grayscale(100%)',
+                    }}
+                />
+                {/* Mobile: solid red. sm+: red/gray diagonal (SVG). */}
+                <div className="relative z-10 w-full min-h-[5.25rem] overflow-hidden bg-[#E31E25] sm:bg-transparent sm:min-h-0 sm:h-24">
+                    <svg
+                        className="pointer-events-none absolute inset-0 hidden h-full min-h-[5.25rem] w-full sm:block sm:min-h-0"
+                        viewBox="0 0 771 103"
+                        fill="none"
+                        preserveAspectRatio="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                        aria-hidden
+                    >
+                        <path d="M0 0H320L400 103H0V0Z" fill="#E31E25" />
+                        <path d="M320 0L400 103L771 103L771 0Z" fill="#8C8C8C" />
+                    </svg>
+                    <div className="relative z-10 flex min-h-[5.25rem] w-full items-center px-4 py-3.5 sm:min-h-0 sm:h-full sm:px-6 sm:py-0 md:pl-10 md:pr-8 lg:pl-12">
+                        <h2 className="max-w-full text-balance font-['Inter'] text-[11px] font-semibold uppercase leading-snug tracking-wide text-white sm:text-sm md:text-base lg:text-body-lg sm:leading-normal sm:tracking-[0.1em] md:tracking-[0.12em]">
+                            VACUUM FORMED PLASTIC PRODUCTS
                         </h2>
-                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-16 justify-items-center text-center">
-                            {/* DURABLE MATERIALS - hexagon with checkmark, thin outline */}
-                            <div className="flex flex-col items-center gap-6">
-                                <div className="w-20 h-20 flex items-center justify-center text-neutral-500" style={{ color: '#737373' }}>
-                                    <svg className="w-16 h-16" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" strokeWidth="1.5" stroke="currentColor">
-                                        <path d="M32 10L52 22V42L32 54L12 42V22L32 10Z" strokeLinejoin="round"/>
-                                        <path d="M22 32L28 36L42 24" strokeLinecap="round" strokeLinejoin="round"/>
-                                    </svg>
-                                </div>
-                                <span className="text-red-600 text-caption font-['Inter']">DURABLE MATERIALS</span>
-                            </div>
-                            {/* FAST DELIVERY - pickup truck, thin outline */}
-                            <div className="flex flex-col items-center gap-6">
-                                <div className="w-20 h-20 flex items-center justify-center text-neutral-500" style={{ color: '#737373' }}>
-                                    <svg className="w-16 h-16" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" strokeWidth="1.5" stroke="currentColor">
-                                        <path d="M6 38V26L26 26L30 18H44L52 28V38" strokeLinecap="round" strokeLinejoin="round"/>
-                                        <path d="M52 38H42L38 30H26L22 38H6" strokeLinecap="round" strokeLinejoin="round"/>
-                                        <circle cx="16" cy="46" r="4" />
-                                        <circle cx="46" cy="46" r="4" />
-                                        <path d="M20 46H42" strokeLinecap="round"/>
-                                        <path d="M30 18L38 28" strokeLinecap="round"/>
-                                    </svg>
-                                </div>
-                                <span className="text-red-600 text-caption font-['Inter']">FAST DELIVERY</span>
-                            </div>
-                            {/* COMPETETIVE PRICING - rectangular box with dotted pattern inside, horizontal line above */}
-                            <div className="flex flex-col items-center gap-6">
-                                <div className="w-20 h-20 flex items-center justify-center text-neutral-500" style={{ color: '#737373' }}>
-                                    <svg className="w-16 h-16" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" strokeWidth="1.5" stroke="currentColor">
-                                        <path d="M18 22H46V54H18V22Z" strokeLinejoin="round"/>
-                                        <path d="M22 18H42" strokeLinecap="round"/>
-                                        <path d="M22 32H42M22 40H42M22 48H42" strokeLinecap="round" strokeDasharray="3 2"/>
-                                    </svg>
-                                </div>
-                                <span className="text-red-600 text-caption font-['Inter']">COMPETETIVE PRICING</span>
-                            </div>
-                            {/* QUALITY ASSURED - shield with checkmark, thin outline */}
-                            <div className="flex flex-col items-center gap-6">
-                                <div className="w-20 h-20 flex items-center justify-center text-neutral-500" style={{ color: '#737373' }}>
-                                    <svg className="w-16 h-16" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" strokeWidth="1.5" stroke="currentColor">
-                                        <path d="M32 10L10 20V34C10 46 32 58 32 58C32 58 54 46 54 34V20L32 10Z" strokeLinejoin="round"/>
-                                        <path d="M22 34L28 40L42 26" strokeLinecap="round" strokeLinejoin="round"/>
-                                    </svg>
-                                </div>
-                                <span className="text-red-600 text-caption font-['Inter']">QUALITY ASSURED</span>
-                            </div>
-                        </div>
                     </div>
                 </div>
 
-                {/* VACUUM FORMED PLASTIC PRODUCTS - whole section on grayscale bg.jpg */}
-                <div className="relative w-full overflow-hidden min-h-[800px]">
-                    <div
-                        className="absolute inset-0 z-0 min-h-full"
-                        style={{
-                            backgroundImage: "url('/bg.jpg')",
-                            backgroundSize: 'cover',
-                            backgroundPosition: 'center',
-                            backgroundRepeat: 'no-repeat',
-                            filter: 'grayscale(100%)',
-                        }}
-                    />
-                    {/* Mobile: solid red. sm+: red/gray diagonal (SVG). */}
-                    <div className="relative z-10 w-full min-h-[5.25rem] overflow-hidden bg-[#E31E25] sm:bg-transparent sm:min-h-0 sm:h-24">
-                        <svg
-                            className="pointer-events-none absolute inset-0 hidden h-full min-h-[5.25rem] w-full sm:block sm:min-h-0"
-                            viewBox="0 0 771 103"
-                            fill="none"
-                            preserveAspectRatio="none"
-                            xmlns="http://www.w3.org/2000/svg"
-                            aria-hidden
-                        >
-                            <path d="M0 0H320L400 103H0V0Z" fill="#E31E25" />
-                            <path d="M320 0L400 103L771 103L771 0Z" fill="#8C8C8C" />
-                        </svg>
-                        <div className="relative z-10 flex min-h-[5.25rem] w-full items-center px-4 py-3.5 sm:min-h-0 sm:h-full sm:px-6 sm:py-0 md:pl-10 md:pr-8 lg:pl-12">
-                            <h2 className="max-w-full text-balance font-['Inter'] text-[11px] font-semibold uppercase leading-snug tracking-wide text-white sm:text-sm md:text-base lg:text-body-lg sm:leading-normal sm:tracking-[0.1em] md:tracking-[0.12em]">
-                                VACUUM FORMED PLASTIC PRODUCTS
-                            </h2>
-                        </div>
-                    </div>
-
-                    {/* Product cards 3x2 + carousel buttons */}
-                    <div className="relative z-10 w-full min-h-[700px] py-16">
+                {/* Product cards 3x2 + carousel buttons */}
+                <div className="relative z-10 w-full min-h-[700px] py-16">
                     <div className="relative max-w-6xl mx-auto px-4">
-                        <div className="grid grid-cols-1 justify-items-center gap-12 sm:grid-cols-2 sm:gap-16 lg:grid-cols-3 lg:gap-20">
+                        <div id="products" className="grid grid-cols-1 justify-items-center gap-12 sm:grid-cols-2 sm:gap-16 lg:grid-cols-3 lg:gap-20">
                             {visibleTpsmiProducts.map((product, i) => (
                                 <div
                                     key={product.id ?? `${product.title}-${i}`}
@@ -457,7 +528,11 @@ export default function Tpsmi() {
                                         <div className="relative aspect-[4/3] w-full overflow-hidden rounded-xl">
                                             <img
                                                 className="h-full w-full object-cover"
-                                                src={product.img}
+                                                src={
+                                                    product.img
+                                                        ? publicAssetUrl(product.img)
+                                                        : 'https://placehold.co/800x600/e5e5e5/737373?text=No+image'
+                                                }
                                                 alt={product.title}
                                             />
                                         </div>
@@ -502,238 +577,190 @@ export default function Tpsmi() {
                             </svg>
                         </button>
                     </div>
-                    </div>
                 </div>
+            </div>
 
-                {/* Stone background — VFP product showcase (responsive; replaces fixed absolute layout) */}
-                <div className="w-full bg-stone-900 py-10 sm:py-14 lg:py-16">
-                    <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-                        <div className="overflow-hidden rounded-3xl border-4 border-red-600 bg-white shadow-2xl sm:rounded-[2.5rem] sm:border-[5px] lg:rounded-[3rem]">
-                            <div className="bg-[#E31E25] px-4 py-4 sm:px-6 sm:py-5 lg:px-10 lg:py-6">
-                                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between sm:gap-6">
-                                    <h2 className="max-w-full text-balance font-['Inter'] text-xs font-semibold uppercase leading-snug tracking-wide text-white sm:text-sm md:text-base lg:text-subtitle">
-                                        VACUUM FORMED PLASTIC PRODUCTS
-                                    </h2>
-                                    <img
-                                        src="/Tpsmilogo.png"
-                                        alt="TPSMI"
-                                        className="h-9 w-auto shrink-0 object-contain grayscale sm:h-11 lg:h-12"
-                                    />
-                                </div>
-                            </div>
-                            <div className="bg-white px-4 py-6 sm:px-8 sm:py-10 lg:px-12 lg:py-12">
-                                <div className="mx-auto w-full max-w-4xl">
-                                    <img
-                                        src="/Aircon Evaporator Cover.png"
-                                        alt="Aircon Evaporator Cover"
-                                        className="mx-auto h-auto w-full object-contain object-center max-h-[min(65vh,560px)] sm:max-h-[min(70vh,640px)]"
-                                    />
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Full-bleed Karton banner + service cards — mobile: stack below image (no absolute overflow). md+: overlay on image. */}
-                <div className="relative left-1/2 w-screen max-w-[100vw] -translate-x-1/2 overflow-hidden">
-                    <img
-                        src="/karton.png"
-                        alt="Karton"
-                        loading="lazy"
-                        className="block h-44 w-full object-cover sm:h-52 md:h-auto md:max-h-[520px]"
-                    />
-
-                    <div className="flex flex-col gap-6 bg-stone-950 px-4 py-8 sm:gap-7 sm:px-6 sm:py-10 md:absolute md:inset-0 md:justify-center md:bg-black/40 md:px-8 md:py-10 lg:px-12 xl:px-16 md:backdrop-blur-[2px]">
-                        <div className="mx-auto grid w-full max-w-6xl grid-cols-1 gap-6 sm:gap-7 md:grid-cols-2 md:gap-5 lg:max-w-7xl xl:grid-cols-4 xl:gap-5">
-                            <div className="flex min-h-0 flex-col rounded-3xl border border-white bg-red-600 px-5 py-5 text-center shadow-[0px_4px_14px_rgba(0,0,0,0.45)] sm:px-8 sm:py-6">
-                                <div className="font-['Inter'] text-subtitle text-white">Quotation</div>
-                                <div className="mt-3 font-['Inter'] text-sm leading-relaxed text-white sm:text-body-lg">
-                                    Get a free estimate tailored to your budget and requirements.
-                                </div>
-                            </div>
-
-                            <div className="flex min-h-0 flex-col rounded-3xl border border-white bg-red-600 px-5 py-5 text-center shadow-[0px_4px_14px_rgba(0,0,0,0.45)] sm:px-8 sm:py-6">
-                                <div className="font-['Inter'] text-subtitle text-white">Delivery</div>
-                                <div className="mt-3 font-['Inter'] text-sm leading-relaxed text-white sm:text-body-lg">
-                                    We provide reliable delivery services to clients anywhere in the Philippines.
-                                </div>
-                            </div>
-
-                            <div className="flex min-h-0 flex-col rounded-3xl border border-white bg-red-600 px-5 py-5 text-center shadow-[0px_4px_14px_rgba(0,0,0,0.45)] sm:px-8 sm:py-6">
-                                <div className="font-['Inter'] text-subtitle text-white">Free Customization</div>
-                                <div className="mt-3 font-['Inter'] text-sm leading-relaxed text-white sm:text-body-lg">
-                                    Enjoy free customization of style, color, and size based on your specific needs
-                                </div>
-                            </div>
-
-                            <div className="flex min-h-0 flex-col rounded-3xl border border-white bg-red-600 px-5 py-5 text-center shadow-[0px_4px_14px_rgba(0,0,0,0.45)] sm:px-8 sm:py-6">
-                                <div className="font-['Inter'] text-subtitle text-white">Printing</div>
-                                <div className="mt-3 font-['Inter'] text-sm leading-relaxed text-white sm:text-body-lg">
-                                    We offer customized printing solutions designed to match your brand and requirements.
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Customize box section (full-bleed) */}
-                <div
-                    className="relative left-1/2 m-0 w-screen max-w-[100vw] -translate-x-1/2 overflow-hidden p-0"
-                    style={{ width: '100vw' }}
-                >
-                    <div className="relative min-h-[280px] w-full py-10 sm:min-h-[360px] sm:h-[420px] sm:py-0 lg:h-[520px]">
-                        <img
-                            src="/customize box.png"
-                            alt="Customize Box"
-                            className="absolute inset-0 h-full w-full scale-110 object-cover blur-xl"
-                            aria-hidden="true"
-                        />
-                        <img
-                            src="/customize box.png"
-                            alt=""
-                            className="absolute inset-0 h-full w-full object-contain"
-                            aria-hidden="true"
-                        />
-
-                        <div className="relative z-10 flex min-h-[240px] flex-col items-center justify-center px-4 py-6 sm:absolute sm:inset-0 sm:min-h-0 sm:py-0">
-                            <div className="w-full max-w-4xl text-center">
-                                <p className="font-['Inter'] text-sm font-medium tracking-[0.15em] text-white sm:text-body-lg sm:tracking-[0.25em]">
-                                    We are more than just a packaging company;
-                                </p>
-                                <h2 className="mt-4 font-['Inter'] text-xl font-extrabold uppercase leading-tight tracking-wide text-white sm:mt-3 sm:text-3xl md:text-4xl lg:text-hero lg:tracking-widest">
-                                    WE MANUFACTURE AND CUSTOMIZE BOXES
+            {/* Stone background — VFP product showcase (responsive; replaces fixed absolute layout) */}
+            <div className="w-full bg-stone-900 py-10 sm:py-14 lg:py-16">
+                <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+                    <div className="overflow-hidden rounded-3xl border-4 border-red-600 bg-white shadow-2xl sm:rounded-[2.5rem] sm:border-[5px] lg:rounded-[3rem]">
+                        <div className="bg-[#E31E25] px-4 py-4 sm:px-6 sm:py-5 lg:px-10 lg:py-6">
+                            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between sm:gap-6">
+                                <h2 className="max-w-full text-balance font-['Inter'] text-xs font-semibold uppercase leading-snug tracking-wide text-white sm:text-sm md:text-base lg:text-subtitle">
+                                    VACUUM FORMED PLASTIC PRODUCTS
                                 </h2>
-                                <p className="mt-3 font-['Inter'] text-sm font-medium text-white sm:text-body-lg">
-                                    of the highest quality.
-                                </p>
+                                <img
+                                    src="/Tpsmilogo.png"
+                                    alt="TPSMI"
+                                    className="h-9 w-auto shrink-0 object-contain grayscale sm:h-11 lg:h-12"
+                                />
                             </div>
-                            <div className="mt-8 sm:mt-6">
+                        </div>
+                        <div className="bg-white px-4 py-8 sm:px-12 sm:py-12 lg:px-16 lg:py-16">
+                            <div className="mx-auto w-full max-w-4xl relative">
+                                <img
+                                    src={vfpImages[currentVfpIndex].src}
+                                    alt={vfpImages[currentVfpIndex].alt}
+                                    className="mx-auto h-auto w-full object-contain object-center max-h-[min(65vh,560px)] sm:max-h-[min(70vh,640px)] transition-opacity duration-300"
+                                />
+
                                 <button
                                     type="button"
-                                    onClick={() => router.visit(route('home') + '#contact')}
-                                    className="group inline-flex items-center justify-center px-12 sm:px-16 py-3 sm:py-4 bg-red-600 rounded-full border-2 border-white cursor-pointer select-none transition-transform duration-200 ease-out hover:scale-[1.03] active:scale-[0.99] focus:outline-none focus-visible:ring-2 focus-visible:ring-white/80 focus-visible:ring-offset-2 focus-visible:ring-offset-black/40 hover:bg-red-500 shadow-[0_10px_24px_rgba(0,0,0,0.25)]"
+                                    onClick={prevVfpImage}
+                                    className="absolute left-0 sm:-left-6 top-1/2 -translate-y-1/2 flex h-12 w-12 sm:h-14 sm:w-14 items-center justify-center rounded-full bg-red-600 border-[3px] border-white shadow-[0_4px_12px_rgba(227,30,37,0.4)] text-white transition-transform hover:scale-110 hover:bg-red-500 z-10"
                                 >
-                                    <span className="text-white text-subtitle tracking-[0.25em]">
-                                        CUSTOMIZE NOW
-                                    </span>
+                                    <svg className="w-6 h-6 sm:w-8 sm:h-8 pr-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M15 19l-7-7 7-7" />
+                                    </svg>
                                 </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
 
-                {/* Full-bleed Karton banner with cards */}
-                <div className="w-screen relative left-1/2 -translate-x-1/2 m-0 p-0">
-                    <img
-                        src="/karton.png"
-                        alt="Karton"
-                        loading="lazy"
-                        className="w-screen max-w-none h-auto object-cover block m-0 p-0"
-                    />
-
-                    {/* Overlay cards */}
-                    <div className="absolute inset-0 flex items-center">
-                        <div className="w-full px-6 sm:px-10 lg:px-16">
-                            <div className="flex flex-col gap-5 max-w-[482px]">
-                                <div className="w-[482px] max-w-full h-32 relative rounded-3xl shadow-[0px_4px_14.100000381469727px_0px_rgba(0,0,0,0.62)]">
-                                    <div className="w-full h-full left-0 top-0 absolute bg-red-600/90 rounded-3xl border border-white" />
-                                    <div className="absolute inset-0 flex flex-col items-center justify-center px-8 text-center">
-                                        <div className="text-white text-xl font-extrabold font-['Inter'] leading-tight">
-                                            Quotation
-                                        </div>
-                                        <div className="mt-3 text-white text-xl font-normal font-['Inter'] leading-6">
-                                            Get a free estimate tailored to your budget and requirements.
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div className="w-[482px] max-w-full h-32 relative rounded-3xl shadow-[0px_4px_14.100000381469727px_0px_rgba(0,0,0,0.62)]">
-                                    <div className="w-full h-full left-0 top-0 absolute bg-red-600/90 rounded-3xl border border-white" />
-                                    <div className="absolute inset-0 flex flex-col items-center justify-center px-8 text-center">
-                                        <div className="text-white text-xl font-extrabold font-['Inter'] leading-tight">
-                                            Delivery
-                                        </div>
-                                        <div className="mt-3 text-white text-xl font-normal font-['Inter'] leading-6">
-                                            We provide reliable delivery services to clients anywhere in the Philippines.
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div className="w-[482px] max-w-full h-32 relative rounded-3xl shadow-[0px_4px_14.100000381469727px_0px_rgba(0,0,0,0.62)]">
-                                    <div className="w-full h-full left-0 top-0 absolute bg-red-600/90 rounded-3xl border border-white" />
-                                    <div className="absolute inset-0 flex flex-col items-center justify-center px-8 text-center">
-                                        <div className="text-white text-xl font-extrabold font-['Inter'] leading-tight">
-                                            Free Customization
-                                        </div>
-                                        <div className="mt-3 text-white text-xl font-normal font-['Inter'] leading-6">
-                                            Enjoy free customization of style, color, and size based on your specific needs
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div className="w-[482px] max-w-full h-36 relative rounded-3xl shadow-[0px_4px_14.100000381469727px_0px_rgba(0,0,0,0.62)]">
-                                    <div className="w-full h-full left-0 top-0 absolute bg-red-600/90 rounded-3xl border border-white" />
-                                    <div className="absolute inset-0 flex flex-col items-center justify-center px-8 text-center">
-                                        <div className="text-white text-xl font-extrabold font-['Inter'] leading-tight">
-                                            Printing
-                                        </div>
-                                        <div className="mt-3 text-white text-xl font-normal font-['Inter'] leading-6">
-                                            We offer customized printing solutions designed to match your brand and requirements.
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Customize box section (full-bleed, no side spacing) */}
-                <div
-                    className="relative left-1/2 -translate-x-1/2 w-screen m-0 p-0 overflow-hidden"
-                    style={{ width: '100vw' }}
-                >
-                    <div className="relative w-full h-[320px] sm:h-[420px] lg:h-[520px]">
-                        <img
-                            src="/customize box.png"
-                            alt="Customize Box"
-                            className="absolute inset-0 w-full h-full object-cover blur-xl scale-110"
-                            aria-hidden="true"
-                        />
-                        <img
-                            src="/customize box.png"
-                            alt=""
-                            className="absolute inset-0 w-full h-full object-contain"
-                            aria-hidden="true"
-                        />
-                    
-                        <div className="absolute inset-0 flex flex-col items-center justify-center">
-                            <div className="w-full text-center px-4">
-                                <p className="text-white text-base sm:text-lg lg:text-xl font-medium tracking-[0.25em]">
-                                    We are more than just a packaging company;
-                                </p>
-                                <h2 className="mt-3 text-white text-2xl sm:text-4xl lg:text-5xl xl:text-6xl font-extrabold leading-tight tracking-widest">
-                                    WE MANUFACTURE AND CUSTOMIZE BOXES
-                                </h2>
-                                <p className="mt-3 text-white text-base sm:text-lg lg:text-xl font-medium">
-                                    of the highest quality.
-                                </p>
-                            </div>
-                            <div className="mt-6">
                                 <button
                                     type="button"
-                                    onClick={() => router.visit(route('home') + '#contact')}
-                                    className="group inline-flex items-center justify-center px-12 sm:px-16 py-3 sm:py-4 bg-red-600 rounded-full border-2 border-white cursor-pointer select-none transition-transform duration-200 ease-out hover:scale-[1.03] active:scale-[0.99] focus:outline-none focus-visible:ring-2 focus-visible:ring-white/80 focus-visible:ring-offset-2 focus-visible:ring-offset-black/40 hover:bg-red-500 shadow-[0_10px_24px_rgba(0,0,0,0.25)]"
+                                    onClick={nextVfpImage}
+                                    className="absolute right-0 sm:-right-6 top-1/2 -translate-y-1/2 flex h-12 w-12 sm:h-14 sm:w-14 items-center justify-center rounded-full bg-red-600 border-[3px] border-white shadow-[0_4px_12px_rgba(227,30,37,0.4)] text-white transition-transform hover:scale-110 hover:bg-red-500 z-10"
                                 >
-                                    <span className="text-white text-xl sm:text-2xl font-extrabold tracking-[0.25em]">
-                                        CUSTOMIZE NOW
-                                    </span>
+                                    <svg className="w-6 h-6 sm:w-8 sm:h-8 pl-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M9 5l7 7-7 7" />
+                                    </svg>
                                 </button>
+                            </div>
+
+                            <div className="mt-8 flex justify-center gap-2">
+                                {vfpImages.map((_, idx) => (
+                                    <button
+                                        key={`dot-${idx}`}
+                                        type="button"
+                                        onClick={() => setCurrentVfpIndex(idx)}
+                                        aria-label={`Go to slide ${idx + 1}`}
+                                        className={`h-2.5 rounded-full transition-all duration-300 ${
+                                            idx === currentVfpIndex ? 'w-8 bg-red-600' : 'w-2.5 bg-gray-300 hover:bg-red-400'
+                                        }`}
+                                    />
+                                ))}
                             </div>
                         </div>
                     </div>
                 </div>
+            </div>
 
-                <Footer />
+
+
+
+            {/* Customize box section (full-bleed) */}
+            <div
+                className="relative left-1/2 m-0 w-screen max-w-[100vw] -translate-x-1/2 overflow-hidden p-0"
+                style={{ width: '100vw' }}
+            >
+            </div>
+
+            {/* Full-bleed Karton banner with cards */}
+            <div className="w-screen relative left-1/2 -translate-x-1/2 m-0 p-0">
+                <img
+                    src="/karton.png"
+                    alt="Karton"
+                    loading="lazy"
+                    className="w-screen max-w-none h-[520px] sm:h-[560px] lg:h-[640px] object-cover block m-0 p-0"
+                />
+
+                {/* Overlay cards */}
+                <div className="absolute inset-0">
+                    <div className="mx-auto flex h-full w-full max-w-7xl items-start px-4 pt-6 sm:px-6 sm:pt-10 lg:items-center lg:px-8 lg:pt-0">
+                        <div className="w-full max-w-[520px] space-y-4 sm:space-y-5">
+                            <div className="relative overflow-hidden rounded-3xl border border-white/90 bg-red-600/90 shadow-[0px_4px_14.1px_0px_rgba(0,0,0,0.62)] backdrop-blur-[1px]">
+                                <div className="px-5 py-5 text-center sm:px-8 sm:py-6">
+                                    <div className="text-white text-base sm:text-xl font-extrabold font-['Inter'] leading-tight">
+                                        Quotation
+                                    </div>
+                                    <div className="mt-2 text-white text-sm sm:text-xl font-normal font-['Inter'] leading-snug sm:leading-6">
+                                        Get a free estimate tailored to your budget and requirements.
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="relative overflow-hidden rounded-3xl border border-white/90 bg-red-600/90 shadow-[0px_4px_14.1px_0px_rgba(0,0,0,0.62)] backdrop-blur-[1px]">
+                                <div className="px-5 py-5 text-center sm:px-8 sm:py-6">
+                                    <div className="text-white text-base sm:text-xl font-extrabold font-['Inter'] leading-tight">
+                                        Delivery
+                                    </div>
+                                    <div className="mt-2 text-white text-sm sm:text-xl font-normal font-['Inter'] leading-snug sm:leading-6">
+                                        We provide reliable delivery services to clients anywhere in the Philippines.
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="relative overflow-hidden rounded-3xl border border-white/90 bg-red-600/90 shadow-[0px_4px_14.1px_0px_rgba(0,0,0,0.62)] backdrop-blur-[1px]">
+                                <div className="px-5 py-5 text-center sm:px-8 sm:py-6">
+                                    <div className="text-white text-base sm:text-xl font-extrabold font-['Inter'] leading-tight">
+                                        Free Customization
+                                    </div>
+                                    <div className="mt-2 text-white text-sm sm:text-xl font-normal font-['Inter'] leading-snug sm:leading-6">
+                                        Enjoy free customization of style, color, and size based on your specific needs
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="relative overflow-hidden rounded-3xl border border-white/90 bg-red-600/90 shadow-[0px_4px_14.1px_0px_rgba(0,0,0,0.62)] backdrop-blur-[1px]">
+                                <div className="px-5 py-5 text-center sm:px-8 sm:py-6">
+                                    <div className="text-white text-base sm:text-xl font-extrabold font-['Inter'] leading-tight">
+                                        Printing
+                                    </div>
+                                    <div className="mt-2 text-white text-sm sm:text-xl font-normal font-['Inter'] leading-snug sm:leading-6">
+                                        We offer customized printing solutions designed to match your brand and requirements.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* Customize box section (full-bleed, no side spacing) */}
+            <div
+                className="relative left-1/2 -translate-x-1/2 w-screen m-0 p-0 overflow-hidden"
+                style={{ width: '100vw' }}
+            >
+                <div className="relative w-full h-[320px] sm:h-[420px] lg:h-[520px]">
+                    <img
+                        src="/customize box.png"
+                        alt="Customize Box"
+                        className="absolute inset-0 w-full h-full object-cover blur-xl scale-110"
+                        aria-hidden="true"
+                    />
+                    <img
+                        src="/customize box.png"
+                        alt=""
+                        className="absolute inset-0 w-full h-full object-contain"
+                        aria-hidden="true"
+                    />
+
+                    <div className="absolute inset-0 flex flex-col items-center justify-center">
+                        <div className="w-full text-center px-4">
+                            <p className="text-white text-base sm:text-lg lg:text-xl font-medium tracking-[0.25em]">
+                                We are more than just a packaging company;
+                            </p>
+                            <h2 className="mt-3 text-white text-2xl sm:text-4xl lg:text-5xl xl:text-6xl font-extrabold leading-tight tracking-widest">
+                                WE MANUFACTURE AND CUSTOMIZE BOXES
+                            </h2>
+                            <p className="mt-3 text-white text-base sm:text-lg lg:text-xl font-medium">
+                                of the highest quality.
+                            </p>
+                        </div>
+                        <div className="mt-6">
+                            <button
+                                type="button"
+                                onClick={() => router.visit(route('home') + '#contact')}
+                                className="group inline-flex items-center justify-center px-8 sm:px-10 py-2.5 sm:py-3 bg-red-600 rounded-full border-2 border-white cursor-pointer select-none transition-transform duration-200 ease-out hover:scale-[1.03] active:scale-[0.99] focus:outline-none focus-visible:ring-2 focus-visible:ring-white/80 focus-visible:ring-offset-2 focus-visible:ring-offset-black/40 hover:bg-red-500 shadow-[0_10px_24px_rgba(0,0,0,0.25)]"
+                            >
+                                <span className="text-white text-base sm:text-lg font-extrabold tracking-[0.25em]">
+                                    CUSTOMIZE NOW
+                                </span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <Footer />
         </>
     );
 }

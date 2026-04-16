@@ -12,6 +12,7 @@ export default function Modal({
     closeable = true,
     containerClassName = '',
     panelClassName = '',
+    backdropClassName = '',
     panelStyle,
     onClose = () => {},
 }) {
@@ -27,6 +28,8 @@ export default function Modal({
         lg: 'sm:max-w-lg',
         xl: 'sm:max-w-xl',
         '2xl': 'sm:max-w-2xl',
+        '3xl': 'sm:max-w-3xl',
+        '4xl': 'sm:max-w-4xl',
     }[maxWidth];
 
     return (
@@ -48,7 +51,12 @@ export default function Modal({
                     leaveFrom="opacity-100"
                     leaveTo="opacity-0"
                 >
-                    <div className="absolute inset-0 bg-gray-900/60 dark:bg-black/70" />
+                    <div
+                        className={
+                            backdropClassName ||
+                            'absolute inset-0 bg-gray-900/60 dark:bg-black/70'
+                        }
+                    />
                 </TransitionChild>
 
                 <TransitionChild

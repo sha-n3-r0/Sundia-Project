@@ -10,6 +10,8 @@ class TeamMemberController extends Controller
 {
     public function store(Request $request): RedirectResponse
     {
+        $this->discardGhostFileField($request, 'profile_image_file');
+
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'title' => ['nullable', 'string', 'max:255'],
@@ -28,9 +30,9 @@ class TeamMemberController extends Controller
         $member->display_order = (int) ($validated['display_order'] ?? 0);
         $member->is_active = (bool) ($validated['is_active'] ?? true);
 
-        if ($request->hasFile('profile_image_file')) {
-            $path = $request->file('profile_image_file')->store('team-members', 'public');
-            $member->profile_image_path = '/storage/' . $path;
+        $profileUrl = $this->storePublicUpload($request, 'profile_image_file', 'uploads/team-members');
+        if ($profileUrl) {
+            $member->profile_image_path = $profileUrl;
         }
 
         $member->save();
@@ -42,6 +44,8 @@ class TeamMemberController extends Controller
 
     public function update(Request $request, TeamMember $teamMember): RedirectResponse
     {
+        $this->discardGhostFileField($request, 'profile_image_file');
+
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'title' => ['nullable', 'string', 'max:255'],
@@ -59,9 +63,9 @@ class TeamMemberController extends Controller
         $teamMember->display_order = (int) ($validated['display_order'] ?? $teamMember->display_order);
         $teamMember->is_active = (bool) ($validated['is_active'] ?? $teamMember->is_active);
 
-        if ($request->hasFile('profile_image_file')) {
-            $path = $request->file('profile_image_file')->store('team-members', 'public');
-            $teamMember->profile_image_path = '/storage/' . $path;
+        $profileUrl = $this->storePublicUpload($request, 'profile_image_file', 'uploads/team-members');
+        if ($profileUrl) {
+            $teamMember->profile_image_path = $profileUrl;
         }
 
         $teamMember->save();

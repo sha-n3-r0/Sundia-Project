@@ -18,6 +18,10 @@
 /public/storage
 /storage/*.key
 /storage/pail
+/vendor/
+/node_modules/
+/public/uploads/
+/.env
 # /vendor  (uncomment to ignore; keep commented so Vercel deploy has deps without Composer)
 # vendor
 Homestead.json

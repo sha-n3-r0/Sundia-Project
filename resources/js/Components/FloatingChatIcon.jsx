@@ -5,6 +5,10 @@ export default function FloatingChatIcon() {
     const [hoveredCompany, setHoveredCompany] = useState(null);
 
     const isTopOffroadPage = route().current('top-offroad');
+    const isDashboard = route().current('dashboard');
+
+    if (isDashboard) return null;
+
     const chatColor = isTopOffroadPage ? '#FF6E00' : '#FF0000';
 
     const companies = [

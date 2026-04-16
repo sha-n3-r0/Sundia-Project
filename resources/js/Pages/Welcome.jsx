@@ -1,5 +1,6 @@
 import Footer from '@/Components/Footer';
 import Header from '@/Components/Header';
+import { publicAssetUrl } from '@/utils/publicAssetUrl';
 import { Head, Link, usePage } from '@inertiajs/react';
 import { useEffect, useRef, useState } from 'react';
 
@@ -304,6 +305,10 @@ function mapUpcomingEventsForPanel(raw) {
 
 export default function Welcome({ appName }) {
     const { props } = usePage();
+    const backgroundPicture = props.backgroundPicture;
+    const heroBackgroundImage =
+        publicAssetUrl(backgroundPicture?.images?.[0] || backgroundPicture?.image_path) ||
+        '/sundia-group-background.JPG';
     const sundia = props.sundia;
     const homepageVideo = props.homepageVideo;
     const missionVision = props.missionVision;
@@ -554,7 +559,7 @@ export default function Welcome({ appName }) {
                         className="pointer-events-none absolute inset-0 -z-10 bg-cover bg-center"
                         style={{
                             backgroundImage:
-                                "linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url('/sundia-group-background.JPG')",
+                                `linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url('${heroBackgroundImage}')`,
                         }}
                         aria-hidden
                     />
@@ -918,7 +923,7 @@ export default function Welcome({ appName }) {
                         </h2>
 
                         <div className="w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-16 gap-x-8 justify-items-center">
-                            {resolvedTeamMembers.map((member, index) => {
+                            {resolvedTeamMembers.slice(0, 6).map((member, index) => {
                                 const logoKey = member.company_logo ?? member.logo;
                                 return (
                                     <div key={member.id ?? member.name ?? index} className="w-80 group">
@@ -958,6 +963,15 @@ export default function Welcome({ appName }) {
                                     </div>
                                 );
                             })}
+                        </div>
+
+                        <div className="mt-16 w-full flex justify-center">
+                            <Link 
+                                href="/team"
+                                className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-gradient-to-r from-red-600 to-red-700 px-10 text-sm font-extrabold tracking-widest text-white shadow-md transition-all hover:scale-105 hover:from-red-500 hover:to-red-600 uppercase"
+                            >
+                                SEE MORE
+                            </Link>
                         </div>
                     </div>
 

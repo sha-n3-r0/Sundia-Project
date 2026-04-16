@@ -1,21 +1,34 @@
 import Footer from '@/Components/Footer';
 import Header from '@/Components/Header';
+import { publicAssetUrl } from '@/utils/publicAssetUrl';
 import { Head, router } from '@inertiajs/react';
 import { useRef, useState, useEffect } from 'react';
 
-export default function TopOffroad({ topoffroad, topoffroadProducts = [] }) {
+export default function TopOffroad({ topoffroad, topoffroadProducts = [], backgroundPicture }) {
     const videoRef = useRef(null);
     const [isPlaying, setIsPlaying] = useState(false);
     const [activeCategory, setActiveCategory] = useState('car-accessories');
     const [bgIndex, setBgIndex] = useState(0);
-    const backgrounds = ['/Topoffroad.png?v=2', '/bro.jpg', '/lineup.jpg'];
+    const backgrounds = (backgroundPicture?.images ?? [])
+        .map((path) => publicAssetUrl(path))
+        .filter(Boolean);
+    const resolvedBackgrounds =
+        backgrounds.length > 0
+            ? backgrounds
+            : ['/Topoffroad.png?v=2', '/bro.jpg', '/lineup.jpg'];
 
     useEffect(() => {
         const interval = setInterval(() => {
-            setBgIndex((prev) => (prev + 1) % backgrounds.length);
+            setBgIndex((prev) => (prev + 1) % resolvedBackgrounds.length);
         }, 5000);
         return () => clearInterval(interval);
-    }, []);
+    }, [resolvedBackgrounds.length]);
+
+    useEffect(() => {
+        if (bgIndex >= resolvedBackgrounds.length) {
+            setBgIndex(0);
+        }
+    }, [bgIndex, resolvedBackgrounds.length]);
     const brandLogos = [
         { src: '/arb.png', alt: 'ARB' },
         { src: '/dometic.png', alt: 'Dometic' },
@@ -140,10 +153,10 @@ export default function TopOffroad({ topoffroad, topoffroadProducts = [] }) {
         <>
             <Head title="TOP OFFROAD" />
 
-            <div className="min-h-screen font-['Inter'] antialiased bg-white">
+            <div id="about" className="min-h-screen font-['Inter'] antialiased bg-white">
                 <section className="relative flex min-h-[46vh] flex-col overflow-visible bg-cover bg-center sm:min-h-[56vh] lg:min-h-[68vh]">
                     <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
-                        {backgrounds.map((bg, index) => (
+                        {resolvedBackgrounds.map((bg, index) => (
                             <div
                                 key={bg}
                                 className={`absolute inset-0 bg-cover bg-center transition-opacity duration-1000 ease-in-out ${
@@ -333,8 +346,8 @@ export default function TopOffroad({ topoffroad, topoffroadProducts = [] }) {
                         </div>
 
                         {/* Outreach — fluid layout (replaces fixed px / absolute) */}
-                        <div className="relative left-1/2 mt-12 w-screen max-w-[100vw] -translate-x-1/2 overflow-x-hidden bg-stone-900">
-                            <div className="mx-auto flex max-w-7xl flex-col gap-8 px-4 py-12 sm:px-6 sm:py-16 lg:flex-row lg:items-center lg:gap-12 lg:px-8">
+                        <div className="relative left-1/2 w-screen max-w-[100vw] -translate-x-1/2 overflow-x-hidden bg-stone-900">
+                            <div className="mx-auto flex max-w-7xl flex-col gap-8 px-4 pt-12 pb-24 sm:px-6 sm:pt-16 sm:pb-32 lg:flex-row lg:items-center lg:gap-12 lg:px-8 lg:pb-36">
                                 <div className="min-w-0 flex-1">
                                     <h2 className="font-['Inter'] text-xl font-bold tracking-tight text-white sm:text-2xl md:text-section">
                                         OUTREACH MISSION &amp; EVENTS
@@ -362,46 +375,61 @@ export default function TopOffroad({ topoffroad, topoffroadProducts = [] }) {
                                     </h2>
                                 </div>
 
-                                <div className="space-y-12 rounded-t-2xl bg-zinc-100 px-4 py-10 sm:space-y-14 sm:px-6 sm:py-12 md:px-10 md:py-14 lg:px-12">
+                                <div className="flex flex-col bg-zinc-100 rounded-t-2xl sm:rounded-b-[48px] sm:rounded-t-[48px] md:rounded-b-[56px] w-full overflow-hidden">
                                     {advantageBlocks.map((block) => (
                                         <article
                                             key={block.key}
-                                            className="flex flex-col gap-6 lg:flex-row lg:items-start lg:gap-10"
+                                            className={`flex flex-col gap-6 lg:flex-row lg:items-center lg:gap-10 px-4 py-10 sm:px-6 sm:py-14 md:px-10 lg:px-12 ${
+                                                block.imageFirst ? 'bg-[#1a1a1a] rounded-[32px] sm:rounded-[48px] relative z-10 shadow-xl' : 'bg-transparent'
+                                            }`}
                                         >
                                             <div
                                                 className={
-                                                    'flex min-w-0 flex-1 flex-col gap-4 ' +
-                                                    (block.imageFirst ? 'order-2 lg:order-2' : 'order-1 lg:order-1')
+                                                    'flex min-w-0 flex-1 flex-col gap-5 sm:gap-6 lg:pr-8 ' +
+                                                    (block.imageFirst ? 'order-2 lg:order-2 lg:pl-10 lg:pr-0' : 'order-1 lg:order-1')
                                                 }
                                             >
-                                                <div className="inline-flex max-w-full flex-wrap items-center gap-2 rounded-full bg-orange-500 px-4 py-2.5 sm:gap-3 sm:px-5 sm:py-3">
-                                                    <svg
-                                                        className="h-6 w-6 shrink-0 sm:h-8 sm:w-8"
-                                                        viewBox="0 0 24 24"
-                                                        fill="none"
-                                                        xmlns="http://www.w3.org/2000/svg"
-                                                        aria-hidden
-                                                    >
-                                                        {block.icon}
-                                                    </svg>
-                                                    <span className="break-words text-left font-['Inter'] text-xs font-semibold uppercase leading-snug tracking-wide text-white sm:text-sm md:text-base">
-                                                        {block.title}
-                                                    </span>
+                                                <div>
+                                                    <div className="inline-flex max-w-full flex-wrap items-center gap-2 rounded-full bg-orange-600 px-2 py-2 sm:gap-3 sm:px-2 sm:py-2">
+                                                        {block.imageFirst ? (
+                                                            <>
+                                                                <span className="break-words pl-4 sm:pl-5 text-left font-['Inter'] text-xs font-bold uppercase leading-snug tracking-wider text-white sm:text-sm md:text-base mr-1">
+                                                                    {block.title}
+                                                                </span>
+                                                                <div className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 shrink-0 border-[2px] border-white rounded-full bg-transparent">
+                                                                    <svg className="h-5 w-5 sm:h-6 sm:w-6" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
+                                                                        {block.icon}
+                                                                    </svg>
+                                                                </div>
+                                                            </>
+                                                        ) : (
+                                                            <>
+                                                                <div className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 shrink-0 border-[2px] border-white rounded-full bg-transparent">
+                                                                    <svg className="h-5 w-5 sm:h-6 sm:w-6" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
+                                                                        {block.icon}
+                                                                    </svg>
+                                                                </div>
+                                                                <span className="break-words pr-4 sm:pr-5 text-left font-['Inter'] text-xs font-bold uppercase leading-snug tracking-wider text-white sm:text-sm md:text-base ml-1">
+                                                                    {block.title}
+                                                                </span>
+                                                            </>
+                                                        )}
+                                                    </div>
                                                 </div>
-                                                <p className="text-pretty font-['Inter'] text-sm leading-relaxed text-orange-600 sm:text-base lg:text-body-lg lg:leading-relaxed">
+                                                <p className="text-pretty font-['Inter'] text-[13px] font-semibold tracking-wide leading-relaxed text-orange-600 sm:text-[15px] lg:text-base lg:leading-8">
                                                     {block.body}
                                                 </p>
                                             </div>
                                             <div
                                                 className={
-                                                    'w-full shrink-0 overflow-hidden rounded-2xl bg-stone-900 shadow-inner ring-1 ring-black/20 lg:max-w-[min(100%,520px)] lg:flex-1 ' +
+                                                    'w-full shrink-0 overflow-hidden rounded-2xl shadow-lg ring-1 ring-black/5 lg:max-w-[min(100%,500px)] lg:flex-1 ' +
                                                     (block.imageFirst ? 'order-1 lg:order-1' : 'order-2 lg:order-2')
                                                 }
                                             >
                                                 <img
                                                     src={block.image}
                                                     alt={block.imageAlt}
-                                                    className="aspect-[4/3] h-auto w-full object-cover sm:aspect-[588/489]"
+                                                    className="aspect-[4/3] h-auto w-full object-cover sm:aspect-[588/400]"
                                                 />
                                             </div>
                                         </article>
@@ -411,7 +439,7 @@ export default function TopOffroad({ topoffroad, topoffroadProducts = [] }) {
                         </div>
 
                         {/* Our Products — wrap / grid on narrow screens */}
-                        <div className="relative left-1/2 mt-12 w-screen max-w-[100vw] -translate-x-1/2 sm:mt-16">
+                        <div id="products" className="relative left-1/2 mt-12 w-screen max-w-[100vw] -translate-x-1/2 sm:mt-16">
                             <div className="bg-neutral-900 py-10 sm:py-12">
                                 <div className="mx-auto max-w-6xl px-4 sm:px-6">
                                     <div className="text-center font-['Inter'] text-section font-medium text-white">
@@ -499,6 +527,10 @@ export default function TopOffroad({ topoffroad, topoffroadProducts = [] }) {
                                             .filter(Boolean)
                                             .slice(0, 3);
 
+                                        const cardImageUrl = product.image_path
+                                            ? publicAssetUrl(product.image_path)
+                                            : '/case.png';
+
                                         return (
                                             <div
                                                 key={product.id ?? `topoffroad-product-${idx}`}
@@ -507,7 +539,7 @@ export default function TopOffroad({ topoffroad, topoffroadProducts = [] }) {
                                                 <div
                                                     className="w-full h-52 bg-cover bg-center transform transition-transform duration-200 group-hover:scale-110"
                                                     style={{
-                                                        backgroundImage: `url('${product.image_path || '/case.png'}')`,
+                                                        backgroundImage: `url('${cardImageUrl}')`,
                                                     }}
                                                 />
                                                 <div className="bg-neutral-800 px-4 py-3 text-white rounded-b-[18px] h-24 flex flex-col justify-between">

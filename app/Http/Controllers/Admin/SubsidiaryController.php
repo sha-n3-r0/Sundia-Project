@@ -7,6 +7,7 @@ use App\Models\Subsidiary;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+
 class SubsidiaryController extends Controller
 {
     public function store(Request $request): RedirectResponse
@@ -33,14 +34,14 @@ class SubsidiaryController extends Controller
         $subsidiary->display_order = (int) ($validated['display_order'] ?? 0);
         $subsidiary->is_active = (bool) ($validated['is_active'] ?? true);
 
-        if ($request->hasFile('logo_file')) {
-            $path = $request->file('logo_file')->store('subsidiaries/logos', 'public');
-            $subsidiary->logo_path = '/storage/' . $path;
+        $publicLogoPath = $this->storePublicUpload($request, 'logo_file', 'uploads/subsidiaries/logos');
+        if ($publicLogoPath) {
+            $subsidiary->logo_path = $publicLogoPath;
         }
 
-        if ($request->hasFile('background_file')) {
-            $path = $request->file('background_file')->store('subsidiaries/backgrounds', 'public');
-            $subsidiary->background_path = '/storage/' . $path;
+        $publicBgPath = $this->storePublicUpload($request, 'background_file', 'uploads/subsidiaries/backgrounds');
+        if ($publicBgPath) {
+            $subsidiary->background_path = $publicBgPath;
         }
 
         $subsidiary->save();
@@ -74,14 +75,14 @@ class SubsidiaryController extends Controller
         $subsidiary->display_order = (int) ($validated['display_order'] ?? $subsidiary->display_order);
         $subsidiary->is_active = (bool) ($validated['is_active'] ?? $subsidiary->is_active);
 
-        if ($request->hasFile('logo_file')) {
-            $path = $request->file('logo_file')->store('subsidiaries/logos', 'public');
-            $subsidiary->logo_path = '/storage/' . $path;
+        $publicLogoPath = $this->storePublicUpload($request, 'logo_file', 'uploads/subsidiaries/logos');
+        if ($publicLogoPath) {
+            $subsidiary->logo_path = $publicLogoPath;
         }
 
-        if ($request->hasFile('background_file')) {
-            $path = $request->file('background_file')->store('subsidiaries/backgrounds', 'public');
-            $subsidiary->background_path = '/storage/' . $path;
+        $publicBgPath = $this->storePublicUpload($request, 'background_file', 'uploads/subsidiaries/backgrounds');
+        if ($publicBgPath) {
+            $subsidiary->background_path = $publicBgPath;
         }
 
         $subsidiary->save();

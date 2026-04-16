@@ -1,19 +1,23 @@
 import Footer from '@/Components/Footer';
 import Header from '@/Components/Header';
+import { publicAssetUrl } from '@/utils/publicAssetUrl';
 import { Head, router, usePage } from '@inertiajs/react';
 import { useEffect, useRef, useState } from 'react';
 
 function normalizeImageSrc(path) {
-    if (!path) return 'https://placehold.co/350x269';
-    if (path.startsWith('http') || path.startsWith('/')) return path;
-    return `/${path}`;
+    return publicAssetUrl(path) || 'https://placehold.co/350x269';
 }
 
 export default function Siam() {
     const { props } = usePage();
+    const backgroundPicture = props.backgroundPicture;
+    const heroBackgroundImage =
+        publicAssetUrl(backgroundPicture?.images?.[0] || backgroundPicture?.image_path) ||
+        '/siambackground.JPG';
     const siam = props.siam;
     const siamPageVideo = props.siamPageVideo;
     const siamProductCategories = props.siamProductCategories ?? [];
+    const serviceCards = props.serviceCards ?? [];
     const statsTitleLine1 = siam?.content?.stats_title_line1 ?? 'WHAT';
     const statsTitleLine2 = siam?.content?.stats_title_line2 ?? 'WE';
     const statsTitleLine3 = siam?.content?.stats_title_line3 ?? 'DO?';
@@ -193,10 +197,10 @@ export default function Siam() {
     return (
         <>
             <Head title="SIAM" />
-            <div className="min-h-screen font-['Inter'] antialiased bg-white">
+            <div id="about" className="min-h-screen font-['Inter'] antialiased bg-white">
                 <section
                     className="relative flex min-h-[46vh] flex-col overflow-visible bg-cover bg-center sm:min-h-[56vh] lg:min-h-[68vh]"
-                    style={{ backgroundImage: "url('/siambackground.JPG')" }}
+                    style={{ backgroundImage: `url('${heroBackgroundImage}')` }}
                 >
                     <div className="pointer-events-none absolute inset-0 z-0 bg-gradient-to-r from-black/80 to-black/40" />
 
@@ -219,9 +223,16 @@ export default function Siam() {
                             <button
                                 type="button"
                                 onClick={() => router.visit(route('home') + '#contact')}
-                                className="inline-flex min-h-12 w-full max-w-md items-center justify-center rounded-full bg-gradient-to-r from-red-600 to-orange-600 px-5 py-3 text-center text-xs font-bold leading-snug text-white shadow-[0px_1px_2px_-1px_rgba(0,0,0,0.10)] shadow-[0px_1px_3px_0px_rgba(0,0,0,0.10)] transition-colors hover:from-red-700 hover:to-orange-700 sm:w-auto sm:max-w-none sm:px-8 sm:text-base sm:leading-7"
+                                className="inline-flex min-h-12 w-full max-w-md items-center justify-center gap-2 rounded-full bg-gradient-to-r from-red-600 to-red-700 px-5 py-3 text-center text-xs sm:text-base font-medium leading-snug text-white shadow-md transition-colors hover:from-red-500 hover:to-red-600 sm:w-auto sm:max-w-none sm:px-8 sm:leading-7"
                             >
-                                REQUEST FOR QUOTATION
+                                <span>CONTACT US</span>
+                                <span className="inline-flex h-4 w-6 items-center justify-start pl-2">
+                                    <span className="flex h-4 w-4 items-center justify-center overflow-hidden">
+                                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M12.172 7L6.808 1.636L8.222 0.222L16 8L8.222 15.778L6.808 14.364L12.172 9H0V7H12.172Z" fill="currentColor" />
+                                        </svg>
+                                    </span>
+                                </span>
                             </button>
                         </div>
                     </div>
@@ -379,7 +390,7 @@ export default function Siam() {
                             </p>
                         </div>
 
-                        <div className="grid w-full grid-cols-1 gap-x-8 gap-y-12 md:grid-cols-2 md:gap-y-14 lg:grid-cols-3 lg:gap-x-12 lg:gap-y-16">
+                        <div id="products" className="grid w-full grid-cols-1 gap-x-8 gap-y-12 md:grid-cols-2 md:gap-y-14 lg:grid-cols-3 lg:gap-x-12 lg:gap-y-16">
                             {siamProductCategories.map((category, index) => (
                                 <button
                                     key={category.id ?? `siam-category-${index}`}
@@ -403,17 +414,28 @@ export default function Siam() {
                         </div>
                     </div>
                 </div>
-
-                <div className="w-full mt-0 mb-0 flex flex-col">
-                    <div className="w-full h-28 bg-red-600 flex-shrink-0" />
-                    <img
-                        src="/Rectangle.png"
-                        alt="Rectangle"
-                        loading="lazy"
-                        className="w-screen max-w-none h-auto object-cover block m-0 p-0"
-                    />
-                </div>
             </div>
+
+            <div className="w-full h-28 bg-red-600 flex-shrink-0" />
+
+            {/* 3x2 Cards Grid */}
+            {serviceCards.length > 0 && (
+                <div className="w-full px-4 py-8">
+                    <div className="max-w-7xl mx-auto">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {serviceCards.map((card) => (
+                                <div key={card.id} className="overflow-hidden rounded-lg">
+                                    <img
+                                        src={publicAssetUrl(card.image_path) || 'https://placehold.co/500x350/e31e25/white?text=No+Image'}
+                                        alt={card.alt_text || card.title || 'Service card'}
+                                        className="w-full h-72 object-cover hover:scale-105 transition-transform duration-300"
+                                    />
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {selectedCategory && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-8">

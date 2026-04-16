@@ -2,7 +2,7 @@ import Modal from '@/Components/Modal';
 import DeleteUserForm from '@/Pages/Profile/Partials/DeleteUserForm';
 import UpdatePasswordForm from '@/Pages/Profile/Partials/UpdatePasswordForm';
 import UpdateProfileInformationForm from '@/Pages/Profile/Partials/UpdateProfileInformationForm';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 export default function ProfileModal({
     show,
@@ -11,95 +11,45 @@ export default function ProfileModal({
     status,
     anchorRef,
 }) {
-    const [panelStyle, setPanelStyle] = useState(undefined);
-
-    const anchored = !!anchorRef?.current;
-
-    const containerClassName = useMemo(() => {
-        if (!anchored) return '';
-        return 'fixed inset-0 z-50';
-    }, [anchored]);
+    const [isCentered, setIsCentered] = useState(true);
 
     useEffect(() => {
-        if (!show || !anchored) return;
-
-        const compute = () => {
-            const el = anchorRef.current;
-            if (!el) return;
-            const rect = el.getBoundingClientRect();
-
-            const gap = 10;
-            const desiredWidth = 420;
-            const maxWidth = Math.min(desiredWidth, window.innerWidth - 24);
-                const heightPadding = 12;
-                const maxPanelHeight = Math.min(560, window.innerHeight - 24);
-
-            // Prefer to the right of the button; fallback to the left.
-            const fitsRight = rect.right + gap + maxWidth <= window.innerWidth - 8;
-            const left = fitsRight
-                ? rect.right + gap
-                : Math.max(8, rect.left - gap - maxWidth);
-
-                // Place beside button; flip upward if near bottom.
-                const spaceBelow = window.innerHeight - rect.bottom;
-                const spaceAbove = rect.top;
-                const canFitBelow = spaceBelow >= Math.min(220, maxPanelHeight * 0.6);
-                const canFitAbove = spaceAbove >= Math.min(220, maxPanelHeight * 0.6);
-
-                let top;
-                if (canFitBelow || (!canFitAbove && spaceBelow >= spaceAbove)) {
-                    // Below, aligned to top of button.
-                    top = rect.top - 6;
-                } else {
-                    // Above, aligned to bottom of button (with estimated panel height).
-                    top = rect.bottom - maxPanelHeight + 6;
-                }
-
-                // Clamp inside viewport.
-                top = Math.min(
-                    Math.max(8, top),
-                    Math.max(8, window.innerHeight - maxPanelHeight - heightPadding),
-                );
-
-            setPanelStyle({
-                position: 'fixed',
-                left,
-                top,
-                width: maxWidth,
-                margin: 0,
-            });
-        };
-
-        compute();
-        window.addEventListener('resize', compute);
-        window.addEventListener('scroll', compute, true);
-
-        return () => {
-            window.removeEventListener('resize', compute);
-            window.removeEventListener('scroll', compute, true);
-        };
-    }, [show, anchored, anchorRef]);
+        // If a future page still passes an anchorRef, we intentionally ignore it:
+        // the Profile dialog should always open centered for consistent UX.
+        setIsCentered(true);
+    }, [show, anchorRef]);
 
     return (
         <Modal
             show={show}
             onClose={onClose}
-            maxWidth={anchored ? 'sm' : 'lg'}
-            containerClassName={containerClassName}
-            panelStyle={panelStyle}
-            panelClassName={
-                anchored
-                    ? 'max-h-[min(560px,calc(100vh-1.5rem))] rounded-xl ring-1 ring-neutral-900'
-                    : ''
-            }
+            maxWidth={isCentered ? '4xl' : 'lg'}
+            panelClassName="overflow-hidden rounded-2xl"
         >
-            <div className="bg-neutral-950 text-neutral-100">
-                <div className="flex items-start justify-between gap-3 border-b border-neutral-800/80 px-4 py-4 sm:px-5">
+            <div
+                className="bg-white text-neutral-900 dark:bg-white dark:text-neutral-900
+                [&_label]:text-neutral-700 dark:[&_label]:text-neutral-700
+                [&_h2]:text-neutral-900 dark:[&_h2]:text-neutral-900
+                [&_p]:text-neutral-600 dark:[&_p]:text-neutral-600
+                [&_input]:border-neutral-300 [&_input]:bg-white [&_input]:text-neutral-900 [&_input]:placeholder:text-neutral-400
+                dark:[&_input]:border-neutral-300 dark:[&_input]:bg-white dark:[&_input]:text-neutral-900 dark:[&_input]:placeholder:text-neutral-400
+                [&_input]:focus:border-red-600 [&_input]:focus:ring-red-600
+                dark:[&_input]:focus:border-red-600 dark:[&_input]:focus:ring-red-600
+                [&_textarea]:border-neutral-300 [&_textarea]:bg-white [&_textarea]:text-neutral-900 [&_textarea]:placeholder:text-neutral-400
+                dark:[&_textarea]:border-neutral-300 dark:[&_textarea]:bg-white dark:[&_textarea]:text-neutral-900 dark:[&_textarea]:placeholder:text-neutral-400
+                [&_textarea]:focus:border-red-600 [&_textarea]:focus:ring-red-600
+                dark:[&_textarea]:focus:border-red-600 dark:[&_textarea]:focus:ring-red-600
+                [&_select]:border-neutral-300 [&_select]:bg-white [&_select]:text-neutral-900
+                dark:[&_select]:border-neutral-300 dark:[&_select]:bg-white dark:[&_select]:text-neutral-900
+                [&_select]:focus:border-red-600 [&_select]:focus:ring-red-600
+                dark:[&_select]:focus:border-red-600 dark:[&_select]:focus:ring-red-600"
+            >
+                <div className="flex items-start justify-between gap-3 bg-gradient-to-r from-red-600 to-red-700 px-5 py-4 sm:px-6">
                     <div>
-                        <h2 className="text-xs font-semibold uppercase tracking-[0.22em] text-neutral-100">
+                        <h2 className="text-xs font-semibold uppercase tracking-[0.22em] text-white">
                             Account
                         </h2>
-                        <p className="mt-1 text-[11px] leading-5 text-neutral-400">
+                        <p className="mt-1 text-[11px] leading-5 text-red-100">
                             Profile, password, and account controls
                         </p>
                     </div>
@@ -107,7 +57,7 @@ export default function ProfileModal({
                     <button
                         type="button"
                         onClick={onClose}
-                        className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-neutral-300 transition hover:bg-white/5 hover:text-white focus:outline-none focus:ring-2 focus:ring-red-600 focus:ring-offset-2 focus:ring-offset-neutral-950"
+                        className="inline-flex h-9 w-9 items-center justify-center rounded-xl text-white/90 transition hover:bg-white/10 hover:text-white focus:outline-none focus:ring-2 focus:ring-white/80 focus:ring-offset-2 focus:ring-offset-red-700"
                         aria-label="Close"
                     >
                         <svg
@@ -125,8 +75,8 @@ export default function ProfileModal({
                     </button>
                 </div>
 
-                <div className="divide-y divide-neutral-800/80">
-                    <div className="px-4 py-5 sm:px-5">
+                <div className="divide-y divide-neutral-200 bg-neutral-50">
+                    <div className="px-5 py-6 sm:px-6">
                         <UpdateProfileInformationForm
                             mustVerifyEmail={mustVerifyEmail}
                             status={status}
@@ -134,11 +84,11 @@ export default function ProfileModal({
                         />
                     </div>
 
-                    <div className="px-4 py-5 sm:px-5">
+                    <div className="px-5 py-6 sm:px-6">
                         <UpdatePasswordForm className="max-w-none" />
                     </div>
 
-                    <div className="px-4 py-5 sm:px-5">
+                    <div className="px-5 py-6 sm:px-6">
                         <DeleteUserForm className="max-w-none" />
                     </div>
                 </div>

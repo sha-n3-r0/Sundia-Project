@@ -34,3 +34,9 @@ body {
 }
 
 /* removed fixed body background as it's handled in Welcome.jsx */
+
+@keyframes dashboardSavingBar {
+    0% { transform: translateX(-70%); }
+    50% { transform: translateX(40%); }
+    100% { transform: translateX(170%); }
+}

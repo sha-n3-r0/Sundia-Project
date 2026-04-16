@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\CareerCultureCard;
 use App\Models\CareerJob;
+use App\Models\BackgroundPicture;
+use App\Support\BackgroundPictureData;
 use Illuminate\Support\Facades\Schema;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -82,6 +84,7 @@ class CareersController extends Controller
             return Inertia::render('Careers', [
                 'careerCultureCards' => self::defaultCultureCards(),
                 'careerJobs' => self::defaultJobs(),
+                'backgroundPicture' => BackgroundPictureData::payloadForPage(null, 'Careers'),
             ]);
         }
 
@@ -122,9 +125,14 @@ class CareersController extends Controller
             ->values()
             ->all();
 
+        $backgroundPicture = Schema::hasTable('background_pictures')
+            ? BackgroundPictureData::payloadForPage(BackgroundPicture::where('page_name', 'Careers')->first(), 'Careers')
+            : BackgroundPictureData::payloadForPage(null, 'Careers');
+
         return Inertia::render('Careers', [
             'careerCultureCards' => $careerCultureCards,
             'careerJobs' => $careerJobs,
+            'backgroundPicture' => $backgroundPicture,
         ]);
     }
 }

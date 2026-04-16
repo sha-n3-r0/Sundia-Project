@@ -11,11 +11,13 @@ class SiamProductCategoryController extends Controller
 {
     public function store(Request $request): RedirectResponse
     {
+        $this->discardGhostFileField($request, 'image_file');
+
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'card_description' => ['nullable', 'string'],
             'modal_short_description' => ['nullable', 'string'],
-            'image_file' => ['nullable', 'image', 'max:4096'],
+            'image_file' => ['nullable', 'image', 'max:2048'],
             'display_order' => ['nullable', 'integer', 'min:0', 'max:1000000'],
             'is_active' => ['nullable', 'boolean'],
         ]);
@@ -28,9 +30,9 @@ class SiamProductCategoryController extends Controller
         $category->display_order = (int) ($validated['display_order'] ?? 0);
         $category->is_active = (bool) ($validated['is_active'] ?? true);
 
-        if ($request->hasFile('image_file')) {
-            $path = $request->file('image_file')->store('siam-product-categories', 'public');
-            $category->card_image_path = '/storage/'.$path;
+        $publicImageUrl = $this->storePublicUpload($request, 'image_file', 'uploads/siam-product-categories');
+        if ($publicImageUrl) {
+            $category->card_image_path = $publicImageUrl;
         }
 
         $category->save();
@@ -42,11 +44,13 @@ class SiamProductCategoryController extends Controller
 
     public function update(Request $request, SiamProductCategory $siamProductCategory): RedirectResponse
     {
+        $this->discardGhostFileField($request, 'image_file');
+
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'card_description' => ['nullable', 'string'],
             'modal_short_description' => ['nullable', 'string'],
-            'image_file' => ['nullable', 'image', 'max:4096'],
+            'image_file' => ['nullable', 'image', 'max:2048'],
             'display_order' => ['nullable', 'integer', 'min:0', 'max:1000000'],
             'is_active' => ['nullable', 'boolean'],
         ]);
@@ -67,9 +71,9 @@ class SiamProductCategoryController extends Controller
         $siamProductCategory->display_order = (int) ($validated['display_order'] ?? $siamProductCategory->display_order);
         $siamProductCategory->is_active = (bool) ($validated['is_active'] ?? $siamProductCategory->is_active);
 
-        if ($request->hasFile('image_file')) {
-            $path = $request->file('image_file')->store('siam-product-categories', 'public');
-            $siamProductCategory->card_image_path = '/storage/'.$path;
+        $publicImageUrl = $this->storePublicUpload($request, 'image_file', 'uploads/siam-product-categories');
+        if ($publicImageUrl) {
+            $siamProductCategory->card_image_path = $publicImageUrl;
         }
 
         $siamProductCategory->save();

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\TrustedCompany;
+use App\Support\PublicUrl;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -21,7 +22,7 @@ class TrustedCompanyController extends Controller
                 ->map(fn (TrustedCompany $c) => [
                     'id' => $c->id,
                     'name' => $c->name,
-                    'logo_path' => $c->logo_path,
+                    'logo_path' => PublicUrl::web($c->logo_path),
                     'display_order' => (int) $c->display_order,
                     'is_active' => (bool) $c->is_active,
                 ]),
@@ -42,9 +43,9 @@ class TrustedCompanyController extends Controller
         $company->display_order = (int) ($validated['display_order'] ?? 0);
         $company->is_active = (bool) ($validated['is_active'] ?? true);
 
-        if ($request->hasFile('logo_file')) {
-            $path = $request->file('logo_file')->store('trusted-companies', 'public');
-            $company->logo_path = '/storage/' . $path;
+        $logoUrl = $this->storePublicUpload($request, 'logo_file', 'uploads/trusted-companies');
+        if ($logoUrl) {
+            $company->logo_path = $logoUrl;
         }
 
         $company->save();
@@ -73,9 +74,9 @@ class TrustedCompanyController extends Controller
             $trustedCompany->is_active = (bool) ($validated['is_active'] ?? $trustedCompany->is_active);
         }
 
-        if ($request->hasFile('logo_file')) {
-            $path = $request->file('logo_file')->store('trusted-companies', 'public');
-            $trustedCompany->logo_path = '/storage/' . $path;
+        $logoUrl = $this->storePublicUpload($request, 'logo_file', 'uploads/trusted-companies');
+        if ($logoUrl) {
+            $trustedCompany->logo_path = $logoUrl;
         }
 
         $trustedCompany->save();

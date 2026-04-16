@@ -1,4 +1,4 @@
-import { Link, usePage } from '@inertiajs/react';
+import { Link, usePage, router } from '@inertiajs/react';
 import { useState, useEffect, useRef } from 'react';
 
 export default function Header() {
@@ -37,6 +37,83 @@ export default function Header() {
         };
     }, []);
 
+    function RibbonHoverMenu({ items, onItemClick, backgroundColor }) {
+        return (
+            <div style={{ backgroundColor }} className="w-40 rounded-2xl border border-white/20 p-2 shadow-lg">
+                {items.map(({ href, label }) => (
+                    <a
+                        key={label}
+                        href={href}
+                        onClick={(event) => onItemClick(event, href)}
+                        className="block rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-center text-xs font-semibold uppercase tracking-[0.18em] text-white transition hover:bg-white/20"
+                    >
+                        {label}
+                    </a>
+                ))}
+            </div>
+        );
+    }
+
+    const currentRoute = route().current();
+
+    const getRibbonSectionHref = (sectionKey) => {
+        const samePageRoutes = ['siam', 'tpsmi', 'top-offroad'];
+
+        if (sectionKey === 'contact') {
+            return currentRoute === 'home' ? '#contact' : route('home') + '#contact';
+        }
+
+        if (sectionKey === 'about') {
+            if (samePageRoutes.includes(currentRoute)) {
+                return '#about';
+            }
+            return route('home') + '#about';
+        }
+
+        if (sectionKey === 'products') {
+            if (samePageRoutes.includes(currentRoute)) {
+                return '#products';
+            }
+            return route('home') + '#products';
+        }
+
+        return route('home') + `#${sectionKey}`;
+    };
+
+    const scrollToHash = (href) => {
+        if (typeof window === 'undefined') {
+            return false;
+        }
+
+        const url = new URL(href, window.location.origin);
+        const currentPath = window.location.pathname.replace(/\/$/, '');
+        const targetPath = url.pathname.replace(/\/$/, '');
+
+        if (currentPath !== targetPath) {
+            return false;
+        }
+
+        if (!url.hash) {
+            return false;
+        }
+
+        const element = document.getElementById(url.hash.slice(1));
+        if (!element) {
+            return false;
+        }
+
+        element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        return true;
+    };
+
+    const handleRibbonItemClick = (event, href) => {
+        event.preventDefault();
+        if (scrollToHash(href)) {
+            return;
+        }
+        router.visit(href);
+    };
+
     useEffect(() => {
         setMobileNavOpen(false);
     }, [url]);
@@ -50,6 +127,21 @@ export default function Header() {
         return () => document.removeEventListener('keydown', onKey);
     }, [mobileNavOpen]);
 
+    useEffect(() => {
+        const scrollToHashOnLoad = () => {
+            if (typeof window === 'undefined') return;
+            const { hash } = window.location;
+            if (!hash) return;
+            const element = document.getElementById(hash.slice(1));
+            if (!element) return;
+            element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        };
+
+        scrollToHashOnLoad();
+        const timeoutId = window.setTimeout(scrollToHashOnLoad, 50);
+        return () => window.clearTimeout(timeoutId);
+    }, [url]);
+
     const isTopOffroadPage = route().current('top-offroad');
     const navBarColor = isTopOffroadPage ? '#FF6E00' : '#FF0000';
 
@@ -59,7 +151,6 @@ export default function Header() {
         }
     };
 
-    const currentRoute = route().current();
     const navLinks = [
         { 
             href: route('home'), 
@@ -261,9 +352,16 @@ export default function Header() {
         },
     ];
 
+    const ribbonMenuItems = [
+        { label: 'About', href: getRibbonSectionHref('about') },
+        { label: 'Products', href: getRibbonSectionHref('products') },
+        { label: 'Contact', href: getRibbonSectionHref('contact') },
+    ];
+
     const navRef = useRef(null);
     const linkRefs = useRef([]);
     const [lineStyle, setLineStyle] = useState({ left: 0, width: 0 });
+    const [hoverIndex, setHoverIndex] = useState(-1);
 
     const activeIndex = navLinks.findIndex(
         ({ href, routeName }) =>
@@ -271,6 +369,9 @@ export default function Header() {
                 ? currentRoute === routeName
                 : href === '#careers' && url.includes('#careers')
     );
+
+    const isRibbonLink = [1, 2, 3].includes(activeIndex);
+    const ribbonLinksClass = isRibbonLink ? 'w-16 h-12 rounded overflow-hidden' : '';
 
     useEffect(() => {
         if (activeIndex === -1) return;
@@ -349,22 +450,44 @@ export default function Header() {
                                     routeName != null
                                         ? currentRoute === routeName
                                         : href === '#careers' && url.includes('#careers');
+                                const isRibbonLink = i === 1 || i === 2 || i === 3;
+                                const showRibbon = hoverIndex === i;
 
                                 return (
-                                    <Link
+                                    <div
                                         key={href}
-                                        ref={(el) => (linkRefs.current[i] = el)}
-                                        href={href}
-                                        className={
-                                            'group relative flex items-center gap-2 px-4 py-2 pb-3 text-xs font-semibold uppercase tracking-[0.18em] transition-all duration-300 ease-in-out ' +
-                                            (isActive
-                                                ? 'text-white'
-                                                : 'text-white/90 hover:text-white')
-                                        }
+                                        className="relative"
+                                        onMouseEnter={() => isRibbonLink && setHoverIndex(i)}
+                                        onMouseLeave={() => isRibbonLink && setHoverIndex(-1)}
                                     >
-                                        {icon}
-                                        {label}
-                                    </Link>
+                                        <Link
+                                            ref={(el) => (linkRefs.current[i] = el)}
+                                            href={href}
+                                            className={
+                                                'group relative flex items-center gap-2 px-4 py-2 pb-3 text-xs font-semibold uppercase tracking-[0.18em] transition-all duration-300 ease-in-out ' +
+                                                (isActive
+                                                    ? 'text-white'
+                                                    : 'text-white/90 hover:text-white')
+                                            }
+                                        >
+                                            <span className="shrink-0 opacity-90 mr-2">{icon}</span>
+                                            {label}
+                                        </Link>
+
+                                        {isRibbonLink && (
+                                            <div
+                                                className={`absolute left-1/2 top-full z-20 -translate-x-1/2 transition-all duration-200 ${
+                                                    showRibbon ? 'opacity-100 translate-y-0 pointer-events-auto' : 'opacity-0 translate-y-1 pointer-events-none'
+                                                }`}
+                                            >
+                                                <RibbonHoverMenu
+                                                    items={ribbonMenuItems}
+                                                    onItemClick={handleRibbonItemClick}
+                                                    backgroundColor={navBarColor}
+                                                />
+                                            </div>
+                                        )}
+                                    </div>
                                 );
                             })}
                             {/* Single sliding underline — smooth transition when switching nav items */}
@@ -443,7 +566,7 @@ export default function Header() {
                                     (isActive ? 'text-white' : 'text-white/90 active:bg-white/10')
                                 }
                             >
-                                <span className="shrink-0 opacity-90">{icon}</span>
+                                <span className="shrink-0 opacity-90 mr-2">{icon}</span>
                                 {label}
                             </Link>
                         </li>

@@ -1,6 +1,7 @@
 import Footer from '@/Components/Footer';
 import Header from '@/Components/Header';
-import { Head, Link } from '@inertiajs/react';
+import { publicAssetUrl } from '@/utils/publicAssetUrl';
+import { Head, Link, usePage } from '@inertiajs/react';
 import { useEffect, useRef, useState } from 'react';
 
 function JobIcon({ variant }) {
@@ -49,6 +50,10 @@ function JobIcon({ variant }) {
 }
 
 export default function Careers({ careerCultureCards = [], careerJobs = [] }) {
+    const { props } = usePage();
+    const heroBackgroundImage =
+        publicAssetUrl(props.backgroundPicture?.images?.[0] || props.backgroundPicture?.image_path) ||
+        '/careers.jpg';
     const positionsRef = useRef(null);
     const [positionsInView, setPositionsInView] = useState(false);
 
@@ -82,11 +87,7 @@ export default function Careers({ careerCultureCards = [], careerJobs = [] }) {
                 <div className="relative isolate -mt-[120px] min-h-screen pt-[120px]">
                     {/* object-cover fills the viewport (no side bars); aspect ratio may crop top/bottom */}
                     <div aria-hidden className="absolute inset-0 z-0 overflow-hidden bg-stone-950">
-                        <img
-                            src="/careers.jpg"
-                            alt=""
-                            className="h-full w-full min-h-full min-w-full object-cover object-top"
-                        />
+                        <img src={heroBackgroundImage} alt="" className="h-full w-full min-h-full min-w-full object-cover object-top" />
                         <div className="pointer-events-none absolute inset-0 bg-black/55" />
                     </div>
 
@@ -187,12 +188,14 @@ export default function Careers({ careerCultureCards = [], careerJobs = [] }) {
                                         </ul>
 
                                         <div className="mt-auto pt-5">
-                                            <Link
-                                                href={route('home') + '#contact'}
+                                            <a
+                                                href="https://docs.google.com/forms/d/e/1FAIpQLSeVU5oixGHORdYCgZLZ5Y35mYMJPgk9ELeplc8vz8-6yacSHg/viewform?fbclid=IwY2xjawRKyxBleHRuA2FlbQMxMDAAc3J0YwZhcHBfaWQBMAABHo-i-n2Kt89eCYPApNG_0bSydjMU79-Rm0OV-J8AioFzSV6HQiEti7JUuFdi_aem__bxwauZFs8r5PT99El8VOQ"
+                                                target="_blank"
+                                                rel="noreferrer"
                                                 className="inline-flex items-center justify-center w-full h-11 rounded-full bg-red-600 text-white text-sm font-semibold font-['Inter'] shadow-md transition-colors duration-300 ease-out hover:bg-red-500"
                                             >
-                                                Apply
-                                            </Link>
+                                                Apply Now
+                                            </a>
                                         </div>
                                     </div>
                                 </div>

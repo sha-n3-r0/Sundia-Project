@@ -7,6 +7,7 @@ use App\Models\SiampageVideo;
 use App\Models\Sundia;
 use App\Models\TopoffroadpageVideo;
 use App\Models\TpsmipageVideo;
+use App\Support\PublicUrl;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 use Illuminate\Support\Facades\Schema;
@@ -89,7 +90,7 @@ class HandleInertiaRequests extends Middleware
             ],
             'sundia' => $sundia
                 ? [
-                    'logo_path' => $sundia->logo_path,
+                    'logo_path' => PublicUrl::web($sundia->logo_path),
                     'content' => $sundia->content,
                 ]
                 : null,

@@ -1,6 +1,6 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, router, useForm, usePage } from '@inertiajs/react';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 export default function Index({ companies = [] }) {
     const { props } = usePage();
@@ -15,15 +15,34 @@ export default function Index({ companies = [] }) {
     });
 
     const [localLogoPreviewUrl, setLocalLogoPreviewUrl] = useState(null);
+    const logoPreviewObjectUrlRef = useRef(null);
+
+    const revokeLogoPreview = () => {
+        if (logoPreviewObjectUrlRef.current) {
+            URL.revokeObjectURL(logoPreviewObjectUrlRef.current);
+            logoPreviewObjectUrlRef.current = null;
+        }
+    };
+
+    const onLogoFileChange = (e) => {
+        const file = e.target.files?.[0] ?? null;
+        revokeLogoPreview();
+        if (file) {
+            const url = URL.createObjectURL(file);
+            logoPreviewObjectUrlRef.current = url;
+            setLocalLogoPreviewUrl(url);
+        } else {
+            setLocalLogoPreviewUrl(null);
+        }
+        form.setData('logo_file', file);
+    };
 
     useEffect(() => {
-        if (!form.data.logo_file) return;
-        const url = URL.createObjectURL(form.data.logo_file);
-        setLocalLogoPreviewUrl(url);
-        return () => URL.revokeObjectURL(url);
-    }, [form.data.logo_file]);
+        return () => revokeLogoPreview();
+    }, []);
 
     useEffect(() => {
+        revokeLogoPreview();
         if (!editing) {
             form.setData({
                 name: '',
@@ -157,7 +176,7 @@ export default function Index({ companies = [] }) {
                                             <input
                                                 type="file"
                                                 accept="image/*"
-                                                onChange={(e) => form.setData('logo_file', e.target.files?.[0] ?? null)}
+                                                onChange={onLogoFileChange}
                                                 className="mt-1 block w-full text-sm text-gray-700 file:mr-3 file:rounded-md file:border-0 file:bg-red-600 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-white hover:file:bg-red-700"
                                             />
                                             {form.errors.logo_file && (
