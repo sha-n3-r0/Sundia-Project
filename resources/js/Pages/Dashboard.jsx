@@ -15,6 +15,44 @@ function emptyCareersCultureForm() {
         display_order: 0,
         is_active: true,
     };
+    return (
+        // Removed the bg-neutral-50 class from the outermost div to eliminate the white space
+        <div>
+            <div>
+                <div className="flex h-screen overflow-hidden">
+                    {/* Sidebar */}
+                    <aside className="w-72 shrink-0 bg-white shadow-2xl flex h-full flex-col sticky top-0 overflow-hidden">
+                        <div className="border-b border-red-700/40 bg-gradient-to-r from-red-600 to-red-700 px-6 py-6">
+                            <div className="flex items-center gap-3">
+                                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white shadow-md ring-1 ring-white/60">
+                                    <img
+                                        src={publicAssetUrl('Slogo.png')}
+                                        alt="Sundia"
+                                        className="h-8 w-8 object-contain"
+                                    />
+                                </div>
+                                <div className="flex flex-col">
+                                    <span className="text-[10px] font-semibold uppercase tracking-[0.25em] text-red-100">
+                                        Sundia Group
+                                    </span>
+                                    <span className="text-xs font-medium text-white/90">
+                                        Welcome, {props?.auth?.user?.name ?? 'User'}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <nav className="flex flex-1 flex-col gap-1 overflow-y-auto px-3 py-5 overscroll-contain">
+                            {companies.map((company) => {
+                                // ...existing code...
+                            })}
+                        </nav>
+                    </aside>
+                    {/* ...existing code for the rest of the dashboard... */}
+                </div>
+            </div>
+        </div>
+    );
 }
 
 function emptyCareersJobForm() {
@@ -38,6 +76,7 @@ export default function Dashboard() {
     const profileButtonRef = useRef(null);
     const [showSavingPopup, setShowSavingPopup] = useState(false);
     const [savingPopupLabel, setSavingPopupLabel] = useState('Saving…');
+    const [logoutRequested, setLogoutRequested] = useState(false);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     const [deleteConfirmTitle, setDeleteConfirmTitle] = useState('Delete item?');
     const [deleteConfirmBody, setDeleteConfirmBody] = useState('This action cannot be undone.');
@@ -95,10 +134,26 @@ export default function Dashboard() {
         deleteConfirmActionRef.current = null;
     };
 
+    const isLogoutRequest = (event) => {
+        const visit = event?.detail?.visit;
+        if (!visit) return false;
+
+        const url =
+            visit.url ??
+            visit.path ??
+            visit.route ??
+            visit.options?.url ??
+            visit.originalRequest?.url ??
+            visit.initialRequest?.url;
+
+        return typeof url === 'string' && url.includes('/logout');
+    };
+
     useEffect(() => {
         const unsubStart = router.on('start', (event) => {
             const method = event?.detail?.visit?.method?.toLowerCase?.();
             if (!method || method === 'get') return;
+            if (isLogoutRequest(event) || logoutRequested) return;
             setSavingPopupLabel(method === 'delete' ? 'Deleting…' : 'Saving…');
             setShowSavingPopup(true);
         });
@@ -106,6 +161,11 @@ export default function Dashboard() {
         const unsubFinish = router.on('finish', (event) => {
             const method = event?.detail?.visit?.method?.toLowerCase?.();
             if (!method || method === 'get') return;
+            if (isLogoutRequest(event) || logoutRequested) {
+                setShowSavingPopup(false);
+                if (logoutRequested) setLogoutRequested(false);
+                return;
+            }
             setShowSavingPopup(false);
         });
 
@@ -1911,12 +1971,18 @@ export default function Dashboard() {
         careersJobForm.setData('responsibilities', next.length ? next : ['']);
     };
 
+    // Intercept logout to set logoutRequested flag
+    const handleLogout = () => {
+        setLogoutRequested(true);
+        window.dispatchEvent(new Event('sundia-logout-loading'));
+    };
+
     return (
-        <>
+        <AuthenticatedLayout showNavigation={false}>
             <Head title="Dashboard" />
 
             <Modal
-                show={showSavingPopup}
+                show={showSavingPopup && !logoutRequested}
                 closeable={false}
                 maxWidth="sm"
                 panelClassName="overflow-hidden"
@@ -2012,7 +2078,7 @@ export default function Dashboard() {
                                         Sundia Group
                                     </span>
                                     <span className="text-xs font-medium text-white/90">
-                                        Admin Navigation
+                                        Welcome, {props?.auth?.user?.name ?? 'User'}
                                     </span>
                                 </div>
                             </div>
@@ -2062,7 +2128,7 @@ export default function Dashboard() {
                             })}
                         </nav>
 
-                        <div className="mt-auto border-t border-neutral-200 px-6 py-5 space-y-2">
+                            <div className="mt-auto border-t border-neutral-200 px-6 py-5 space-y-2">
                             <button
                                 type="button"
                                 ref={profileButtonRef}
@@ -2075,6 +2141,10 @@ export default function Dashboard() {
                                 href={route('logout')}
                                 method="post"
                                 as="button"
+                                onClick={() => {
+                                    setLogoutRequested(true);
+                                    window.dispatchEvent(new Event('sundia-logout-loading'));
+                                }}
                                 className="flex w-full items-center justify-center gap-2 rounded-full border border-red-600 bg-white px-4 py-2 text-xs font-semibold uppercase tracking-widest text-red-600 transition-colors hover:bg-red-600 hover:text-white"
                             >
                                 Logout
@@ -2090,7 +2160,7 @@ export default function Dashboard() {
 
                     {/* Main content */}
                     <section className="flex-1 h-full overflow-y-auto overflow-x-hidden overscroll-contain">
-                        <div className="m-6 overflow-hidden rounded-[3px] bg-white shadow-2xl">
+                        <div className="m-6 overflow-hidden rounded-2xl bg-white shadow-2xl">
                             <div className="border-b border-neutral-200 bg-gradient-to-r from-red-600 to-red-700 px-6 py-4">
                                 <h3 className="text-sm font-semibold uppercase tracking-widest text-white">
                                     {selectedCompany.name} Components
@@ -2106,9 +2176,9 @@ export default function Dashboard() {
                                     </div>
                                 )}
                                 {selectedCompany.name === 'SIAM' && (
-                                    <section className="space-y-6 rounded-[3px] bg-neutral-50 p-5 shadow-sm">
+                                    <section className="space-y-6 rounded-xl bg-neutral-50 p-5 shadow-sm">
                                         {/* "What we do" stats */}
-                                        <div className="rounded-[3px] border border-neutral-200 bg-white p-5 border-t-2 border-t-red-600 shadow-sm rounded-b-[3px]">
+                                        <div className="rounded-xl border border-neutral-200 bg-white p-5 border-t-2 border-t-red-600 shadow-sm">
                                             <form onSubmit={submitSiamStats} className="space-y-6">
                                                 <div>
                                                     <h4 className="text-xs font-semibold uppercase tracking-widest text-neutral-700">
@@ -2231,7 +2301,7 @@ export default function Dashboard() {
                                 )}
                                 {selectedCompany.name === 'SIAM' && (
                                     <section className="space-y-6 rounded-[3px] bg-neutral-50 p-5 shadow-sm">
-                                        <div className="rounded-[3px] border border-neutral-200 bg-white p-5 border-t-2 border-t-red-600 shadow-sm rounded-b-[3px]">
+                                        <div className="rounded-2xl border border-neutral-200 bg-white p-5 border-t-2 border-t-red-600 shadow-sm">
                                             <form onSubmit={submitSiamVideo} className="space-y-6">
                                                 <div>
                                                     <h4 className="text-xs font-semibold uppercase tracking-widest text-neutral-700">
@@ -5040,7 +5110,7 @@ export default function Dashboard() {
                                                             .map((ev) => (
                                                                 <div
                                                                     key={ev.id}
-                                                                    className={`flex items-center justify-between gap-2 rounded border border-neutral-200 bg-neutral-50 px-3 py-2 ${ev.is_active === false ? 'opacity-60' : ''}`}
+                                                                    className={`flex items-center justify-between gap-2 rounded-xl border border-neutral-200 bg-neutral-50 px-3 py-2 ${ev.is_active === false ? 'opacity-60' : ''}`}
                                                                 >
                                                                     <div className="min-w-0 flex-1">
                                                                         <p className="truncate text-[11px] font-bold uppercase text-neutral-900">
@@ -5075,7 +5145,7 @@ export default function Dashboard() {
                                                     )}
                                                 </div>
 
-                                                <form onSubmit={submitUpcomingEvent} className="space-y-3 rounded border border-neutral-200 bg-white p-4">
+                                                <form onSubmit={submitUpcomingEvent} className="space-y-3 rounded-xl border border-neutral-200 bg-white p-4">
                                                     <div className="flex flex-wrap items-center justify-between gap-2">
                                                         <div>
                                                             <div className="text-[10px] font-semibold uppercase tracking-widest text-neutral-600">
@@ -6791,7 +6861,7 @@ export default function Dashboard() {
                     </section>
                 </div>
             </div>
-        </>
+        </AuthenticatedLayout>
     );
 }
 

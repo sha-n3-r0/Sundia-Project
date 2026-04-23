@@ -64,6 +64,15 @@ export default function Header() {
         }
 
         if (sectionKey === 'about') {
+            if (currentRoute === 'siam') {
+                return '#siam-about';
+            }
+            if (currentRoute === 'tpsmi') {
+                return '#tpsmi-about';
+            }
+            if (currentRoute === 'top-offroad') {
+                return '#topoffroad-about';
+            }
             if (samePageRoutes.includes(currentRoute)) {
                 return '#about';
             }

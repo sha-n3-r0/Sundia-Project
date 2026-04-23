@@ -6,8 +6,10 @@ export default function FloatingChatIcon() {
 
     const isTopOffroadPage = route().current('top-offroad');
     const isDashboard = route().current('dashboard');
+    const isLogin = route().current('login');
+    const isRegister = route().current('register');
 
-    if (isDashboard) return null;
+    if (isDashboard || isLogin || isRegister) return null;
 
     const chatColor = isTopOffroadPage ? '#FF6E00' : '#FF0000';
 
@@ -18,16 +20,19 @@ export default function FloatingChatIcon() {
             link: 'https://www.facebook.com/profile.php?id=100071172685471',
         },
         {
-            name: 'SIAM DIRECT TRADING CORP.',
-            link: 'https://www.facebook.com/search/top?q=SIAM%20DIRECT%20TRADING%20CORP.',
+            name: 'TOTAL PACKAGING SOLUTIONS MFG. (TPSMI)',
+            tooltip: 'Packaging solutions provider for customized boxes, plastics, and foam.',
+            link: 'https://mail.google.com/mail/?view=cm&fs=1&to=romeo.amores@sundiagroup.com.ph',
         },
         {
-            name: 'TOTAL PACKAGING SOLUTIONS MFG.',
-            link: 'https://www.facebook.com/search/top?q=TOTAL%20PACKAGING%20SOLUTIONS%20MFG.',
+            name: 'SIAM DIRECT TRADING CORP.',
+            tooltip: 'Distributor of industrial consumables and Sundia Group sales arm.',
+            link: 'https://mail.google.com/mail/?view=cm&fs=1&to=romeo.amores@sundiagroup.com.ph',
         },
         {
             name: 'TOP OFFROAD PHILIPPINES',
-            link: 'https://www.facebook.com/search/top?q=TOP%20OFFROAD%20PHILIPPINES',
+            tooltip: 'Off-road accessories, installation, and camping gear provider.',
+            link: 'https://www.facebook.com/TopOffroadPhilippines',
         },
     ];
 
@@ -58,7 +63,7 @@ export default function FloatingChatIcon() {
 
                         <div className="rounded-[16px] bg-[#D9D9D9] p-3 sm:rounded-[20px] sm:p-4">
                             <p className="mb-3 text-[14px] font-normal text-gray-700 sm:text-[16px]">
-                                Active Social Media
+                                Contact Options
                             </p>
 
                             <div className="space-y-2">
@@ -98,11 +103,9 @@ export default function FloatingChatIcon() {
 
                                         {company.tooltip && hoveredCompany === company.name && (
                                             <div className="relative z-[60] mt-2 w-full rounded-2xl bg-[#222222] p-3 text-[11px] leading-snug text-white shadow-2xl sm:absolute sm:mt-0 sm:-top-[85px] sm:right-[-10px] sm:w-[260px]">
-                                                <div className="mb-1 font-semibold text-gray-100">Sundia Group</div>
+                                                <div className="mb-1 font-semibold text-gray-100">{company.name}</div>
                                                 <div className="text-gray-300">
-                                                    Job vacancies and other related topic
-                                                    <br />
-                                                    about hiring
+                                                    {company.tooltip}
                                                 </div>
                                                 <div className="absolute bottom-[-8px] right-10 hidden h-3 w-3 rotate-45 bg-[#222222] sm:block" />
                                             </div>

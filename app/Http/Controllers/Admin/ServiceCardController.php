@@ -10,6 +10,42 @@ use Inertia\Inertia;
 
 class ServiceCardController extends Controller
 {
+    private function mirrorImageToPublicStorage(?string $relativePath): void
+    {
+        if (!$relativePath) {
+            return;
+        }
+
+        $relativePath = str_replace('\\', '/', ltrim($relativePath, '/'));
+        $source = storage_path('app/public/' . $relativePath);
+        $destination = public_path('storage/' . $relativePath);
+
+        if (!is_file($source)) {
+            return;
+        }
+
+        $directory = dirname($destination);
+        if (!is_dir($directory)) {
+            mkdir($directory, 0755, true);
+        }
+
+        @copy($source, $destination);
+    }
+
+    private function removeMirroredImage(?string $relativePath): void
+    {
+        if (!$relativePath) {
+            return;
+        }
+
+        $relativePath = str_replace('\\', '/', ltrim($relativePath, '/'));
+        $mirroredPath = public_path('storage/' . $relativePath);
+
+        if (is_file($mirroredPath)) {
+            @unlink($mirroredPath);
+        }
+    }
+
     /**
      * Display a listing of the resource.
      */
@@ -48,6 +84,8 @@ class ServiceCardController extends Controller
         if ($request->hasFile('image_file')) {
             $imagePath = $request->file('image_file')->store('service-cards', 'public');
         }
+
+        $this->mirrorImageToPublicStorage($imagePath);
 
         ServiceCard::create([
             'title' => $request->title,
@@ -107,7 +145,9 @@ class ServiceCardController extends Controller
             if ($imagePath && Storage::disk('public')->exists($imagePath)) {
                 Storage::disk('public')->delete($imagePath);
             }
+            $this->removeMirroredImage($imagePath);
             $imagePath = $request->file('image_file')->store('service-cards', 'public');
+            $this->mirrorImageToPublicStorage($imagePath);
         }
 
         $serviceCard->update([
@@ -133,6 +173,7 @@ class ServiceCardController extends Controller
         if ($serviceCard->image_path && Storage::disk('public')->exists($serviceCard->image_path)) {
             Storage::disk('public')->delete($serviceCard->image_path);
         }
+        $this->removeMirroredImage($serviceCard->image_path);
 
         $serviceCard->delete();
 

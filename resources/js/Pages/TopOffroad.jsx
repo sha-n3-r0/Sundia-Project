@@ -282,7 +282,7 @@ export default function TopOffroad({ topoffroad, topoffroadProducts = [], backgr
                     </div>
 
                         {/* Featured: mobile = logo + orange card stack; md+ = logo overlaps orange, text has real width */}
-                        <div className="relative left-1/2 mt-16 w-screen max-w-[100vw] -translate-x-1/2 overflow-x-hidden">
+                        <div id="topoffroad-about" className="relative left-1/2 mt-16 w-screen max-w-[100vw] -translate-x-1/2 overflow-x-hidden scroll-mt-36">
                             <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                                 <div className="flex flex-col items-center gap-6 md:hidden">
                                     <div className="flex h-44 w-44 shrink-0 items-center justify-center rounded-full bg-white p-4 shadow-xl ring-1 ring-black/5">

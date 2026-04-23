@@ -29,15 +29,18 @@ class ProfileController extends Controller
      */
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
-        $request->user()->fill($request->validated());
+        $user = $request->user();
+        \Log::info('Profile update for user', ['id' => $user->id, 'data' => $request->validated()]);
+        $user->fill($request->validated());
 
-        if ($request->user()->isDirty('email')) {
-            $request->user()->email_verified_at = null;
+        if ($user->isDirty('email')) {
+            $user->email_verified_at = null;
         }
 
-        $request->user()->save();
+        $user->save();
+        \Log::info('Profile updated for user', ['id' => $user->id]);
 
-        return Redirect::route('profile.edit');
+        return back()->with('status', 'profile-updated');
     }
 
     /**
@@ -45,11 +48,13 @@ class ProfileController extends Controller
      */
     public function destroy(Request $request): RedirectResponse
     {
+        \Log::info('Account deletion requested');
         $request->validate([
             'password' => ['required', 'current_password'],
         ]);
 
         $user = $request->user();
+        \Log::info('Deleting user', ['id' => $user->id]);
 
         Auth::logout();
 

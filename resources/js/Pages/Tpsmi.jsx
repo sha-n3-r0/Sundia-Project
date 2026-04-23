@@ -7,9 +7,28 @@ import { useEffect, useRef, useState } from 'react';
 export default function Tpsmi() {
     const { props } = usePage();
     const backgroundPicture = props.backgroundPicture;
-    const heroBackgroundImage =
-        publicAssetUrl(backgroundPicture?.images?.[0] || backgroundPicture?.image_path) ||
-        '/tpsmi.jpg';
+    const [bgIndex, setBgIndex] = useState(0);
+    const backgrounds = (backgroundPicture?.images ?? [])
+        .map((path) => publicAssetUrl(path))
+        .filter(Boolean);
+    const resolvedBackgrounds =
+        backgrounds.length > 0
+            ? backgrounds
+            : ['/tpsmi.jpg'];
+
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setBgIndex((prev) => (prev + 1) % resolvedBackgrounds.length);
+        }, 5000);
+        return () => clearInterval(interval);
+    }, [resolvedBackgrounds.length]);
+
+    useEffect(() => {
+        if (bgIndex >= resolvedBackgrounds.length) {
+            setBgIndex(0);
+        }
+    }, [bgIndex, resolvedBackgrounds.length]);
+
     const tpsmi = props.tpsmi;
     const tpsmiPageVideo = props.tpsmiPageVideo;
     const tpsmiProducts = props.tpsmiProducts ?? [];
@@ -170,10 +189,18 @@ export default function Tpsmi() {
         <>
             <Head title="TPSMI" />
             <div id="about" className="min-h-screen font-['Inter'] antialiased bg-white">
-                <section
-                    className="relative flex min-h-[46vh] flex-col overflow-visible bg-cover bg-center sm:min-h-[56vh] lg:min-h-[68vh]"
-                    style={{ backgroundImage: `url('${heroBackgroundImage}')` }}
-                >
+                <section className="relative flex min-h-[46vh] flex-col overflow-visible bg-cover bg-center sm:min-h-[56vh] lg:min-h-[68vh]">
+                    <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
+                        {resolvedBackgrounds.map((bg, index) => (
+                            <div
+                                key={bg}
+                                className={`absolute inset-0 bg-cover bg-center transition-opacity duration-1000 ease-in-out ${
+                                    index === bgIndex ? 'opacity-100' : 'opacity-0'
+                                }`}
+                                style={{ backgroundImage: `url('${bg}')` }}
+                            />
+                        ))}
+                    </div>
                     <div className="pointer-events-none absolute inset-0 z-0 bg-gradient-to-r from-black to-black/30" />
 
                     <Header />
@@ -316,7 +343,8 @@ export default function Tpsmi() {
 
                 {/* Featured section - with background image and red bar */}
                 <div
-                    className="relative w-screen overflow-hidden bg-white py-14 sm:py-16 lg:py-20"
+                    id="tpsmi-about"
+                    className="relative w-screen overflow-hidden bg-white py-14 sm:py-16 lg:py-20 scroll-mt-36"
                     style={{ marginLeft: 'calc(-50vw + 50%)' }}
                 >
                     <div className="absolute left-0 top-0 w-full h-full z-0 overflow-hidden">

@@ -207,7 +207,7 @@ function UpcomingEventsListContent({ events }) {
 function UpcomingEventsPanel({ events }) {
     return (
         <div className="hidden w-full max-w-[511px] shrink-0 animate-upcoming-rise font-['Inter'] motion-reduce:animate-none [animation-play-state:running] lg:block lg:max-w-[min(511px,42vw)]">
-            <div className="relative min-h-[min(514px,auto)] rounded-t-[32px] border-2 border-white bg-white/10 px-6 pb-8 pt-7 backdrop-blur-[2px] animate-upcoming-float [animation-delay:1.5s] [animation-play-state:running] motion-reduce:animate-none hover:[animation-play-state:paused]">
+            <div className="relative min-h-[min(514px,auto)] rounded-[32px] border-2 border-white bg-white/10 px-6 pb-8 pt-7 backdrop-blur-[2px] animate-upcoming-float [animation-delay:1.5s] [animation-play-state:running] motion-reduce:animate-none hover:[animation-play-state:paused]">
                 <UpcomingEventsListContent events={events} />
             </div>
         </div>
@@ -306,9 +306,28 @@ function mapUpcomingEventsForPanel(raw) {
 export default function Welcome({ appName }) {
     const { props } = usePage();
     const backgroundPicture = props.backgroundPicture;
-    const heroBackgroundImage =
-        publicAssetUrl(backgroundPicture?.images?.[0] || backgroundPicture?.image_path) ||
-        '/sundia-group-background.JPG';
+    const [bgIndex, setBgIndex] = useState(0);
+    const backgrounds = (backgroundPicture?.images ?? [])
+        .map((path) => publicAssetUrl(path))
+        .filter(Boolean);
+    const resolvedBackgrounds =
+        backgrounds.length > 0
+            ? backgrounds
+            : ['/sundia-group-background.JPG'];
+
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setBgIndex((prev) => (prev + 1) % resolvedBackgrounds.length);
+        }, 5000);
+        return () => clearInterval(interval);
+    }, [resolvedBackgrounds.length]);
+
+    useEffect(() => {
+        if (bgIndex >= resolvedBackgrounds.length) {
+            setBgIndex(0);
+        }
+    }, [bgIndex, resolvedBackgrounds.length]);
+
     const sundia = props.sundia;
     const homepageVideo = props.homepageVideo;
     const missionVision = props.missionVision;
@@ -555,14 +574,19 @@ export default function Welcome({ appName }) {
 
             <div className="min-h-screen font-sans antialiased">
                 <section className="relative flex min-h-[46vh] flex-col overflow-visible sm:min-h-[56vh] lg:min-h-[68vh]">
-                    <div
-                        className="pointer-events-none absolute inset-0 -z-10 bg-cover bg-center"
-                        style={{
-                            backgroundImage:
-                                `linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url('${heroBackgroundImage}')`,
-                        }}
-                        aria-hidden
-                    />
+                    <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
+                        {resolvedBackgrounds.map((bg, index) => (
+                            <div
+                                key={bg}
+                                className={`absolute inset-0 bg-cover bg-center transition-opacity duration-1000 ease-in-out ${
+                                    index === bgIndex ? 'opacity-100' : 'opacity-0'
+                                }`}
+                                style={{
+                                    backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url('${bg}')`,
+                                }}
+                            />
+                        ))}
+                    </div>
 
                     <Header />
 

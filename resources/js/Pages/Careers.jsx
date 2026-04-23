@@ -51,9 +51,29 @@ function JobIcon({ variant }) {
 
 export default function Careers({ careerCultureCards = [], careerJobs = [] }) {
     const { props } = usePage();
-    const heroBackgroundImage =
-        publicAssetUrl(props.backgroundPicture?.images?.[0] || props.backgroundPicture?.image_path) ||
-        '/careers.jpg';
+    const backgroundPicture = props.backgroundPicture;
+    const [bgIndex, setBgIndex] = useState(0);
+    const backgrounds = (backgroundPicture?.images ?? [])
+        .map((path) => publicAssetUrl(path))
+        .filter(Boolean);
+    const resolvedBackgrounds =
+        backgrounds.length > 0
+            ? backgrounds
+            : ['/careers.jpg'];
+
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setBgIndex((prev) => (prev + 1) % resolvedBackgrounds.length);
+        }, 5000);
+        return () => clearInterval(interval);
+    }, [resolvedBackgrounds.length]);
+
+    useEffect(() => {
+        if (bgIndex >= resolvedBackgrounds.length) {
+            setBgIndex(0);
+        }
+    }, [bgIndex, resolvedBackgrounds.length]);
+
     const positionsRef = useRef(null);
     const [positionsInView, setPositionsInView] = useState(false);
 
@@ -87,7 +107,15 @@ export default function Careers({ careerCultureCards = [], careerJobs = [] }) {
                 <div className="relative isolate -mt-[120px] min-h-screen pt-[120px]">
                     {/* object-cover fills the viewport (no side bars); aspect ratio may crop top/bottom */}
                     <div aria-hidden className="absolute inset-0 z-0 overflow-hidden bg-stone-950">
-                        <img src={heroBackgroundImage} alt="" className="h-full w-full min-h-full min-w-full object-cover object-top" />
+                        {resolvedBackgrounds.map((bg, index) => (
+                            <div
+                                key={bg}
+                                className={`absolute inset-0 bg-cover bg-center transition-opacity duration-1000 ease-in-out ${
+                                    index === bgIndex ? 'opacity-100' : 'opacity-0'
+                                }`}
+                                style={{ backgroundImage: `url('${bg}')` }}
+                            />
+                        ))}
                         <div className="pointer-events-none absolute inset-0 bg-black/55" />
                     </div>
 

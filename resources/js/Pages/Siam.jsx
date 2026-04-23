@@ -11,9 +11,28 @@ function normalizeImageSrc(path) {
 export default function Siam() {
     const { props } = usePage();
     const backgroundPicture = props.backgroundPicture;
-    const heroBackgroundImage =
-        publicAssetUrl(backgroundPicture?.images?.[0] || backgroundPicture?.image_path) ||
-        '/siambackground.JPG';
+    const [bgIndex, setBgIndex] = useState(0);
+    const backgrounds = (backgroundPicture?.images ?? [])
+        .map((path) => publicAssetUrl(path))
+        .filter(Boolean);
+    const resolvedBackgrounds =
+        backgrounds.length > 0
+            ? backgrounds
+            : ['/siambackground.JPG'];
+
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setBgIndex((prev) => (prev + 1) % resolvedBackgrounds.length);
+        }, 5000);
+        return () => clearInterval(interval);
+    }, [resolvedBackgrounds.length]);
+
+    useEffect(() => {
+        if (bgIndex >= resolvedBackgrounds.length) {
+            setBgIndex(0);
+        }
+    }, [bgIndex, resolvedBackgrounds.length]);
+
     const siam = props.siam;
     const siamPageVideo = props.siamPageVideo;
     const siamProductCategories = props.siamProductCategories ?? [];
@@ -198,10 +217,18 @@ export default function Siam() {
         <>
             <Head title="SIAM" />
             <div id="about" className="min-h-screen font-['Inter'] antialiased bg-white">
-                <section
-                    className="relative flex min-h-[46vh] flex-col overflow-visible bg-cover bg-center sm:min-h-[56vh] lg:min-h-[68vh]"
-                    style={{ backgroundImage: `url('${heroBackgroundImage}')` }}
-                >
+                <section className="relative flex min-h-[46vh] flex-col overflow-visible bg-cover bg-center sm:min-h-[56vh] lg:min-h-[68vh]">
+                    <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
+                        {resolvedBackgrounds.map((bg, index) => (
+                            <div
+                                key={bg}
+                                className={`absolute inset-0 bg-cover bg-center transition-opacity duration-1000 ease-in-out ${
+                                    index === bgIndex ? 'opacity-100' : 'opacity-0'
+                                }`}
+                                style={{ backgroundImage: `url('${bg}')` }}
+                            />
+                        ))}
+                    </div>
                     <div className="pointer-events-none absolute inset-0 z-0 bg-gradient-to-r from-black/80 to-black/40" />
 
                     <Header />
@@ -323,7 +350,7 @@ export default function Siam() {
                                     It was established in 2010 to handle the distribution of manufacturing consumables. We also stand as the sales and marketing arm of the whole Sundia group. Products include automotive acccessories, adhesives, chemicals, power coating, industrial oil, diesel fuel, kraft paper underlay, plastic overlay, and other manufacturing packaging and consumables. We also provide services for generator, truck, and forklift maintenance.
                                 </p>
 
-                                <div className="mt-16 w-screen relative left-1/2 -translate-x-1/2 pr-0">
+                                <div id="siam-about" className="mt-16 w-screen relative left-1/2 -translate-x-1/2 pr-0 scroll-mt-36">
                                     <div className="relative h-[380px] pl-25 sm:pl-20 lg:pl-24 pr-0 z-10" style={{ marginLeft: '96px' }}>
                                         <div
                                             className="absolute left-24 sm:left-28 right-0 top-0 h-full rounded-tl-[100px] rounded-bl-[100px]"

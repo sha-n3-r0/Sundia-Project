@@ -187,7 +187,13 @@ Route::get('/siam', function () {
             'id' => $card->id,
             'title' => $card->title,
             'description' => $card->description,
-            'image_path' => $card->image_path ? '/storage/' . $card->image_path : null,
+            'image_path' => $card->image_path
+                ? PublicUrl::web(
+                    preg_match('#^/?storage/#', str_replace('\\', '/', $card->image_path))
+                        ? str_replace('\\', '/', $card->image_path)
+                        : 'storage/' . ltrim(str_replace('\\', '/', $card->image_path), '/')
+                )
+                : null,
             'alt_text' => $card->alt_text,
             'sort_order' => (int) $card->sort_order,
             'is_active' => (bool) $card->is_active,
@@ -449,7 +455,13 @@ Route::get('/dashboard', function () {
             'id' => $card->id,
             'title' => $card->title,
             'description' => $card->description,
-            'image_path' => $card->image_path ? '/storage/' . $card->image_path : null,
+            'image_path' => $card->image_path
+                ? PublicUrl::web(
+                    preg_match('#^/?storage/#', str_replace('\\', '/', $card->image_path))
+                        ? str_replace('\\', '/', $card->image_path)
+                        : 'storage/' . ltrim(str_replace('\\', '/', $card->image_path), '/')
+                )
+                : null,
             'alt_text' => $card->alt_text,
             'sort_order' => (int) $card->sort_order,
             'is_active' => (bool) $card->is_active,
