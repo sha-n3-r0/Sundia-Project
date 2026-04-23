@@ -293,7 +293,7 @@ export default function TopOffroad({ topoffroad, topoffroadProducts = [], backgr
                                         />
                                     </div>
                                     <div
-                                        className="w-full max-w-2xl rounded-3xl border-4 border-orange-600 px-5 py-7 shadow-lg sm:px-8 sm:py-9"
+                                        className="w-full max-w-2xl rounded-[40px] px-6 py-8 shadow-lg sm:px-8 sm:py-9"
                                         style={{ backgroundColor: '#FF6E00' }}
                                     >
                                         <p className="text-pretty font-['Inter'] text-sm font-semibold leading-relaxed tracking-wide text-white sm:text-base">
@@ -302,24 +302,25 @@ export default function TopOffroad({ topoffroad, topoffroadProducts = [], backgr
                                     </div>
                                 </div>
 
-                                <div className="relative hidden min-h-[min(380px,52vh)] py-6 md:block">
-                                    <div
-                                        className="absolute inset-y-0 left-[7.5rem] right-0 rounded-tl-[50px] rounded-bl-[50px] border-4 border-orange-600 shadow-lg lg:left-[8.5rem]"
-                                        style={{ backgroundColor: '#FF6E00' }}
-                                    />
-                                    <div className="absolute left-0 top-1/2 z-10 w-52 -translate-y-1/2 sm:w-56 lg:left-2 lg:w-64">
-                                        <div className="flex aspect-square items-center justify-center rounded-full bg-white p-4 shadow-xl ring-1 ring-black/5">
+                                {/* Desktop View - Siam Style with larger box radius and no border */}
+                                <div className="relative hidden w-full pr-0 md:block py-6">
+                                    <div className="relative h-[380px] pl-24 lg:pl-28 pr-0 z-10" style={{ marginLeft: '96px' }}>
+                                        <div
+                                            className="absolute left-24 sm:left-28 right-[-50vw] top-0 h-full rounded-tl-[100px] rounded-bl-[100px] shadow-lg"
+                                            style={{ backgroundColor: '#FF6E00' }}
+                                        />
+                                        <div className="absolute left-0 top-1/2 -translate-y-1/2 w-64 h-64 sm:w-72 sm:h-72 bg-white rounded-full shadow-xl flex items-center justify-center p-8 z-20">
                                             <img
-                                                className="h-full w-full object-contain"
+                                                className="w-full h-full object-contain"
                                                 src="/topoffroadlogo.png"
                                                 alt="TOP Offroad"
                                             />
                                         </div>
-                                    </div>
-                                    <div className="relative z-20 flex min-h-[min(380px,52vh)] items-center py-10 pl-[calc(7.5rem+6.5rem)] pr-8 lg:pl-[calc(8.5rem+8rem)] lg:pr-12">
-                                        <p className="max-w-3xl text-pretty font-['Inter'] text-body-lg font-semibold leading-relaxed tracking-wide text-white">
-                                            {topOffroadFeaturedBlurb}
-                                        </p>
+                                        <div className="absolute left-80 sm:left-96 right-8 sm:right-12 top-1/2 -translate-y-1/2 flex items-center z-20">
+                                            <p className="text-white text-body-lg font-semibold tracking-wide font-['Inter']">
+                                                {topOffroadFeaturedBlurb}
+                                            </p>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -613,7 +614,7 @@ export default function TopOffroad({ topoffroad, topoffroadProducts = [], backgr
                                 <div className="absolute inset-0 flex items-center justify-center translate-y-4 sm:translate-y-20">
                                     <button
                                         type="button"
-                                        onClick={() => router.visit(route('home') + '#contact')}
+                                        onClick={() => window.location.assign('https://www.facebook.com/TopOffroadPhilippines')}
                                         className="group w-64 h-12 relative rounded-3xl cursor-pointer select-none transition-transform duration-200 ease-out hover:scale-[1.03] active:scale-[0.99] focus:outline-none focus-visible:ring-2 focus-visible:ring-white/80 focus-visible:ring-offset-2 focus-visible:ring-offset-black/40"
                                     >
                                         <div className="w-64 h-12 left-0 top-0 absolute bg-red-600 rounded-3xl border-[0.87px] border-white shadow-[0_10px_24px_rgba(0,0,0,0.25)] transition-colors duration-200 group-hover:bg-red-500" />

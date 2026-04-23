@@ -1,7 +1,7 @@
 import Footer from '@/Components/Footer';
 import Header from '@/Components/Header';
 import { publicAssetUrl } from '@/utils/publicAssetUrl';
-import { Head, Link, router, usePage } from '@inertiajs/react';
+import { Head, router, usePage } from '@inertiajs/react';
 import { useEffect, useRef, useState } from 'react';
 
 export default function Tpsmi() {
@@ -222,24 +222,20 @@ export default function Tpsmi() {
                         </div>
 
                         <div className="mt-8 flex flex-wrap items-center gap-x-4 gap-y-2">
-                            <Link
-                                href={route('home') + '#contact'}
-                                className="inline-flex min-h-12 w-full max-w-xs items-center justify-center gap-2 rounded-full bg-gradient-to-r from-red-600 to-red-600 px-5 text-sm font-medium text-white shadow-[0px_1px_2px_-1px_rgba(0,0,0,0.10),0px_1px_3px_0px_rgba(0,0,0,0.10)] transition-colors hover:from-red-500 hover:to-orange-500 sm:w-auto sm:max-w-none sm:px-8 sm:text-base"
+                            <button
+                                type="button"
+                                onClick={() => router.visit(route('home') + '#contact')}
+                                className="inline-flex min-h-12 w-full max-w-md items-center justify-center gap-2 rounded-full bg-gradient-to-r from-red-600 to-red-700 px-5 py-3 text-center text-xs sm:text-base font-medium leading-snug text-white shadow-md transition-colors hover:from-red-500 hover:to-red-600 sm:w-auto sm:max-w-none sm:px-8 sm:leading-7"
                             >
-                                <span>Learn More</span>
+                                <span>REQUEST FOR QUOTATION</span>
                                 <span className="inline-flex h-4 w-6 items-center justify-start pl-2">
-                                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                        <path d="M3.33398 8H12.6673" stroke="white" strokeWidth="1.33333" strokeLinecap="round" strokeLinejoin="round" />
-                                        <path d="M8 3.33337L12.6667 8.00004L8 12.6667" stroke="white" strokeWidth="1.33333" strokeLinecap="round" strokeLinejoin="round" />
-                                    </svg>
+                                    <span className="flex h-4 w-4 items-center justify-center overflow-hidden">
+                                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M12.172 7L6.808 1.636L8.222 0.222L16 8L8.222 15.778L6.808 14.364L12.172 9H0V7H12.172Z" fill="currentColor" />
+                                        </svg>
+                                    </span>
                                 </span>
-                            </Link>
-                            <Link
-                                href={route('home') + '#contact'}
-                                className="inline-flex min-h-12 w-full max-w-xs items-center justify-center rounded-full bg-white px-5 text-sm font-medium text-black shadow-[0px_1px_2px_0px_rgba(0,0,0,0.05)] ring-1 ring-slate-700 hover:bg-gray-50 sm:w-auto sm:max-w-none sm:px-8 sm:text-base"
-                            >
-                                Contact Us
-                            </Link>
+                            </button>
                         </div>
                     </div>
 

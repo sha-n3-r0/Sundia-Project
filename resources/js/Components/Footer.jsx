@@ -1,9 +1,11 @@
-import { Link } from '@inertiajs/react';
+import { Link, usePage } from '@inertiajs/react';
 import { useEffect, useRef, useState } from 'react';
 
 export default function Footer() {
+    const { props } = usePage();
     const footerRef = useRef(null);
     const [isInView, setIsInView] = useState(false);
+    const footerSetting = props.footerSetting ?? {};
 
     useEffect(() => {
         const el = footerRef.current;
@@ -29,6 +31,14 @@ export default function Footer() {
         { href: route('top-offroad'), label: 'TOP OFFROAD' },
         { href: route('home') + '#contact', label: 'CONTACT US' },
     ];
+    const aboutText =
+        footerSetting.about_text ||
+        'At Sundia Group Philippines, we bring innovative solutions to life. Our core values of being solutions-oriented, united, disciplined, having integrity, and being adaptable to change drive us every day.';
+    const contactEmailPrimary = footerSetting.contact_email_primary || 'sundia.hrd@yahoo.com';
+    const contactPhone = footerSetting.contact_phone || '(049) 502 2443';
+    const contactEmailSecondary =
+        footerSetting.contact_email_secondary || 'jep.bernas@sundiagroup.com.ph';
+    const contactCompanyLabel = footerSetting.contact_company_label || 'Sundia Group';
 
     return (
         <footer
@@ -50,9 +60,7 @@ export default function Footer() {
                             />
                         </Link>
                         <p className="mt-6 max-w-md text-xs font-normal leading-relaxed text-white/60 font-['Inter']">
-                            At Sundia Group Philippines, we bring innovative solutions to life. Our
-                            core values of being solutions-oriented, united, disciplined, having
-                            integrity, and being adaptable to change drive us every day.
+                            {aboutText}
                         </p>
                     </div>
 
@@ -90,26 +98,26 @@ export default function Footer() {
                         <ul className="mt-5 flex flex-col gap-2.5 text-xs font-bold text-white/60 font-['Inter']">
                             <li>
                                 <a
-                                    href="mailto:sundia.hrd@yahoo.com"
+                                    href={`mailto:${contactEmailPrimary}`}
                                     className="break-all transition-colors hover:text-white"
                                 >
-                                    sundia.hrd@yahoo.com
+                                    {contactEmailPrimary}
                                 </a>
                             </li>
                             <li>
-                                <a href="tel:+63495022443" className="transition-colors hover:text-white">
-                                    (049) 502 2443
+                                <a href={`tel:${contactPhone.replace(/[^\d+]/g, '')}`} className="transition-colors hover:text-white">
+                                    {contactPhone}
                                 </a>
                             </li>
                             <li>
                                 <a
-                                    href="mailto:jep.bernas@sundiagroup.com.ph"
+                                    href={`mailto:${contactEmailSecondary}`}
                                     className="break-all underline transition-colors hover:text-white"
                                 >
-                                    jep.bernas@sundiagroup.com.ph
+                                    {contactEmailSecondary}
                                 </a>
                             </li>
-                            <li className="pt-0.5">Sundia Group</li>
+                            <li className="pt-0.5">{contactCompanyLabel}</li>
                         </ul>
                     </div>
                 </div>

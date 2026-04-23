@@ -90,6 +90,7 @@ export default function Dashboard() {
     const teamMembers = props.teamMembers ?? [];
     const trustedCompanies = props.trustedCompanies ?? [];
     const contactInfos = props.contactInfos ?? [];
+    const footerSetting = props.footerSetting ?? {};
     const upcomingEventsFromDb = props.upcomingEvents ?? [];
     const siamProductCategories = props.siamProductCategories ?? [];
     const serviceCards = props.serviceCards ?? [];
@@ -113,6 +114,7 @@ export default function Dashboard() {
     const flashTeamMemberSuccess = props?.flash?.success_team_member;
     const flashTrustedCompanySuccess = props?.flash?.success_trusted_company;
     const flashContactInfoSuccess = props?.flash?.success_contact_info;
+    const flashFooterSettingsSuccess = props?.flash?.success_footer_settings;
     const flashUpcomingEventSuccess = props?.flash?.success_upcoming_event;
     const flashSiamProductCategorySuccess = props?.flash?.success_siam_product_category;
     const flashSiamCategoryProductSuccess = props?.flash?.success_siam_category_product;
@@ -746,6 +748,19 @@ export default function Dashboard() {
             body: 'This will permanently remove this contact item.',
             onConfirm: () => router.delete(route('contact-infos.destroy', id), { preserveScroll: true }),
         });
+    };
+    const footerSettingsForm = useForm({
+        about_text: footerSetting.about_text ?? '',
+        contact_email_primary: footerSetting.contact_email_primary ?? 'sundia.hrd@yahoo.com',
+        contact_phone: footerSetting.contact_phone ?? '(049) 502 2443',
+        contact_email_secondary:
+            footerSetting.contact_email_secondary ?? 'jep.bernas@sundiagroup.com.ph',
+        contact_company_label: footerSetting.contact_company_label ?? 'Sundia Group',
+    });
+
+    const submitFooterSettings = (e) => {
+        e.preventDefault();
+        footerSettingsForm.post(route('footer-settings.update'), { preserveScroll: true });
     };
 
     const [editingUpcomingEvent, setEditingUpcomingEvent] = useState(null);
@@ -6826,6 +6841,142 @@ export default function Dashboard() {
                                                     </div>
                                                 </form>
                                             </div>
+                                        </div>
+                                    </section>
+                                )}
+
+                                {selectedCompany.name === 'SUNDIA' && (
+                                    <section className="rounded-[3px] bg-neutral-50 p-5 shadow-sm">
+                                        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                                            <div>
+                                                <h4 className="text-xs font-semibold uppercase tracking-widest text-neutral-700">
+                                                    Footer Content
+                                                </h4>
+                                                <p className="mt-2 max-w-xl text-xs text-neutral-500">
+                                                    Update footer company description and contact details shown on all pages.
+                                                </p>
+                                            </div>
+                                            {flashFooterSettingsSuccess && (
+                                                <div className="rounded border border-green-200 bg-green-50 px-3 py-1 text-[10px] text-green-800">
+                                                    {flashFooterSettingsSuccess}
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        <div className="mt-5 rounded-[3px] border border-neutral-200 bg-white p-4">
+                                            <form onSubmit={submitFooterSettings} className="space-y-4">
+                                                <div className="space-y-2">
+                                                    <label className="block text-[10px] font-semibold uppercase tracking-widest text-neutral-600">
+                                                        About text
+                                                    </label>
+                                                    <textarea
+                                                        rows={5}
+                                                        value={footerSettingsForm.data.about_text}
+                                                        onChange={(e) =>
+                                                            footerSettingsForm.setData('about_text', e.target.value)
+                                                        }
+                                                        className="w-full rounded border border-neutral-300 px-2 py-1 text-[11px] focus:border-red-500 focus:ring focus:ring-red-500/20"
+                                                        placeholder="Footer company description..."
+                                                    />
+                                                    {footerSettingsForm.errors.about_text && (
+                                                        <p className="text-[10px] text-red-600">
+                                                            {footerSettingsForm.errors.about_text}
+                                                        </p>
+                                                    )}
+                                                </div>
+
+                                                <div className="grid gap-3 sm:grid-cols-2">
+                                                    <div className="space-y-2">
+                                                        <label className="block text-[10px] font-semibold uppercase tracking-widest text-neutral-600">
+                                                            Primary email
+                                                        </label>
+                                                        <input
+                                                            type="text"
+                                                            value={footerSettingsForm.data.contact_email_primary}
+                                                            onChange={(e) =>
+                                                                footerSettingsForm.setData('contact_email_primary', e.target.value)
+                                                            }
+                                                            className="w-full rounded border border-neutral-300 px-2 py-1 text-[11px] focus:border-red-500 focus:ring focus:ring-red-500/20"
+                                                            placeholder="sundia.hrd@yahoo.com"
+                                                        />
+                                                        {footerSettingsForm.errors.contact_email_primary && (
+                                                            <p className="text-[10px] text-red-600">
+                                                                {footerSettingsForm.errors.contact_email_primary}
+                                                            </p>
+                                                        )}
+                                                    </div>
+                                                    <div className="space-y-2">
+                                                        <label className="block text-[10px] font-semibold uppercase tracking-widest text-neutral-600">
+                                                            Phone
+                                                        </label>
+                                                        <input
+                                                            type="text"
+                                                            value={footerSettingsForm.data.contact_phone}
+                                                            onChange={(e) =>
+                                                                footerSettingsForm.setData('contact_phone', e.target.value)
+                                                            }
+                                                            className="w-full rounded border border-neutral-300 px-2 py-1 text-[11px] focus:border-red-500 focus:ring focus:ring-red-500/20"
+                                                            placeholder="(049) 502 2443"
+                                                        />
+                                                        {footerSettingsForm.errors.contact_phone && (
+                                                            <p className="text-[10px] text-red-600">
+                                                                {footerSettingsForm.errors.contact_phone}
+                                                            </p>
+                                                        )}
+                                                    </div>
+                                                </div>
+
+                                                <div className="grid gap-3 sm:grid-cols-2">
+                                                    <div className="space-y-2">
+                                                        <label className="block text-[10px] font-semibold uppercase tracking-widest text-neutral-600">
+                                                            Secondary email
+                                                        </label>
+                                                        <input
+                                                            type="text"
+                                                            value={footerSettingsForm.data.contact_email_secondary}
+                                                            onChange={(e) =>
+                                                                footerSettingsForm.setData('contact_email_secondary', e.target.value)
+                                                            }
+                                                            className="w-full rounded border border-neutral-300 px-2 py-1 text-[11px] focus:border-red-500 focus:ring focus:ring-red-500/20"
+                                                            placeholder="jep.bernas@sundiagroup.com.ph"
+                                                        />
+                                                        {footerSettingsForm.errors.contact_email_secondary && (
+                                                            <p className="text-[10px] text-red-600">
+                                                                {footerSettingsForm.errors.contact_email_secondary}
+                                                            </p>
+                                                        )}
+                                                    </div>
+                                                    <div className="space-y-2">
+                                                        <label className="block text-[10px] font-semibold uppercase tracking-widest text-neutral-600">
+                                                            Company label
+                                                        </label>
+                                                        <input
+                                                            type="text"
+                                                            value={footerSettingsForm.data.contact_company_label}
+                                                            onChange={(e) =>
+                                                                footerSettingsForm.setData('contact_company_label', e.target.value)
+                                                            }
+                                                            className="w-full rounded border border-neutral-300 px-2 py-1 text-[11px] focus:border-red-500 focus:ring focus:ring-red-500/20"
+                                                            placeholder="Sundia Group"
+                                                        />
+                                                        {footerSettingsForm.errors.contact_company_label && (
+                                                            <p className="text-[10px] text-red-600">
+                                                                {footerSettingsForm.errors.contact_company_label}
+                                                            </p>
+                                                        )}
+                                                    </div>
+                                                </div>
+
+                                                <div className="flex items-center justify-end pt-1">
+                                                    <button
+                                                        type="submit"
+                                                        disabled={footerSettingsForm.processing}
+                                                        className="inline-flex items-center justify-center rounded-full border border-transparent bg-red-600 px-5 py-2 text-[11px] font-semibold uppercase tracking-widest text-white shadow-sm transition-colors hover:bg-red-700 disabled:opacity-60"
+                                                    >
+                                                        {footerSettingsForm.processing ? 'Saving...' : 'Save Footer'}
+                                                    </button>
+                                                </div>
+                                            </form>
                                         </div>
                                     </section>
                                 )}

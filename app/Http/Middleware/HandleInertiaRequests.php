@@ -5,6 +5,7 @@ namespace App\Http\Middleware;
 use App\Models\HomepageVideo;
 use App\Models\SiampageVideo;
 use App\Models\Sundia;
+use App\Models\FooterSetting;
 use App\Models\TopoffroadpageVideo;
 use App\Models\TpsmipageVideo;
 use App\Support\PublicUrl;
@@ -59,6 +60,9 @@ class HandleInertiaRequests extends Middleware
                 ->latest('id')
                 ->first()
             : null;
+        $footerSetting = Schema::hasTable('footer_settings')
+            ? FooterSetting::query()->first()
+            : null;
 
         return [
             ...parent::share($request),
@@ -80,6 +84,7 @@ class HandleInertiaRequests extends Middleware
                 'success_team_member' => fn () => $request->session()->get('success_team_member'),
                 'success_trusted_company' => fn () => $request->session()->get('success_trusted_company'),
                 'success_contact_info' => fn () => $request->session()->get('success_contact_info'),
+                'success_footer_settings' => fn () => $request->session()->get('success_footer_settings'),
                 'success_upcoming_event' => fn () => $request->session()->get('success_upcoming_event'),
                 'success_siam_product_category' => fn () => $request->session()->get('success_siam_product_category'),
                 'success_siam_category_product' => fn () => $request->session()->get('success_siam_category_product'),
@@ -140,6 +145,15 @@ class HandleInertiaRequests extends Middleware
                     'overlay_enabled' => (bool) $topoffroadpageVideo->overlay_enabled,
                     'overlay_image_path' => $topoffroadpageVideo->overlay_image_path,
                     'is_active' => (bool) $topoffroadpageVideo->is_active,
+                ]
+                : null,
+            'footerSetting' => $footerSetting
+                ? [
+                    'about_text' => $footerSetting->about_text,
+                    'contact_email_primary' => $footerSetting->contact_email_primary,
+                    'contact_phone' => $footerSetting->contact_phone,
+                    'contact_email_secondary' => $footerSetting->contact_email_secondary,
+                    'contact_company_label' => $footerSetting->contact_company_label,
                 ]
                 : null,
         ];

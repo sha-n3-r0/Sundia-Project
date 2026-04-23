@@ -13,6 +13,7 @@ use App\Http\Controllers\Admin\ServiceCardController;
 use App\Http\Controllers\Admin\BackgroundPictureController;
 use App\Http\Controllers\CareersController;
 use App\Http\Controllers\ContactInfoController as PublicContactInfoController;
+use App\Http\Controllers\FooterSettingController;
 use App\Http\Controllers\TeamMemberController;
 use App\Http\Controllers\TrustedCompanyController as PublicTrustedCompanyController;
 use App\Http\Controllers\SiamProductCategoryController;
@@ -27,6 +28,7 @@ use App\Http\Controllers\SundiaController;
 use App\Http\Controllers\UpcomingEventController;
 use App\Models\MissionVision;
 use App\Models\ContactInfo;
+use App\Models\FooterSetting;
 use App\Models\Siam;
 use App\Models\Subsidiary;
 use App\Models\Sundia;
@@ -117,7 +119,6 @@ Route::get('/', function () {
                 'display_order' => (int) $i->display_order,
             ])
         : collect();
-
     $upcomingEvents = Schema::hasTable('upcoming_events')
         ? UpcomingEvent::query()
             ->active()
@@ -422,6 +423,9 @@ Route::get('/dashboard', function () {
                 'is_active' => (bool) $i->is_active,
             ])
         : collect();
+    $footerSetting = Schema::hasTable('footer_settings')
+        ? FooterSetting::query()->first()
+        : null;
 
     $siamProductCategories = Schema::hasTable('siam_product_categories')
         ? SiamProductCategory::query()
@@ -577,6 +581,13 @@ Route::get('/dashboard', function () {
         'teamMembers' => $teamMembers,
         'trustedCompanies' => $trustedCompanies,
         'contactInfos' => $contactInfos,
+        'footerSetting' => $footerSetting ? [
+            'about_text' => $footerSetting->about_text,
+            'contact_email_primary' => $footerSetting->contact_email_primary,
+            'contact_phone' => $footerSetting->contact_phone,
+            'contact_email_secondary' => $footerSetting->contact_email_secondary,
+            'contact_company_label' => $footerSetting->contact_company_label,
+        ] : null,
         'siamProductCategories' => $siamProductCategories,
         'serviceCards' => $serviceCards,
         'tpsmiProducts' => $tpsmiProducts,
@@ -668,6 +679,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/contact-infos', [PublicContactInfoController::class, 'store'])->name('contact-infos.store');
     Route::put('/contact-infos/{contactInfo}', [PublicContactInfoController::class, 'update'])->name('contact-infos.update');
     Route::delete('/contact-infos/{contactInfo}', [PublicContactInfoController::class, 'destroy'])->name('contact-infos.destroy');
+    Route::post('/footer-settings', [FooterSettingController::class, 'update'])->name('footer-settings.update');
 
     Route::post('/upcoming-events', [UpcomingEventController::class, 'store'])->name('upcoming-events.store');
     Route::put('/upcoming-events/{upcomingEvent}', [UpcomingEventController::class, 'update'])->name('upcoming-events.update');
